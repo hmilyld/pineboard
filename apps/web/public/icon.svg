@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="论坛">
+  <rect width="64" height="64" rx="14" fill="#14513f"/>
+  <path d="M13 11h27a8 8 0 0 1 8 8v15a8 8 0 0 1-8 8H29l-8 9v-9h-8a8 8 0 0 1-8-8V19a8 8 0 0 1 8-8Z" fill="#f4f8f4"/>
+  <path d="M34 28h17a7 7 0 0 1 7 7v11a7 7 0 0 1-7 7h-4v8l-7-8h-6a7 7 0 0 1-7-7V35a7 7 0 0 1 7-7Z" fill="#e2542c" stroke="#14513f" stroke-width="4" stroke-linejoin="round"/>
+</svg>

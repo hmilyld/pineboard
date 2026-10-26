@@ -1,0 +1,553 @@
+{
+  "passed": 30,
+  "failed": 0,
+  "results": [
+    {
+      "name": "signup: 200",
+      "pass": true,
+      "detail": {
+        "token": "SHm6YfUl4KdHoL8hTnxXSw2Uwvdw2aai",
+        "user": {
+          "name": "Alice",
+          "email": "alice.spike@example.test",
+          "emailVerified": false,
+          "image": null,
+          "createdAt": "2026-10-23T06:31:10.000Z",
+          "updatedAt": "2026-10-23T06:31:10.000Z",
+          "username": null,
+          "role": "user",
+          "status": "active",
+          "bio": null,
+          "avatarKey": null,
+          "timezone": null,
+          "lastSeenAt": null,
+          "deletedAt": null,
+          "id": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9"
+        }
+      }
+    },
+    {
+      "name": "signup: no interactive transaction",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "signup: user + credential account + session",
+      "pass": true,
+      "detail": {
+        "users": [
+          {
+            "id": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9",
+            "name": "Alice",
+            "email": "alice.spike@example.test",
+            "email_verified": 0,
+            "username": null,
+            "role": "user",
+            "status": "active",
+            "created_at": 1792737070,
+            "updated_at": 1792737070
+          }
+        ],
+        "accounts": [
+          {
+            "id": "bKUQBwVwEPZ7XmLzKlntDDobmJoh1KER",
+            "user_id": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9",
+            "provider_id": "credential",
+            "account_id": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9",
+            "has_password": 1,
+            "password_length": 44,
+            "created_at": 1792737070
+          }
+        ],
+        "sessions": [
+          {
+            "id": "9q0tMFNZ26htgkLS5owgBexS5wUFgozM",
+            "user_id": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9",
+            "token": "SHm6YfUl4KdHoL8hTnxXSw2Uwvdw2aai",
+            "expires_at": 1793341870,
+            "created_at": 1792737070
+          }
+        ],
+        "verifications": [],
+        "rateLimits": [
+          {
+            "key": "no-trusted-ip|/sign-up/email",
+            "count": 1,
+            "last_request": 1792737070620
+          }
+        ],
+        "outbox": [],
+        "revisions": {
+          "revisions": 0
+        },
+        "counts": {
+          "topics": 0,
+          "posts": 0,
+          "fts_rows": 0
+        }
+      }
+    },
+    {
+      "name": "signup: email starts unverified",
+      "pass": true,
+      "detail": {
+        "id": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9",
+        "name": "Alice",
+        "email": "alice.spike@example.test",
+        "email_verified": 0,
+        "username": null,
+        "role": "user",
+        "status": "active",
+        "created_at": 1792737070,
+        "updated_at": 1792737070
+      }
+    },
+    {
+      "name": "signup: rateLimit written to D1",
+      "pass": true,
+      "detail": [
+        {
+          "key": "no-trusted-ip|/sign-up/email",
+          "count": 1,
+          "last_request": 1792737070620
+        }
+      ]
+    },
+    {
+      "name": "signup: password stored as HMAC, not derived value",
+      "pass": true,
+      "detail": {
+        "id": "bKUQBwVwEPZ7XmLzKlntDDobmJoh1KER",
+        "user_id": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9",
+        "provider_id": "credential",
+        "account_id": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9",
+        "has_password": 1,
+        "password_length": 44,
+        "created_at": 1792737070
+      }
+    },
+    {
+      "name": "cookie: host-only + HttpOnly + Secure + SameSite=Lax + Path=/",
+      "pass": true,
+      "detail": {
+        "httpOnly": true,
+        "secure": true,
+        "sameSiteLax": true,
+        "hasDomain": false,
+        "path": true
+      }
+    },
+    {
+      "name": "signup: verification email deferred via waitUntil",
+      "pass": true,
+      "detail": {
+        "id": "709c6d1f-8940-4931-8084-5ca2ee5b3423",
+        "kind": "verify",
+        "payload": "{\"email\":\"alice.spike@example.test\",\"url\":\"http://localhost:8787/api/auth/verify-email?token=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFsaWNlLnNwaWtlQGV4YW1wbGUudGVzdCIsImlhdCI6MTc5MjczNzA3MCwiZXhwIjoxNzkyNzQwNjcwfQ.Ff1xNlvHZ_BczLyYRu_4OfTUrxeGXqaZYhXeRgq4m2A&callbackURL=%2F\",\"token\":\"eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFsaWNlLnNwaWtlQGV4YW1wbGUudGVzdCIsImlhdCI6MTc5MjczNzA3MCwiZXhwIjoxNzkyNzQwNjcwfQ.Ff1xNlvHZ_BczLyYRu_4OfTUrxeGXqaZYhXeRgq4m2A\"}",
+        "created_at": 1792737070
+      }
+    },
+    {
+      "name": "signup: email work not awaited before the response",
+      "pass": true,
+      "detail": {
+        "outboxKind": "verify",
+        "outboxAtResponse": false,
+        "responseWallMs": 70.48
+      }
+    },
+    {
+      "name": "verify-email: user becomes verified",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "verified": 1
+      }
+    },
+    {
+      "name": "sign-in: 200 with derived password",
+      "pass": true,
+      "detail": {
+        "redirect": false,
+        "token": "923550EtYAhifkiraQ7rWFhR9LSt1PLh",
+        "user": {
+          "name": "Alice",
+          "email": "alice.spike@example.test",
+          "emailVerified": true,
+          "image": null,
+          "createdAt": "2026-10-23T06:31:10.000Z",
+          "updatedAt": "2026-10-23T06:31:10.000Z",
+          "username": null,
+          "role": "user",
+          "status": "active",
+          "bio": null,
+          "avatarKey": null,
+          "timezone": null,
+          "lastSeenAt": null,
+          "deletedAt": null,
+          "id": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9"
+        }
+      }
+    },
+    {
+      "name": "sign-in: no interactive transaction",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "oauth merge (verified local): account linked",
+      "pass": true,
+      "detail": {
+        "callbackStatus": 302,
+        "location": "/spike/oauth/done",
+        "users": 1,
+        "accounts": [
+          "credential",
+          "test-oauth"
+        ],
+        "audit": [
+          {
+            "providerId": "test-oauth",
+            "userId": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9"
+          }
+        ],
+        "transactions": []
+      }
+    },
+    {
+      "name": "oauth merge (verified local): audit row written",
+      "pass": true,
+      "detail": [
+        {
+          "providerId": "test-oauth",
+          "userId": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9"
+        }
+      ]
+    },
+    {
+      "name": "oauth merge (verified local): no interactive transaction",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "oauth merge (unverified local, requireLocalEmailVerified=true): refused with account_not_linked",
+      "pass": true,
+      "detail": {
+        "callbackStatus": 302,
+        "location": "http://localhost:8787/api/auth/error?error=account_not_linked",
+        "accounts": [
+          "credential"
+        ],
+        "users": 1,
+        "transactions": []
+      }
+    },
+    {
+      "name": "oauth merge (unverified local, default): credential account preserved",
+      "pass": true,
+      "detail": [
+        {
+          "id": "piMMD1oko6RdX9csMb1rujMGMkP9glwB",
+          "user_id": "C1EM1iCoedwH6220cxcWFjqtg3Sx1lop",
+          "provider_id": "credential",
+          "account_id": "C1EM1iCoedwH6220cxcWFjqtg3Sx1lop",
+          "has_password": 1,
+          "password_length": 44,
+          "created_at": 1792737071
+        }
+      ]
+    },
+    {
+      "name": "oauth merge (unverified local, gate disabled): links and leaves attacker credential (documents why guard is required)",
+      "pass": true,
+      "detail": {
+        "callbackStatus": 302,
+        "accounts": [
+          "credential",
+          "test-oauth"
+        ],
+        "emailVerified": 1,
+        "sessions": 2
+      }
+    },
+    {
+      "name": "guard: credential account deleted on unverified link",
+      "pass": true,
+      "detail": {
+        "callbackStatus": 302,
+        "accounts": [
+          "test-oauth"
+        ],
+        "sessions": 1,
+        "guardAudit": 1,
+        "attackerSessionStatus": 200,
+        "attackerSessionBody": "null",
+        "transactions": []
+      }
+    },
+    {
+      "name": "guard: old sessions revoked",
+      "pass": true,
+      "detail": {
+        "callbackStatus": 302,
+        "accounts": [
+          "test-oauth"
+        ],
+        "sessions": 1,
+        "guardAudit": 1,
+        "attackerSessionStatus": 200,
+        "attackerSessionBody": "null",
+        "transactions": []
+      }
+    },
+    {
+      "name": "guard: audit row written",
+      "pass": true,
+      "detail": {
+        "callbackStatus": 302,
+        "accounts": [
+          "test-oauth"
+        ],
+        "sessions": 1,
+        "guardAudit": 1,
+        "attackerSessionStatus": 200,
+        "attackerSessionBody": "null",
+        "transactions": []
+      }
+    },
+    {
+      "name": "guard: no interactive transaction",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "reset: request-password-reset always 200",
+      "pass": true,
+      "detail": {
+        "sessionsBefore": 3,
+        "forgotStatus": 200,
+        "forgotResponse": {
+          "status": true,
+          "message": "If this email exists in our system, check your email for the reset link"
+        },
+        "resetStatus": 200,
+        "sessionsAfter": 0,
+        "oldLoginStatus": 401,
+        "newLoginStatus": 200,
+        "forgotTransactions": [],
+        "resetTransactions": []
+      }
+    },
+    {
+      "name": "reset: token consumed and password changed",
+      "pass": true,
+      "detail": {
+        "sessionsBefore": 3,
+        "forgotStatus": 200,
+        "forgotResponse": {
+          "status": true,
+          "message": "If this email exists in our system, check your email for the reset link"
+        },
+        "resetStatus": 200,
+        "sessionsAfter": 0,
+        "oldLoginStatus": 401,
+        "newLoginStatus": 200,
+        "forgotTransactions": [],
+        "resetTransactions": []
+      }
+    },
+    {
+      "name": "reset: all sessions revoked",
+      "pass": true,
+      "detail": {
+        "sessionsBefore": 3,
+        "forgotStatus": 200,
+        "forgotResponse": {
+          "status": true,
+          "message": "If this email exists in our system, check your email for the reset link"
+        },
+        "resetStatus": 200,
+        "sessionsAfter": 0,
+        "oldLoginStatus": 401,
+        "newLoginStatus": 200,
+        "forgotTransactions": [],
+        "resetTransactions": []
+      }
+    },
+    {
+      "name": "reset: old password rejected",
+      "pass": true,
+      "detail": {
+        "sessionsBefore": 3,
+        "forgotStatus": 200,
+        "forgotResponse": {
+          "status": true,
+          "message": "If this email exists in our system, check your email for the reset link"
+        },
+        "resetStatus": 200,
+        "sessionsAfter": 0,
+        "oldLoginStatus": 401,
+        "newLoginStatus": 200,
+        "forgotTransactions": [],
+        "resetTransactions": []
+      }
+    },
+    {
+      "name": "reset: no interactive transaction",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "transaction:true: fails at BEGIN with D1 error",
+      "pass": true,
+      "detail": {
+        "status": 500,
+        "body": {
+          "raw": ""
+        },
+        "transactionStatements": [
+          "begin"
+        ],
+        "errors": [
+          "D1_ERROR: To execute a transaction, please use the state.storage.transaction() or state.storage.transactionSync() APIs instead of the SQL BEGIN TRANSACTION or SAVEPOINT statements. The JavaScript API is safer because it will automatically roll back on exceptions, and because it interacts correctly with Durable Objects' automatic atomic write coalescing."
+        ],
+        "usersWritten": 0
+      }
+    },
+    {
+      "name": "transaction:true: no partial user row",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "change-email: disabled by default (salt = email)",
+      "pass": true,
+      "detail": {
+        "status": 400,
+        "body": {
+          "message": "Change email is disabled",
+          "code": "CHANGE_EMAIL_DISABLED"
+        }
+      }
+    }
+  ],
+  "evidence": {
+    "signup": {
+      "status": 200,
+      "wallMs": 70.48,
+      "serverWallMs": "56.000",
+      "setCookie": "better-auth.session_token=<redacted>; Max-Age=604800; Path=/; HttpOnly; Secure; SameSite=Lax",
+      "userId": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9",
+      "storedHashLength": 44,
+      "transactions": [],
+      "statements": [
+        "select \"id\", \"key\", \"count\", \"last_request\" from \"rateLimit\" where \"rateLimit\".\"key\" = ? limit ?",
+        "insert into \"rateLimit\" (\"id\", \"key\", \"count\", \"last_request\") values (?, ?, ?, ?) returning \"id\", \"key\", \"count\", \"last_request\"",
+        "select \"id\", \"name\", \"email\", \"email_verified\", \"image\", \"username\", \"role\", \"status\", \"bio\", \"avatar_key\", \"timezone\", \"last_seen_at\", \"deleted_at\", \"created_at\", \"updated_at\" from \"user\" where \"user\".\"email\" = ?",
+        "insert into \"user\" (\"id\", \"name\", \"email\", \"email_verified\", \"image\", \"username\", \"role\", \"status\", \"bio\", \"avatar_key\", \"timezone\", \"last_seen_at\", \"deleted_at\", \"created_at\", \"updated_at\") values (?, ?, ?, ?, null, null, ?, ?, null, null, null, null, null, ?, ?) returning \"id\", \"name\", \"email\", \"email_verified\", \"image\", \"username\", \"role\", \"status\", \"bio\", \"avatar_key\", \"timezone\", \"last_seen_at\", \"deleted_at\", \"created_at\", \"updated_at\"",
+        "insert into \"account\" (\"id\", \"account_id\", \"provider_id\", \"user_id\", \"access_token\", \"refresh_token\", \"id_token\", \"access_token_expires_at\", \"refresh_token_expires_at\", \"scope\", \"password\", \"created_at\", \"updated_at\") values (?, ?, ?, ?, null, null, null, null, null, null, ?, ?, ?) returning \"id\", \"account_id\", \"provider_id\", \"user_id\", \"access_token\", \"refresh_token\", \"id_token\", \"access_token_expires_at\", \"refresh_token_expires_at\", \"scope\", \"password\", \"created_at\", \"updated_at\"",
+        "insert into \"session\" (\"id\", \"expires_at\", \"token\", \"ip_address\", \"user_agent\", \"user_id\", \"created_at\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?, ?) returning \"id\", \"expires_at\", \"token\", \"ip_address\", \"user_agent\", \"user_id\", \"created_at\", \"updated_at\""
+      ],
+      "cookie": {
+        "httpOnly": true,
+        "secure": true,
+        "sameSiteLax": true,
+        "hasDomain": false,
+        "path": true
+      },
+      "waitUntil": {
+        "outboxKind": "verify",
+        "outboxAtResponse": false,
+        "responseWallMs": 70.48
+      }
+    },
+    "verify": {
+      "status": 200,
+      "verified": 1
+    },
+    "signin": {
+      "status": 200,
+      "transactions": [],
+      "serverWallMs": "20.000"
+    },
+    "oauthVerifiedMerge": {
+      "callbackStatus": 302,
+      "location": "/spike/oauth/done",
+      "users": 1,
+      "accounts": [
+        "credential",
+        "test-oauth"
+      ],
+      "audit": [
+        {
+          "providerId": "test-oauth",
+          "userId": "BQYn33e0ZyVeMjzQ1k4YpycTbSuv07S9"
+        }
+      ],
+      "transactions": []
+    },
+    "oauthUnverifiedDefault": {
+      "callbackStatus": 302,
+      "location": "http://localhost:8787/api/auth/error?error=account_not_linked",
+      "accounts": [
+        "credential"
+      ],
+      "users": 1,
+      "transactions": []
+    },
+    "oauthUnverifiedUnguarded": {
+      "callbackStatus": 302,
+      "accounts": [
+        "credential",
+        "test-oauth"
+      ],
+      "emailVerified": 1,
+      "sessions": 2
+    },
+    "oauthUnverifiedGuarded": {
+      "callbackStatus": 302,
+      "accounts": [
+        "test-oauth"
+      ],
+      "sessions": 1,
+      "guardAudit": 1,
+      "attackerSessionStatus": 200,
+      "attackerSessionBody": "null",
+      "transactions": []
+    },
+    "passwordReset": {
+      "sessionsBefore": 3,
+      "forgotStatus": 200,
+      "forgotResponse": {
+        "status": true,
+        "message": "If this email exists in our system, check your email for the reset link"
+      },
+      "resetStatus": 200,
+      "sessionsAfter": 0,
+      "oldLoginStatus": 401,
+      "newLoginStatus": 200,
+      "forgotTransactions": [],
+      "resetTransactions": []
+    },
+    "transactionForced": {
+      "status": 500,
+      "body": {
+        "raw": ""
+      },
+      "transactionStatements": [
+        "begin"
+      ],
+      "errors": [
+        "D1_ERROR: To execute a transaction, please use the state.storage.transaction() or state.storage.transactionSync() APIs instead of the SQL BEGIN TRANSACTION or SAVEPOINT statements. The JavaScript API is safer because it will automatically roll back on exceptions, and because it interacts correctly with Durable Objects' automatic atomic write coalescing."
+      ],
+      "usersWritten": 0
+    },
+    "changeEmail": {
+      "status": 400,
+      "body": {
+        "message": "Change email is disabled",
+        "code": "CHANGE_EMAIL_DISABLED"
+      }
+    }
+  }
+}

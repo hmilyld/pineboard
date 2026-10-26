@@ -1,0 +1,27 @@
+# Local only. Copy to .dev.vars and replace every value. Never commit .dev.vars.
+# Production hard requirements (Worker Secrets):
+BETTER_AUTH_SECRET=
+PASSWORD_PEPPER=
+IP_HASH_SALT=
+
+# Worker vars: production values live in wrangler.jsonc; local overrides here.
+SITE_URL=http://localhost:5173
+CDN_URL=
+R2_BUCKET_NAME=forum-assets
+ENVIRONMENT=development
+
+# Optional database-managed integrations; set either here or in /admin/integrations.
+RESEND_API_KEY=
+RESEND_WEBHOOK_SECRET=
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+TURNSTILE_SITE_KEY=1x00000000000000000000AA
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+ADMIN_EMAILS=
+
+# Local only: keep verification/reset links in dev_email_outbox instead of calling Resend.
+EMAIL_TRANSPORT=log
+
+# Local only: /api/dev/reset token; non-development environments always return 404.
+DEV_RESET_TOKEN=local-dev-reset

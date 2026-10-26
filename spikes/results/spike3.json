@@ -1,0 +1,499 @@
+{
+  "passed": 16,
+  "failed": 0,
+  "results": [
+    {
+      "name": "fts: 2-char Chinese hits",
+      "pass": true,
+      "detail": {
+        "mode": "fts",
+        "rows": 1,
+        "tokens": "游戏",
+        "phrase": "\"游戏\"",
+        "meta": {
+          "served_by": "miniflare.db",
+          "served_by_primary": true,
+          "total_attempts": 1,
+          "timings": {
+            "sql_duration_ms": 0
+          },
+          "duration": 0,
+          "changes": 0,
+          "last_row_id": 1,
+          "changed_db": false,
+          "size_after": 196608,
+          "rows_read": 4,
+          "rows_written": 0
+        }
+      }
+    },
+    {
+      "name": "fts: bigram phrase hits",
+      "pass": true,
+      "detail": {
+        "mode": "fts",
+        "rows": 1,
+        "tokens": "游戏 戏攻 攻略",
+        "phrase": "\"游戏 戏攻 攻略\"",
+        "meta": {
+          "served_by": "miniflare.db",
+          "served_by_primary": true,
+          "total_attempts": 1,
+          "timings": {
+            "sql_duration_ms": 0
+          },
+          "duration": 0,
+          "changes": 0,
+          "last_row_id": 1,
+          "changed_db": false,
+          "size_after": 196608,
+          "rows_read": 4,
+          "rows_written": 0
+        }
+      }
+    },
+    {
+      "name": "fts: mixed English + Chinese phrase hits",
+      "pass": true,
+      "detail": {
+        "mode": "fts",
+        "rows": 1,
+        "tokens": "elden ring 攻略",
+        "phrase": "\"elden ring 攻略\"",
+        "meta": {
+          "served_by": "miniflare.db",
+          "served_by_primary": true,
+          "total_attempts": 1,
+          "timings": {
+            "sql_duration_ms": 0
+          },
+          "duration": 0,
+          "changes": 0,
+          "last_row_id": 1,
+          "changed_db": false,
+          "size_after": 196608,
+          "rows_read": 4,
+          "rows_written": 0
+        }
+      }
+    },
+    {
+      "name": "fts: single CJK char falls back to LIKE",
+      "pass": true,
+      "detail": {
+        "mode": "like",
+        "rows": 1
+      }
+    },
+    {
+      "name": "fts: MATCH injection is escaped and returns safely",
+      "pass": true,
+      "detail": {
+        "mode": "fts",
+        "rows": 0
+      }
+    },
+    {
+      "name": "fts: hidden topic filtered out by join",
+      "pass": true,
+      "detail": {
+        "hidden": {
+          "ok": true,
+          "data": {
+            "topicId": "1fc7fd6e-232c-4def-bc4a-fc0581037079",
+            "postId": "0db1f095-0126-4625-9708-486433f6ff78",
+            "status": "hidden"
+          }
+        },
+        "hiddenRows": 0
+      }
+    },
+    {
+      "name": "batch edit: CAS update succeeds",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "changes": 1,
+          "versionConflict": false
+        }
+      }
+    },
+    {
+      "name": "batch edit: stale version returns 0 changes (409 signal)",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "changes": 0,
+          "versionConflict": true
+        }
+      }
+    },
+    {
+      "name": "batch edit: new FTS content searchable",
+      "pass": true,
+      "detail": {
+        "newRows": 1,
+        "oldRows": 0,
+        "staleRows": 0
+      }
+    },
+    {
+      "name": "batch edit: old FTS content removed",
+      "pass": true,
+      "detail": {
+        "newRows": 1,
+        "oldRows": 0,
+        "staleRows": 0
+      }
+    },
+    {
+      "name": "batch edit: stale edit did not touch FTS",
+      "pass": true,
+      "detail": {
+        "newRows": 1,
+        "oldRows": 0,
+        "staleRows": 0
+      }
+    },
+    {
+      "name": "batch: failed batch rolls back earlier statements",
+      "pass": true,
+      "detail": {
+        "failed": true,
+        "message": "D1_ERROR: UNIQUE constraint failed: categories.id: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_PRIMARYKEY)",
+        "revisionsBefore": 1,
+        "revisionsAfter": 1,
+        "atomic": true
+      }
+    },
+    {
+      "name": "floor: sequential allocation is unique",
+      "pass": true,
+      "detail": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "name": "floor: 10 concurrent allocations are unique",
+      "pass": true,
+      "detail": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "name": "concurrent CAS: exactly one writer wins",
+      "pass": true,
+      "detail": {
+        "race": [
+          {
+            "ok": true,
+            "data": {
+              "changes": 1,
+              "versionConflict": false
+            }
+          },
+          {
+            "ok": true,
+            "data": {
+              "changes": 0,
+              "versionConflict": true
+            }
+          }
+        ],
+        "winners": 1,
+        "losers": 1
+      }
+    },
+    {
+      "name": "fts: search returns D1 meta for quota accounting",
+      "pass": true,
+      "detail": {
+        "served_by": "miniflare.db",
+        "served_by_primary": true,
+        "total_attempts": 1,
+        "timings": {
+          "sql_duration_ms": 0
+        },
+        "duration": 0,
+        "changes": 0,
+        "last_row_id": 3,
+        "changed_db": false,
+        "size_after": 196608,
+        "rows_read": 1,
+        "rows_written": 0
+      }
+    }
+  ],
+  "evidence": {
+    "migrationFtsWrite": null,
+    "search": {
+      "cases": {
+        "游戏攻略": {
+          "mode": "fts",
+          "rows": 1,
+          "tokens": "游戏 戏攻 攻略",
+          "phrase": "\"游戏 戏攻 攻略\"",
+          "meta": {
+            "served_by": "miniflare.db",
+            "served_by_primary": true,
+            "total_attempts": 1,
+            "timings": {
+              "sql_duration_ms": 0
+            },
+            "duration": 0,
+            "changes": 0,
+            "last_row_id": 1,
+            "changed_db": false,
+            "size_after": 196608,
+            "rows_read": 4,
+            "rows_written": 0
+          }
+        },
+        "游戏": {
+          "mode": "fts",
+          "rows": 1,
+          "tokens": "游戏",
+          "phrase": "\"游戏\"",
+          "meta": {
+            "served_by": "miniflare.db",
+            "served_by_primary": true,
+            "total_attempts": 1,
+            "timings": {
+              "sql_duration_ms": 0
+            },
+            "duration": 0,
+            "changes": 0,
+            "last_row_id": 1,
+            "changed_db": false,
+            "size_after": 196608,
+            "rows_read": 4,
+            "rows_written": 0
+          }
+        },
+        "戏攻": {
+          "mode": "fts",
+          "rows": 1,
+          "tokens": "戏攻",
+          "phrase": "\"戏攻\"",
+          "meta": {
+            "served_by": "miniflare.db",
+            "served_by_primary": true,
+            "total_attempts": 1,
+            "timings": {
+              "sql_duration_ms": 0
+            },
+            "duration": 0,
+            "changes": 0,
+            "last_row_id": 1,
+            "changed_db": false,
+            "size_after": 196608,
+            "rows_read": 4,
+            "rows_written": 0
+          }
+        },
+        "攻略": {
+          "mode": "fts",
+          "rows": 1,
+          "tokens": "攻略",
+          "phrase": "\"攻略\"",
+          "meta": {
+            "served_by": "miniflare.db",
+            "served_by_primary": true,
+            "total_attempts": 1,
+            "timings": {
+              "sql_duration_ms": 0
+            },
+            "duration": 0,
+            "changes": 0,
+            "last_row_id": 1,
+            "changed_db": false,
+            "size_after": 196608,
+            "rows_read": 4,
+            "rows_written": 0
+          }
+        },
+        "魔法学院": {
+          "mode": "fts",
+          "rows": 1,
+          "tokens": "魔法 法学 学院",
+          "phrase": "\"魔法 法学 学院\"",
+          "meta": {
+            "served_by": "miniflare.db",
+            "served_by_primary": true,
+            "total_attempts": 1,
+            "timings": {
+              "sql_duration_ms": 0
+            },
+            "duration": 0,
+            "changes": 0,
+            "last_row_id": 1,
+            "changed_db": false,
+            "size_after": 196608,
+            "rows_read": 4,
+            "rows_written": 0
+          }
+        },
+        "Elden Ring 攻略": {
+          "mode": "fts",
+          "rows": 1,
+          "tokens": "elden ring 攻略",
+          "phrase": "\"elden ring 攻略\"",
+          "meta": {
+            "served_by": "miniflare.db",
+            "served_by_primary": true,
+            "total_attempts": 1,
+            "timings": {
+              "sql_duration_ms": 0
+            },
+            "duration": 0,
+            "changes": 0,
+            "last_row_id": 1,
+            "changed_db": false,
+            "size_after": 196608,
+            "rows_read": 4,
+            "rows_written": 0
+          }
+        },
+        "Elden": {
+          "mode": "fts",
+          "rows": 1,
+          "tokens": "elden",
+          "phrase": "\"elden\"",
+          "meta": {
+            "served_by": "miniflare.db",
+            "served_by_primary": true,
+            "total_attempts": 1,
+            "timings": {
+              "sql_duration_ms": 0
+            },
+            "duration": 0,
+            "changes": 0,
+            "last_row_id": 1,
+            "changed_db": false,
+            "size_after": 196608,
+            "rows_read": 4,
+            "rows_written": 0
+          }
+        }
+      },
+      "single": {
+        "mode": "like",
+        "rows": 1
+      },
+      "injection": {
+        "mode": "fts",
+        "rows": 0
+      }
+    },
+    "hiddenFilter": {
+      "hidden": {
+        "ok": true,
+        "data": {
+          "topicId": "1fc7fd6e-232c-4def-bc4a-fc0581037079",
+          "postId": "0db1f095-0126-4625-9708-486433f6ff78",
+          "status": "hidden"
+        }
+      },
+      "hiddenRows": 0
+    },
+    "batchEdit": {
+      "edit": {
+        "ok": true,
+        "data": {
+          "changes": 1,
+          "versionConflict": false
+        }
+      },
+      "stale": {
+        "ok": true,
+        "data": {
+          "changes": 0,
+          "versionConflict": true
+        }
+      },
+      "afterEdit": {
+        "newRows": 1,
+        "oldRows": 0,
+        "staleRows": 0
+      }
+    },
+    "batchAtomic": {
+      "failed": true,
+      "message": "D1_ERROR: UNIQUE constraint failed: categories.id: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_PRIMARYKEY)",
+      "revisionsBefore": 1,
+      "revisionsAfter": 1,
+      "atomic": true
+    },
+    "floor": {
+      "sequential": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "concurrent": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    "concurrentCas": {
+      "race": [
+        {
+          "ok": true,
+          "data": {
+            "changes": 1,
+            "versionConflict": false
+          }
+        },
+        {
+          "ok": true,
+          "data": {
+            "changes": 0,
+            "versionConflict": true
+          }
+        }
+      ],
+      "winners": 1,
+      "losers": 1
+    },
+    "searchCost": {
+      "served_by": "miniflare.db",
+      "served_by_primary": true,
+      "total_attempts": 1,
+      "timings": {
+        "sql_duration_ms": 0
+      },
+      "duration": 0,
+      "changes": 0,
+      "last_row_id": 3,
+      "changed_db": false,
+      "size_after": 196608,
+      "rows_read": 1,
+      "rows_written": 0
+    }
+  }
+}

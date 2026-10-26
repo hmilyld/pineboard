@@ -1,0 +1,40 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_id:
+        description: Worker version id to roll back to (wrangler versions list)
+        required: true
+      message:
+        description: Rollback reason
+        required: false
+        default: "manual rollback"
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    if: ${{ vars.WORKER_NAME != '' }}
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.5.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Migrations are additive, so rolling the Worker back never needs a
+      # destructive DB rollback. If data must be restored, use the D1 export
+      # from the backup workflow and Time Travel as the last resort.
+      - name: Roll back Worker
+        run: pnpm exec wrangler rollback "${{ inputs.version_id }}" --name "${{ vars.WORKER_NAME }}" --message "${{ inputs.message }}"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

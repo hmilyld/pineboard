@@ -1,0 +1,36 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "forum-spikes",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./web",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/spike/*", "/t/*", "/c/*", "/u/*", "/tag/*", "/sitemap.xml", "/robots.txt", "/manifest.webmanifest"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "forum-spike",
+      "database_id": "00000000-0000-4000-8000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "forum-spike-assets"
+    }
+  ],
+  "vars": {
+    "SITE_URL": "http://localhost:8787",
+    "CDN_URL": "http://localhost:8787/cdn",
+    "ENVIRONMENT": "spike",
+    "R2_BUCKET_NAME": "forum-spike-assets"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

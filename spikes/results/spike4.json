@@ -1,0 +1,306 @@
+{
+  "passed": 15,
+  "failed": 0,
+  "results": [
+    {
+      "name": "presign: allowed image returns a PUT URL",
+      "pass": true,
+      "detail": {
+        "method": "PUT",
+        "signedHeaders": "content-type;host",
+        "expires": "600",
+        "hasSignature": true,
+        "algorithm": "AWS4-HMAC-SHA256",
+        "contentLengthSigned": false
+      }
+    },
+    {
+      "name": "presign: Content-Type is bound into the signature",
+      "pass": true,
+      "detail": {
+        "method": "PUT",
+        "signedHeaders": "content-type;host",
+        "expires": "600",
+        "hasSignature": true,
+        "algorithm": "AWS4-HMAC-SHA256",
+        "contentLengthSigned": false
+      }
+    },
+    {
+      "name": "presign: expiry is 600s",
+      "pass": true,
+      "detail": {
+        "method": "PUT",
+        "signedHeaders": "content-type;host",
+        "expires": "600",
+        "hasSignature": true,
+        "algorithm": "AWS4-HMAC-SHA256",
+        "contentLengthSigned": false
+      }
+    },
+    {
+      "name": "presign: SVG rejected",
+      "pass": true,
+      "detail": {
+        "allowed": {
+          "method": "PUT",
+          "signedHeaders": "content-type;host",
+          "expires": "600",
+          "hasSignature": true,
+          "algorithm": "AWS4-HMAC-SHA256",
+          "contentLengthSigned": false
+        },
+        "svg": "mime_not_allowed",
+        "html": "mime_not_allowed",
+        "badKey": "invalid_key",
+        "tooBig": "size_out_of_range"
+      }
+    },
+    {
+      "name": "presign: HTML rejected",
+      "pass": true,
+      "detail": {
+        "allowed": {
+          "method": "PUT",
+          "signedHeaders": "content-type;host",
+          "expires": "600",
+          "hasSignature": true,
+          "algorithm": "AWS4-HMAC-SHA256",
+          "contentLengthSigned": false
+        },
+        "svg": "mime_not_allowed",
+        "html": "mime_not_allowed",
+        "badKey": "invalid_key",
+        "tooBig": "size_out_of_range"
+      }
+    },
+    {
+      "name": "presign: path traversal rejected",
+      "pass": true,
+      "detail": {
+        "allowed": {
+          "method": "PUT",
+          "signedHeaders": "content-type;host",
+          "expires": "600",
+          "hasSignature": true,
+          "algorithm": "AWS4-HMAC-SHA256",
+          "contentLengthSigned": false
+        },
+        "svg": "mime_not_allowed",
+        "html": "mime_not_allowed",
+        "badKey": "invalid_key",
+        "tooBig": "size_out_of_range"
+      }
+    },
+    {
+      "name": "presign: declared size over limit rejected",
+      "pass": true,
+      "detail": {
+        "allowed": {
+          "method": "PUT",
+          "signedHeaders": "content-type;host",
+          "expires": "600",
+          "hasSignature": true,
+          "algorithm": "AWS4-HMAC-SHA256",
+          "contentLengthSigned": false
+        },
+        "svg": "mime_not_allowed",
+        "html": "mime_not_allowed",
+        "badKey": "invalid_key",
+        "tooBig": "size_out_of_range"
+      }
+    },
+    {
+      "name": "presign: Content-Length cannot be signed (browser restriction)",
+      "pass": true,
+      "detail": {
+        "method": "PUT",
+        "signedHeaders": "content-type;host",
+        "expires": "600",
+        "hasSignature": true,
+        "algorithm": "AWS4-HMAC-SHA256",
+        "contentLengthSigned": false
+      }
+    },
+    {
+      "name": "complete: HEAD matches size and MIME",
+      "pass": true,
+      "detail": {
+        "head": {
+          "key": "spike/ok.png",
+          "size": 1000,
+          "mime": "image/png",
+          "etag": "ede3d3b685b4e137ba4cb2521329a75e",
+          "uploaded": "2026-10-23T06:31:14.399Z"
+        },
+        "complete": {
+          "key": "spike/ok.png",
+          "size": 1000,
+          "mime": "image/png",
+          "etag": "ede3d3b685b4e137ba4cb2521329a75e",
+          "contentDisposition": "inline"
+        },
+        "after": 200
+      }
+    },
+    {
+      "name": "complete: matching upload accepted",
+      "pass": true,
+      "detail": {
+        "head": {
+          "key": "spike/ok.png",
+          "size": 1000,
+          "mime": "image/png",
+          "etag": "ede3d3b685b4e137ba4cb2521329a75e",
+          "uploaded": "2026-10-23T06:31:14.399Z"
+        },
+        "complete": {
+          "key": "spike/ok.png",
+          "size": 1000,
+          "mime": "image/png",
+          "etag": "ede3d3b685b4e137ba4cb2521329a75e",
+          "contentDisposition": "inline"
+        },
+        "after": 200
+      }
+    },
+    {
+      "name": "complete: object larger than declared is rejected",
+      "pass": true,
+      "detail": {
+        "response": {
+          "code": "upload_rejected",
+          "message": "exceeds_declared",
+          "fields": {
+            "reasons": [
+              "exceeds_declared"
+            ]
+          }
+        },
+        "afterHeadStatus": 404
+      }
+    },
+    {
+      "name": "complete: rejected object is deleted",
+      "pass": true,
+      "detail": {
+        "response": {
+          "code": "upload_rejected",
+          "message": "exceeds_declared",
+          "fields": {
+            "reasons": [
+              "exceeds_declared"
+            ]
+          }
+        },
+        "afterHeadStatus": 404
+      }
+    },
+    {
+      "name": "complete: MIME mismatch is rejected",
+      "pass": true,
+      "detail": {
+        "response": {
+          "code": "upload_rejected",
+          "message": "mime_mismatch",
+          "fields": {
+            "reasons": [
+              "mime_mismatch"
+            ]
+          }
+        },
+        "afterHeadStatus": 404
+      }
+    },
+    {
+      "name": "complete: MIME-mismatched object is deleted",
+      "pass": true,
+      "detail": {
+        "response": {
+          "code": "upload_rejected",
+          "message": "mime_mismatch",
+          "fields": {
+            "reasons": [
+              "mime_mismatch"
+            ]
+          }
+        },
+        "afterHeadStatus": 404
+      }
+    },
+    {
+      "name": "non-image: stored with attachment disposition",
+      "pass": true,
+      "detail": {
+        "disposition": "application/pdf",
+        "completeDisposition": "attachment"
+      }
+    }
+  ],
+  "evidence": {
+    "presign": {
+      "allowed": {
+        "method": "PUT",
+        "signedHeaders": "content-type;host",
+        "expires": "600",
+        "hasSignature": true,
+        "algorithm": "AWS4-HMAC-SHA256",
+        "contentLengthSigned": false
+      },
+      "svg": "mime_not_allowed",
+      "html": "mime_not_allowed",
+      "badKey": "invalid_key",
+      "tooBig": "size_out_of_range"
+    },
+    "headVerify": {
+      "head": {
+        "key": "spike/ok.png",
+        "size": 1000,
+        "mime": "image/png",
+        "etag": "ede3d3b685b4e137ba4cb2521329a75e",
+        "uploaded": "2026-10-23T06:31:14.399Z"
+      },
+      "complete": {
+        "key": "spike/ok.png",
+        "size": 1000,
+        "mime": "image/png",
+        "etag": "ede3d3b685b4e137ba4cb2521329a75e",
+        "contentDisposition": "inline"
+      },
+      "after": 200
+    },
+    "oversize": {
+      "response": {
+        "code": "upload_rejected",
+        "message": "exceeds_declared",
+        "fields": {
+          "reasons": [
+            "exceeds_declared"
+          ]
+        }
+      },
+      "afterHeadStatus": 404
+    },
+    "mismatch": {
+      "response": {
+        "code": "upload_rejected",
+        "message": "mime_mismatch",
+        "fields": {
+          "reasons": [
+            "mime_mismatch"
+          ]
+        }
+      },
+      "afterHeadStatus": 404
+    },
+    "nonImage": {
+      "disposition": "application/pdf",
+      "completeDisposition": "attachment"
+    },
+    "remoteBlocked": {
+      "directR2Put": "not executed: no Cloudflare account credentials in this environment",
+      "r2CorsPolicy": "bucket CORS must allow PUT from the site origin with Content-Type",
+      "presignedPost": "R2 docs: POST (multipart form uploads) is not currently supported, so content-length-range is unavailable"
+    }
+  }
+}

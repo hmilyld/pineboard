@@ -1,0 +1,179 @@
+{
+  "passed": 12,
+  "failed": 0,
+  "results": [
+    {
+      "name": "doc: 200 renders SPA shell with injected title",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "cache": "miss",
+        "timing": {
+          "total": 10,
+          "d1": 5
+        },
+        "title": "文档主题标题",
+        "description": "这是用于文档 meta 注入的摘要内容。",
+        "canonical": "http://localhost:8787/t/doc-topic-1",
+        "ogTitle": "文档主题标题",
+        "twitterTitle": "文档主题标题",
+        "jsonLd": "{\"@context\":\"https://schema.org\",\"@type\":\"DiscussionForumPosting\",\"headline\":\"文档主题标题\",\"datePublished\":\"2026-10-23T06:31:13.000Z\",\"dateModified\":\"2026-10-23T06:31:13.000Z\",\"url\":\"http://localhost:8787/t/doc-topic-1\"}",
+        "shellPresent": true
+      }
+    },
+    {
+      "name": "doc: description/canonical/og/twitter injected",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "cache": "miss",
+        "timing": {
+          "total": 10,
+          "d1": 5
+        },
+        "title": "文档主题标题",
+        "description": "这是用于文档 meta 注入的摘要内容。",
+        "canonical": "http://localhost:8787/t/doc-topic-1",
+        "ogTitle": "文档主题标题",
+        "twitterTitle": "文档主题标题",
+        "jsonLd": "{\"@context\":\"https://schema.org\",\"@type\":\"DiscussionForumPosting\",\"headline\":\"文档主题标题\",\"datePublished\":\"2026-10-23T06:31:13.000Z\",\"dateModified\":\"2026-10-23T06:31:13.000Z\",\"url\":\"http://localhost:8787/t/doc-topic-1\"}",
+        "shellPresent": true
+      }
+    },
+    {
+      "name": "doc: JSON-LD DiscussionForumPosting injected with < escaped",
+      "pass": true,
+      "detail": "{\"@context\":\"https://schema.org\",\"@type\":\"DiscussionForumPosting\",\"headline\":\"文档主题标题\",\"datePublished\":\"2026-10-23T06:31:13.000Z\",\"dateModified\":\"2026-10-23T06:31:13.000Z\",\"url\":\"http://localhost:8787/t/doc-topic-1\"}"
+    },
+    {
+      "name": "doc: first request is a cache miss",
+      "pass": true,
+      "detail": "miss"
+    },
+    {
+      "name": "doc: second request is a cache hit",
+      "pass": true,
+      "detail": "hit"
+    },
+    {
+      "name": "doc: cache hit skips the D1 query",
+      "pass": true,
+      "detail": {
+        "total": 1
+      }
+    },
+    {
+      "name": "doc: hidden topic returns 404 and does not leak its title",
+      "pass": true,
+      "detail": {
+        "hiddenStatus": 404,
+        "hiddenTitle": "主题不存在",
+        "leaksHiddenTitle": false,
+        "missingStatus": 404,
+        "missingTitle": "主题不存在"
+      }
+    },
+    {
+      "name": "doc: missing topic returns 404 with SPA shell",
+      "pass": true,
+      "detail": {
+        "hiddenStatus": 404,
+        "hiddenTitle": "主题不存在",
+        "leaksHiddenTitle": false,
+        "missingStatus": 404,
+        "missingTitle": "主题不存在"
+      }
+    },
+    {
+      "name": "doc: 100 cached requests stay cache-hits",
+      "pass": true,
+      "detail": {
+        "requests": 100,
+        "hits": 100,
+        "misses": 0,
+        "serverTotalP50": 1,
+        "serverTotalP95": 1,
+        "clientWallP50": 7.82,
+        "clientWallP95": 9.97
+      }
+    },
+    {
+      "name": "doc: cached server time P95 < 5ms (Go criterion)",
+      "pass": true,
+      "detail": {
+        "requests": 100,
+        "hits": 100,
+        "misses": 0,
+        "serverTotalP50": 1,
+        "serverTotalP95": 1,
+        "clientWallP50": 7.82,
+        "clientWallP95": 9.97
+      }
+    },
+    {
+      "name": "static: / is served from assets without Worker header",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "hasSpikeHeader": false,
+        "shell": true
+      }
+    },
+    {
+      "name": "cpu: 1000 HMAC-SHA256 operations complete locally",
+      "pass": true,
+      "detail": {
+        "cpuUsageAvailable": false,
+        "userMicros": null,
+        "systemMicros": null,
+        "wallMs": 3,
+        "operations": 1000
+      }
+    }
+  ],
+  "evidence": {
+    "meta": {
+      "status": 200,
+      "cache": "miss",
+      "timing": {
+        "total": 10,
+        "d1": 5
+      },
+      "title": "文档主题标题",
+      "description": "这是用于文档 meta 注入的摘要内容。",
+      "canonical": "http://localhost:8787/t/doc-topic-1",
+      "ogTitle": "文档主题标题",
+      "twitterTitle": "文档主题标题",
+      "jsonLd": "{\"@context\":\"https://schema.org\",\"@type\":\"DiscussionForumPosting\",\"headline\":\"文档主题标题\",\"datePublished\":\"2026-10-23T06:31:13.000Z\",\"dateModified\":\"2026-10-23T06:31:13.000Z\",\"url\":\"http://localhost:8787/t/doc-topic-1\"}",
+      "shellPresent": true
+    },
+    "visibility": {
+      "hiddenStatus": 404,
+      "hiddenTitle": "主题不存在",
+      "leaksHiddenTitle": false,
+      "missingStatus": 404,
+      "missingTitle": "主题不存在"
+    },
+    "throughput": {
+      "requests": 100,
+      "hits": 100,
+      "misses": 0,
+      "serverTotalP50": 1,
+      "serverTotalP95": 1,
+      "clientWallP50": 7.82,
+      "clientWallP95": 9.97
+    },
+    "static": {
+      "status": 200,
+      "hasSpikeHeader": false,
+      "shell": true
+    },
+    "cpu": {
+      "cpuUsageAvailable": false,
+      "userMicros": null,
+      "systemMicros": null,
+      "wallMs": 3,
+      "operations": 1000
+    }
+  }
+}

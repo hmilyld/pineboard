@@ -1,0 +1,6 @@
+BETTER_AUTH_SECRET=replace-with-32-byte-random
+PASSWORD_PEPPER=replace-with-32-byte-random
+TEST_OAUTH_CLIENT_SECRET=spike-oauth-secret
+CF_ACCOUNT_ID=your-account-id
+R2_ACCESS_KEY_ID=your-r2-access-key-id
+R2_SECRET_ACCESS_KEY=your-r2-secret-access-key

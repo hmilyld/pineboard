@@ -1,0 +1,34 @@
+{
+  "name": "@pineboard/spikes",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.5.1",
+  "scripts": {
+    "dev": "wrangler dev --port 8787 --persist-to .wrangler/state",
+    "db:migrate": "wrangler d1 migrations apply DB --local --persist-to .wrangler/state",
+    "db:reset": "rm -rf .wrangler/state && pnpm db:migrate",
+    "test": "node scripts/run-all.mjs",
+    "test:spike1": "node scripts/spike1.mjs",
+    "test:spike2": "node scripts/spike2.mjs",
+    "test:spike3": "node scripts/spike3.mjs",
+    "test:spike4": "node scripts/spike4.mjs",
+    "test:spike5": "node scripts/spike5.mjs",
+    "test:migration": "node scripts/migration-probe.mjs",
+    "bench": "node scripts/bench.mjs",
+    "typecheck": "tsc --noEmit",
+    "bench:remote": "node scripts/cpu-remote.mjs"
+  },
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "1.7.12",
+    "aws4fetch": "1.0.20",
+    "better-auth": "1.7.12",
+    "drizzle-orm": "0.45.4",
+    "hono": "4.13.13"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261022.1",
+    "drizzle-kit": "0.31.11",
+    "typescript": "5.9.3",
+    "wrangler": "4.151.3"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1792675420164,
+      "tag": "0000_massive_calypso",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1792681266305,
+      "tag": "0001_great_morbius",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792684359461,
+      "tag": "0002_black_frank_castle",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1792685671880,
+      "tag": "0004_post_revisions",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1792686943354,
+      "tag": "0005_overconfident_synch",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1792687493359,
+      "tag": "0006_mighty_champions",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1792687754296,
+      "tag": "0007_post_search",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1792738034600,
+      "tag": "0008_gray_supreme_intelligence",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1792909602927,
+      "tag": "0009_spooky_calypso",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1792920012538,
+      "tag": "0010_magical_excalibur",
+      "breakpoints": true
+    }
+  ]
+}

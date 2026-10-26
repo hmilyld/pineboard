@@ -1,0 +1,96 @@
+name: Deploy
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    if: ${{ vars.D1_DATABASE_ID != '' }}
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    env:
+      WORKER_NAME: ${{ vars.WORKER_NAME }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      DOMAIN: ${{ vars.DOMAIN }}
+      D1_DATABASE_NAME: ${{ vars.D1_DATABASE_NAME }}
+      D1_DATABASE_ID: ${{ vars.D1_DATABASE_ID }}
+      R2_BUCKET_NAME: ${{ vars.R2_BUCKET_NAME }}
+      CDN_URL: ${{ vars.CDN_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.5.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generate deployment config
+        run: node scripts/render-wrangler.mjs
+      - name: Apply D1 migrations
+        run: pnpm exec wrangler d1 migrations apply "$D1_DATABASE_NAME" --remote --config wrangler.site.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy:
+    if: ${{ vars.D1_DATABASE_ID != '' }}
+    needs: migrate
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    env:
+      WORKER_NAME: ${{ vars.WORKER_NAME }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      DOMAIN: ${{ vars.DOMAIN }}
+      D1_DATABASE_NAME: ${{ vars.D1_DATABASE_NAME }}
+      D1_DATABASE_ID: ${{ vars.D1_DATABASE_ID }}
+      R2_BUCKET_NAME: ${{ vars.R2_BUCKET_NAME }}
+      CDN_URL: ${{ vars.CDN_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.5.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generate deployment config
+        run: node scripts/render-wrangler.mjs
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Verify required Worker secrets
+        run: |
+          pnpm exec wrangler secret list --config wrangler.site.jsonc --format json > /tmp/worker-secrets.json
+          node scripts/check-worker-secrets.mjs /tmp/worker-secrets.json
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - run: pnpm build
+      - name: Deploy Worker
+        run: pnpm exec wrangler deploy --config wrangler.site.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  smoke:
+    if: ${{ vars.D1_DATABASE_ID != '' }}
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Health check
+        run: curl -fsS "${{ vars.SITE_URL }}/api/health"

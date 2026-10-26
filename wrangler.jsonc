@@ -1,0 +1,48 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pineboard",
+  "main": "apps/api/src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./apps/web/dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/", "/api/*", "/files/*", "/t/*", "/c/*", "/u/*", "/tag/*", "/sitemap.xml", "/robots.txt", "/manifest.webmanifest"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pineboard",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "packages/db/migrations"
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "forum.example.com",
+      "custom_domain": true
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "pineboard-assets"
+    }
+  ],
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA"
+  },
+  "vars": {
+    "SITE_URL": "https://forum.example.com",
+    "CDN_URL": "",
+    "ENVIRONMENT": "production",
+    "R2_BUCKET_NAME": "pineboard-assets"
+  },
+  "triggers": {
+    "crons": ["*/5 * * * *", "15 3 * * *"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "steps": [
+    {
+      "name": "migrate fresh local D1",
+      "pass": true,
+      "detail": {
+        "applied": true
+      }
+    },
+    {
+      "name": "seed data (normal + FTS rows)",
+      "pass": true,
+      "detail": {
+        "topics": 1,
+        "fts": 3,
+        "migrations": 3
+      }
+    },
+    {
+      "name": "full export is blocked by FTS5 virtual table (observed)",
+      "pass": true,
+      "detail": {
+        "blocked": true,
+        "error": "cannot export databases with Virtual Tables (fts5)\u001b[0m"
+      }
+    },
+    {
+      "name": "data-only export excluding post_search",
+      "pass": true,
+      "detail": {
+        "tables": [
+          "user",
+          "session",
+          "account",
+          "verification",
+          "rateLimit",
+          "categories",
+          "topics",
+          "posts",
+          "post_revisions",
+          "spike_outbox"
+        ],
+        "sqlBytes": 746,
+        "gzBytes": 370,
+        "sha256": "4997bfa59edb0cc6b399fed1c4b1f0a06e19bf507d3640fe9161d0ae48e95a2b",
+        "hasFtsData": false,
+        "path": "/home/pineboard/Codespace/website/forum.example.com/spikes/.wrangler/spike5/backup.sql",
+        "gzPath": "/home/pineboard/Codespace/website/forum.example.com/spikes/.wrangler/spike5/backup.sql.gz"
+      }
+    },
+    {
+      "name": "restore: migrations + data-only import into a fresh D1",
+      "pass": true,
+      "detail": {
+        "topics": 1,
+        "fts": 2
+      }
+    },
+    {
+      "name": "compare source and restored row counts",
+      "pass": true,
+      "detail": {
+        "source": {
+          "topics": 1,
+          "posts": 1
+        },
+        "restored": {
+          "topics": 1,
+          "posts": 1
+        },
+        "ftsMustBeRebuilt": true
+      }
+    },
+    {
+      "name": "wrangler deploy dry-run",
+      "pass": true,
+      "detail": {
+        "hasBundledWorker": true,
+        "outdir": "/home/pineboard/Codespace/website/forum.example.com/spikes/.wrangler/spike5/dist"
+      }
+    },
+    {
+      "name": "backup excludes .dev.vars/secrets",
+      "pass": true,
+      "detail": {
+        "leaks": []
+      }
+    }
+  ],
+  "backup": {
+    "tables": [
+      "user",
+      "session",
+      "account",
+      "verification",
+      "rateLimit",
+      "categories",
+      "topics",
+      "posts",
+      "post_revisions",
+      "spike_outbox"
+    ],
+    "sqlBytes": 746,
+    "gzBytes": 370,
+    "sha256": "4997bfa59edb0cc6b399fed1c4b1f0a06e19bf507d3640fe9161d0ae48e95a2b",
+    "hasFtsData": false,
+    "path": "/home/pineboard/Codespace/website/forum.example.com/spikes/.wrangler/spike5/backup.sql",
+    "gzPath": "/home/pineboard/Codespace/website/forum.example.com/spikes/.wrangler/spike5/backup.sql.gz"
+  },
+  "fullExportError": "cannot export databases with Virtual Tables (fts5)\u001b[0m",
+  "ftsRebuildRequired": "post_search is derived data: full d1 export rejects virtual tables, so backups exclude it and restore must run the search reindex endpoint/script.",
+  "remoteBlocked": {
+    "remoteMigrations": "requires CLOUDFLARE_API_TOKEN + real database_id",
+    "remoteExport": "requires CLOUDFLARE_API_TOKEN",
+    "wranglerRollback": "requires deployed Worker versions and API token",
+    "githubActionsExecution": "repository has no remote; workflows linted with actionlint 1.7.7"
+  },
+  "pass": true
+}
