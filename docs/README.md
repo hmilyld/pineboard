@@ -4,7 +4,7 @@ English | [简体中文](zh-CN/README.md)
 
 This directory holds all of Pineboard's design, implementation and operations documentation. If you are picking the project up for the first time, read [../AGENTS.md](../AGENTS.md) in the repository root first, then follow the paths below.
 
-Current version: `0.1.0`
+Current version: `0.2.0`
 
 ## Recommended reading paths
 

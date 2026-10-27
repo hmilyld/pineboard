@@ -4,7 +4,7 @@
 
 一个通用、轻量的论坛，不限定行业或主题，小团队、兴趣小组和社区都可以用它搭建自己的讨论区。前台提供主题、回复、标签与搜索，后台负责站点配置、内容维护、用户与举报管理。前后端同源部署在单个 Cloudflare Worker 上，使用 D1、R2、Better Auth、Turnstile 与 Resend。
 
-当前版本：`0.1.0`
+当前版本：`0.2.0`
 
 ## 界面预览
 
@@ -99,8 +99,8 @@ pnpm test:e2e:p1   # p1…p6 同理
 生产部署使用 GitHub Actions 的 tag 工作流：
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
 普通 `main` push 只运行 CI，不打 tag 不会部署。首次部署、Cloudflare 资源创建、必须填写的变量/Secrets、后台可维护项、备份与回滚，见：
