@@ -67,6 +67,7 @@ export const en: Widened<typeof zhCN> = {
     signOut: "Sign out",
     moderation: "Review",
     searchPlaceholder: "Search topics, tags, people",
+    searchPlaceholderShort: "Search",
   },
 
   announcement: {

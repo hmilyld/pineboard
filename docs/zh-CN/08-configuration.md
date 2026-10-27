@@ -115,8 +115,8 @@ git push origin main
 明确打 tag 后才触发生产部署：
 
 ```bash
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.2.1
+git push origin v0.2.1
 ```
 
 `Deploy` workflow 只在 `v*` tag（或手动 `workflow_dispatch`）运行：
@@ -142,7 +142,7 @@ pnpm exec wrangler secret put IP_HASH_SALT
 pnpm exec wrangler secret put ADMIN_EMAILS
 
 # 发布
-git tag v0.2.0 && git push origin v0.2.0
+git tag v0.2.1 && git push origin v0.2.1
 ```
 
 完整步骤见 [09 部署指南](09-deployment.md)。部署后到 `/admin/integrations` 配置 Resend/Turnstile/R2，或以 CF 变量提供；确认：

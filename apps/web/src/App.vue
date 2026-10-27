@@ -258,7 +258,7 @@ async function signOut(): Promise<void> {
 
           <form v-if="!isSearch" class="v2-search" role="search" @submit.prevent="submitSearch">
             <Search :size="13" aria-hidden="true" />
-            <input v-model="searchQ" name="q" type="search" autocomplete="off" :placeholder="t('nav.searchPlaceholder')" :aria-label="t('nav.searchPlaceholder')" />
+            <input v-model="searchQ" name="q" type="search" autocomplete="off" :placeholder="t('nav.searchPlaceholderShort')" :aria-label="t('nav.searchPlaceholder')" />
           </form>
 
           <div class="v2-hauth">

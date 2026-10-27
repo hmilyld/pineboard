@@ -274,7 +274,7 @@
   /* header */
   .v2-header { position: sticky; top: 0; z-index: 30; height: 56px; background: var(--head); color: #f4f8f4; }
   .v2-header-inner { display: flex; align-items: center; gap: 20px; height: 56px; max-width: 1180px; margin-inline: auto; padding-inline: 18px; }
-  .v2-brand { display: flex; align-items: center; gap: 9px; white-space: nowrap; color: #f4f8f4; }
+  .v2-brand { display: flex; align-items: center; gap: 9px; white-space: nowrap; color: #f4f8f4; flex: none; }
   .v2-mark { width: 24px; height: 24px; border-radius: 3px; background: #f2f6f2; color: #14513f; display: grid; place-items: center; font: 700 13px/1 "Songti SC", "Noto Serif CJK SC", serif; }
   .v2-mark-icon { flex: none; width: 28px; height: 28px; object-fit: cover; background: transparent; border: 0; border-radius: 6px; box-shadow: none; }
   .v2-brand-name { font-size: 17px; font-weight: 700; letter-spacing: 0.02em; }
@@ -283,8 +283,8 @@
   .v2-nav > a:hover, .v2-nav > button:hover, .v2-nav .v2-nav-dd-trigger:hover { color: #fff; }
   .v2-nav .on { color: #fff; font-weight: 500; box-shadow: inset 0 -2px 0 var(--orange); }
   .v2-header-inner.no-search .v2-hauth { margin-left: auto; }
-  .v2-search { margin-left: auto; width: 160px; height: 30px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.08); border-radius: 4px; display: flex; align-items: center; gap: 6px; padding: 0 9px; font-size: 11.5px; color: rgba(255,255,255,0.55); }
-  .v2-search input { width: 100%; border: 0; background: transparent; color: #fff; font: inherit; font-size: 11.5px; outline: none; }
+  .v2-search { margin-left: auto; width: 160px; height: 30px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.08); border-radius: 4px; display: flex; align-items: center; gap: 6px; padding: 0 9px; font-size: 11.5px; color: rgba(255,255,255,0.55); flex: 0 1 160px; min-width: 0; }
+  .v2-search input { width: 100%; border: 0; background: transparent; color: #fff; font: inherit; font-size: 11.5px; outline: none; min-width: 0; }
   .v2-search input::placeholder { color: rgba(255,255,255,0.55); }
   .v2-hauth { margin-left: 8px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; white-space: nowrap; }
   .v2-hauth .login { color: rgba(255,255,255,0.82); padding: 5px 8px; }
@@ -323,7 +323,10 @@
   .v2-crumb { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
   .v2-crumb i { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--muted)); display: inline-block; }
   .v2-crumb .sep { color: var(--line); }
-  .v2-topic-head { display: flex; align-items: flex-start; gap: 16px; padding: 12px 0 14px; border-bottom: 1px solid var(--line); }
+  .v2-topic-head { display: flex; align-items: flex-start; gap: 16px; padding: 12px 0 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .v2-topic-head > .min-w-0 { flex: 1 1 320px; }
+  .v2-topic-head > .min-w-0.flex-1 { flex: 1 1 320px; }
+  .v2-topic-acts { flex: none; }
   .v2-topic-head h1 { margin: 0; font-size: 21px; line-height: 1.35; font-weight: 700; letter-spacing: -0.015em; overflow-wrap: anywhere; word-break: break-word; }
   .v2-tmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 12px; margin-top: 8px; font-size: 11.5px; color: var(--muted); }
   .v2-tmeta b { font-weight: 600; color: var(--ink); }
@@ -497,15 +500,32 @@
   .v2-header, .v2-header-inner { height: 50px; }
   .v2-header-inner { padding-inline: 10px; gap: 8px; }
   .v2-nav { display: none; }
-  .v2-search { display: flex; flex: 1 1 auto; width: auto; min-width: 0; margin-left: 2px; height: 30px; }
+  /* The brand keeps its natural width; the search box absorbs whatever is left
+     so a long site name can never overlap it. */
+  /* Brand keeps its text intact; the search box takes the remaining width and
+     shrinks first on very narrow phones, so the two can never overlap. */
+  .v2-brand { flex: 0 0 auto; min-width: 0; }
+  .v2-search { display: flex; flex: 1 1 auto; width: auto; min-width: 44px; margin-left: 2px; height: 30px; }
   .v2-search input { min-width: 0; }
-  .v2-hauth { margin-left: 0; flex: none; gap: 6px; }
+  .v2-hauth { margin-left: 0; flex: none; gap: 4px; }
+  /* Tighter auth buttons on phones leave room for the brand and search box. */
+  .v2-hauth .login { padding: 5px 4px; font-size: 11.5px; }
+  .v2-hauth .reg { padding: 5px 7px; font-size: 11.5px; }
+  .v2-brand { gap: 7px; }
   .v2-admin-entry { display: none; }
   .v2-brand-name { font-size: 15px; }
   .v2-mark { width: 22px; height: 22px; font-size: 12px; }
   .v2-mark-icon { width: 24px; height: 24px; border-radius: 5px; box-shadow: none; }
   .v2-notice { min-height: 34px; padding-inline: 10px; gap: 6px; font-size: 11px; }
   .v2-notice-bar { height: 12px; }
+  /* Below 340px even the tightened header needs one more notch. */
+  @media (max-width: 340px) {
+    .v2-header-inner { padding-inline: 8px; gap: 6px; }
+    .v2-brand-name { font-size: 14px; }
+    .v2-search { min-width: 36px; padding: 0 6px; }
+    .v2-hauth .login { font-size: 11px; padding: 5px 3px; }
+    .v2-hauth .reg { font-size: 11px; padding: 5px 6px; }
+  }
   .v2-footer-inner { min-height: 0; padding-block: 12px 16px; flex-wrap: wrap; gap: 6px 14px; }
   .v2-footer-brand { width: 100%; }
   .v2-footer-tagline { font-size: 10px; }
@@ -528,9 +548,14 @@
   .v2-post.child .v2-rail { padding: 7px 12px; border-bottom: 0; }
   .v2-post.child .v2-post-body { padding: 0 12px 11px; }
   .v2-post.child .v2-avatar { width: 22px; height: 22px; font-size: 10px; }
-  .v2-topic-head { padding-left: 10px; }
+  .v2-topic-head { padding-left: 10px; padding-right: 10px; gap: 10px; }
+  .v2-topic-head > .min-w-0 { flex: 1 1 100%; max-width: 100%; }
+  .v2-topic-head > .min-w-0.flex-1 { flex: 1 1 100%; }
+  /* Actions drop under the title instead of squeezing it into a column. */
+  .v2-topic-head > .v2-topic-acts { flex: 1 1 100%; gap: 8px; }
   .v2-topic-head h1 { font-size: 17.5px; line-height: 1.4; }
   .v2-tmeta { font-size: 11px; gap: 4px 9px; }
+  .v2-switch { font-size: 11px; }
   .v2-auth { padding: 0; }
   .v2-auth-shell { grid-template-columns: 1fr; min-height: 100dvh; border: 0; border-radius: 0; }
   .v2-auth-brand { display: none; }

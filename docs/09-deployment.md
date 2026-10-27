@@ -120,8 +120,8 @@ Forks do not inherit these settings; you must create them again.
 git push origin main
 
 # Real deployment
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.2.1
+git push origin v0.2.1
 ```
 
 The Deploy workflow:

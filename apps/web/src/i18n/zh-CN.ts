@@ -59,6 +59,7 @@ export const zhCN = {
     signOut: "退出登录",
     moderation: "审阅",
     searchPlaceholder: "搜索主题、标签、用户",
+    searchPlaceholderShort: "搜索",
   },
 
   announcement: {

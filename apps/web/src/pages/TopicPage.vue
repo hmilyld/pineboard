@@ -393,7 +393,7 @@ watch([() => route.query.page, () => route.query.onlyOp], () => {
                   </div>
                   <div v-if="detail.topic.tags.length" class="mt-2"><TagChips :tags="detail.topic.tags" /></div>
                 </div>
-                <div class="flex flex-none flex-wrap items-center gap-2">
+                <div class="v2-topic-acts flex flex-none flex-wrap items-center gap-2">
                   <button type="button" class="v2-switch" role="switch" :aria-checked="onlyOp" @click="toggleOnlyOp">
                     <span class="v2-switch-track" aria-hidden="true" />{{ t("topic.onlyOp") }}
                   </button>
