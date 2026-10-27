@@ -1,8 +1,10 @@
 # Contributing
 
-1. 先读 `AGENTS.md` 和 `docs/README.md`。
-2. Fork 仓库，从 `main` 建分支。
-3. 提交前运行：
+English | [简体中文](CONTRIBUTING.zh-CN.md)
+
+1. Read `AGENTS.md` and `docs/README.md` first.
+2. Fork the repository and create a branch from `main`.
+3. Run the following before committing:
 
 ```bash
 pnpm typecheck
@@ -10,9 +12,9 @@ pnpm test
 pnpm build
 ```
 
-4. 涉及 API/数据/权限的改动，补对应 e2e。
-5. 不要提交 `.dev.vars`、`wrangler.site.jsonc`、真实 D1/R2 ID、域名、备份或生产数据。
-6. 文档与代码同一 PR；新增配置必须同步 `docs/02`/`docs/08`。
-7. 提交信息用 `feat:` / `fix:` / `docs:` / `chore:` 前缀。
+4. For changes involving the API/data/permissions, add corresponding e2e tests.
+5. Do not commit `.dev.vars`, `wrangler.site.jsonc`, real D1/R2 IDs, domains, backups, or production data.
+6. Documentation and code go in the same PR; new configuration must be synchronized with `docs/02`/`docs/08`.
+7. Use the `feat:` / `fix:` / `docs:` / `chore:` prefixes in commit messages.
 
-设计方向与不可违反的约束见 `AGENTS.md`。不要重新讨论已定事项。
+See `AGENTS.md` for the design direction and the inviolable constraints. Do not reopen settled matters.

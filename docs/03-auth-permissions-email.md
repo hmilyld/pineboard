@@ -1,19 +1,21 @@
-# 03 认证、权限、编辑留痕与邮件
+# 03 Authentication, Permissions, Edit History, and Email
 
-## Better Auth 初始化
+English | [简体中文](zh-CN/03-auth-permissions-email.md)
 
-D1 绑定是请求级的，**不要模块作用域建实例**。每个请求 `createAuth(env, ctx)`，或按 isolate 懒初始化并把 `ExecutionContext` 通过闭包传入 hook。
+## Better Auth initialization
+
+D1 bindings are request-scoped, so **do not create instances at module scope**. Call `createAuth(env, ctx)` for every request, or lazily initialize per isolate and pass `ExecutionContext` into hooks through a closure.
 
 ```ts
 const auth = createAuth(env, c.executionCtx);
 app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
 ```
 
-`baseURL = SITE_URL`，`trustedOrigins = [SITE_URL]`，`advanced.defaultCookieAttributes = { sameSite:'lax', secure:true, httpOnly:true, path:'/' }`。**不设 `crossSubDomainCookies`。**
+`baseURL = SITE_URL`, `trustedOrigins = [SITE_URL]`, `advanced.defaultCookieAttributes = { sameSite:'lax', secure:true, httpOnly:true, path:'/' }`. **Do not set `crossSubDomainCookies`.**
 
-## 密码：浏览器派生 + 服务端 HMAC
+## Passwords: browser derivation + server-side HMAC
 
-免费版 10ms CPU 跑不动 scrypt。前端：
+The free plan's 10ms CPU budget cannot run scrypt. Frontend:
 
 ```ts
 const salt = new TextEncoder().encode(`forum:v1:${email.trim().toLowerCase()}`);
@@ -22,87 +24,87 @@ const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', hash:'SHA-256', sal
 const derived = 'v1$' + btoa(String.fromCharCode(...new Uint8Array(bits)));
 ```
 
-服务端 `emailAndPassword.password`：
+Server-side `emailAndPassword.password`:
 
 ```ts
 hash: (d) => hmacB64(env.PASSWORD_PEPPER, d),
 verify: async ({ hash, password }) => timingSafeEqual(hash, await hmacB64(env.PASSWORD_PEPPER, password)),
 ```
 
-P1 实现（2026-10-22）：`TURNSTILE_SITE_KEY` 为公开标识，测试 key 为 `1x00000000000000000000AA`/`1x0000000000000000000000000000000AA`，只放在本地 `.dev.vars`；生产不再提交测试 key，由后台 `/admin/integrations` 或 Worker 变量配置。后台值优先于环境变量；本地 `ENVIRONMENT=development` 时 cookie 不加 `Secure`（localhost 无 HTTPS），staging/production 强制 `Secure`。Turnstile 在校验载荷、注册开关、按 IP 频率限制之后才 siteverify。
+P1 implementation (2026-10-22): `TURNSTILE_SITE_KEY` is a public identifier; the test keys are `1x00000000000000000000AA`/`1x0000000000000000000000000000000AA` and only live in the local `.dev.vars`; production no longer commits test keys, which are instead configured in the admin console at `/admin/integrations` or as Worker variables. Admin-console values take precedence over environment variables; when `ENVIRONMENT=development` locally the cookie omits `Secure` (localhost has no HTTPS), while staging/production force `Secure`. Turnstile only reaches siteverify after payload validation, the registration switch, and per-IP rate limiting.
 
-要点：
-- 账户「账户与数据」页提供修改密码：输入当前密码 + 两次新密码，成功后保留当前会话、撤销其他会话。
-- 注册/登录/改密/重置四个表单都先派生；邮箱是盐，因此 **v1 默认禁止改邮箱**（配置项已移除）。将来开启时，改邮箱流程必须同时强制重设密码。
-- 服务端校验格式 `^v1\$[A-Za-z0-9+/=]{43,}$`，防止绕过前端提交原始弱密码。
-- `PASSWORD_PEPPER` 轮换可增量：登录时用旧 pepper 验证成功后，用同一派生值重算新哈希并覆盖，无需全员重置。
-- 在线爆破不受 KDF 保护：登录必须 `rateLimit.storage='database'`，连续失败后加 Turnstile。
-- 密码强度只能在浏览器端校验。
+Key points:
+- The "Account & data" page offers a password change: current password plus the new password twice; on success the current session is kept and all other sessions are revoked.
+- All four forms — signup/login/password change/reset — derive first; the email is the salt, so **v1 forbids changing the email by default** (the config option has been removed). If this is enabled later, the email-change flow must also force a password reset.
+- The server validates the format `^v1\$[A-Za-z0-9+/=]{43,}$` to prevent submitting the raw weak password while bypassing the frontend.
+- `PASSWORD_PEPPER` can be rotated incrementally: after a successful login verified with the old pepper, recompute the hash with the new one from the same derived value and overwrite it, with no need for everyone to reset.
+- Online brute force is not protected by the KDF: login must use `rateLimit.storage='database'`, and Turnstile is added after repeated failures.
+- Password strength can only be checked in the browser.
 
-## 注册、验证、重置
+## Signup, verification, reset
 
-1. 注册：Turnstile → `signUpEmail`（密码传派生值）→ `requireEmailVerification=false` → 允许登录但写操作被中间件拦截。
-2. 验证邮件：hook 内 `waitUntil`，链接指向**前端页面** `/verify-email?token=`，用户点“确认验证”按钮后才调 verify 接口，避免邮件扫描器预取消费令牌。
-3. 重置：`forget-password` 无论邮箱是否存在都返回 200；存在才 `waitUntil` 发信，消除时序侧信道。令牌 30 分钟、单次。成功后吊销该用户全部 session（`revokeSessionsOnPasswordReset: true` + 手动删 session 行），并 bump 其退订令牌 version。
-4. Resend 关闭 click/open tracking，否则链接被改写和预取。
+1. Signup: Turnstile → `signUpEmail` (pass the derived value as the password) → `requireEmailVerification=false` → login is allowed but write operations are intercepted by middleware.
+2. Verification email: `waitUntil` inside the hook, with the link pointing at a **frontend page** `/verify-email?token=`; the verify API is only called after the user clicks the "Confirm verification" button, so mail scanners cannot prefetch and consume the token.
+3. Reset: `forget-password` returns 200 whether or not the email exists; mail is only sent via `waitUntil` when it does, eliminating the timing side channel. Tokens last 30 minutes and are single-use. On success all sessions for that user are revoked (`revokeSessionsOnPasswordReset: true` plus manually deleting session rows), and that user's unsubscribe token version is bumped.
+4. Resend has click/open tracking disabled, otherwise links get rewritten and prefetched.
 
-## OAuth 与同邮箱合并（v1 不启用，预留到 v1.1）
+## OAuth and same-email merging (not enabled in v1, reserved for v1.1)
 
-**已定：v1 只做邮箱 + 密码登录。** Google / GitHub 只保留配置项、数据库 account 表字段与前端按钮位置，`socialProviders` 不填 client id/secret，OAuth 路由不对外启用；v1 不实现同邮箱合并，也没有“未验证本地账户被 OAuth 接管”的攻击面。启用前仍按下面设计执行。
+**Decided: v1 only supports email + password login.** Google / GitHub keep only their config options, the database `account` table fields, and the frontend button positions; `socialProviders` gets no client id/secret and the OAuth routes are not exposed. v1 does not implement same-email merging, and there is no attack surface for "an unverified local account being taken over by OAuth". When it is enabled, still follow the design below.
 
-`accountLinking: { enabled:true, trustedProviders:['google','github'], allowDifferentEmails:false }`。
+`accountLinking: { enabled:true, trustedProviders:['google','github'], allowDifferentEmails:false }`.
 
 ```
-provider 邮箱已验证
-├─ 无同邮箱账户 → 建 user，自动生成唯一 username
-├─ 本地账户已验证 → 关联 account，写 audit_logs('account.link')
-├─ 本地账户未验证 → 关联 + 删除 credential account + 吊销全部 session
+provider email verified
+├─ no account with the same email → create user, auto-generate a unique username
+├─ local account verified → link account, write audit_logs('account.link')
+├─ local account unverified → link + delete credential account + revoke all sessions
 │                    + audit_logs('account.link.unverified_guard')
-└─ 邮箱不同 → 冲突，提示先用原方式登录后绑定
+└─ different email → conflict, prompt to log in the original way first and then link
 ```
 
-第三条是必须的安全补丁：否则攻击者可先注册受害者邮箱（不验证也能登录），等受害者 OAuth 登录时自动并入，攻击者密码仍有效。
+The third branch is a required security patch: otherwise an attacker can register the victim's email first (login works even without verification), and when the victim later logs in via OAuth they get merged automatically while the attacker's password remains valid.
 
-> **Spike 实测（2026-10-22）**：Better Auth 1.7.12 新增 `accountLinking.requireLocalEmailVerified`，默认 `true`。默认会在未验证本地账户上直接以 `account_not_linked` 拒绝合并（不删 credential、不吊销 session）；显式设 `false` 才会走上表第三条。Spike 已验证用 `databaseHooks.account.create.before` 可以在合并前删除 credential 并吊销 session。因为 v1 暂不启用 OAuth，这里的策略顺延到 v1.1 再定；届时优先评估保留库默认拒绝并补“先验证/重置”的 UX。
+> **Spike findings (2026-10-22)**: Better Auth 1.7.12 adds `accountLinking.requireLocalEmailVerified`, defaulting to `true`. By default it rejects the merge on an unverified local account with `account_not_linked` (no credential deletion, no session revocation); only explicitly setting it to `false` takes the third branch above. The spike verified that `databaseHooks.account.create.before` can delete the credential and revoke sessions before the merge. Because v1 does not enable OAuth yet, the policy here is deferred to v1.1; at that point, first evaluate keeping the library default rejection and adding "verify/reset first" UX.
 
-## 角色与权限
+## Roles and permissions
 
-- `user`：默认。
-- `moderator`：`role='moderator'` 且 `category_moderators` 有行；权限仅限管辖版块。后台分配版主时自动提升普通用户；移除最后一个版块映射后自动回退为 `user`。管理员用户管理页可改角色、封禁/解封；不能操作自己，不能降级或封禁最后一个活跃管理员。注销冷静期不会因任意请求自动取消，需显式调用 `POST /api/me/delete/cancel`。
-- `admin`：全站；不能删除/降级最后一个 admin。
+- `user`: default.
+- `moderator`: `role='moderator'` and a row in `category_moderators`; permissions are limited to the moderated categories. Assigning a moderator in the admin console automatically promotes a regular user; removing the last category mapping automatically falls back to `user`. The admin user management page can change roles and ban/unban; you cannot act on yourself, and you cannot demote or ban the last active admin. The account-deletion grace period is not automatically cancelled by arbitrary requests — it requires an explicit `POST /api/me/delete/cancel`.
+- `admin`: site-wide; the last admin cannot be deleted or demoted.
 
-| 动作 | user | moderator | admin |
+| Action | user | moderator | admin |
 |---|---|---|---|
-| 浏览/搜索 | ✓ | ✓ | ✓ |
-| 发帖/回帖 | 已验证 + 开放注册 | ✓ | ✓ |
-| 编辑自己 | 按 user 窗口 | 按 moderator 窗口 | 按 admin 窗口 |
-| 编辑他人 | ✗ | 受 `allowStaffEditOthers` | ✓ |
-| 删除自己 | 受 `allowSelfDelete` | ✓ | ✓ |
-| 删他人/置顶/锁/移动 | ✗ | 管辖版块 | 全站 |
-| 审核/举报处理 | ✗ | 管辖版块 | 全站 |
-| 配置/用户/标签 | ✗ | ✗ | ✓ |
+| Browse/search | ✓ | ✓ | ✓ |
+| Create topic/reply | Verified + registration open | ✓ | ✓ |
+| Edit own | Per the user window | Per the moderator window | Per the admin window |
+| Edit others | ✗ | Subject to `allowStaffEditOthers` | ✓ |
+| Delete own | Subject to `allowSelfDelete` | ✓ | ✓ |
+| Delete others/pin/lock/move | ✗ | Moderated categories | Site-wide |
+| Moderation/report handling | ✗ | Moderated categories | Site-wide |
+| Config/users/tags | ✗ | ✗ | ✓ |
 
-编辑判定顺序：admin 放行 → 版主在管辖版块且允许编辑他人则放行 → 作者按角色窗口 → 若 `lockAfterReply` 且首帖已有回复则拒绝 → 否则拒绝。`0` 分钟表示永久。非 `published` 内容作者不可编辑，仅管理员可恢复。
+Edit decision order: allow admin → allow moderator in a moderated category when editing others is permitted → author subject to the role window → reject if `lockAfterReply` and the first post already has replies → otherwise reject. A value of `0` minutes means permanent. Authors cannot edit content that is not `published`; only admins can restore it.
 
-## 编辑留痕（单 batch + CAS）
+## Edit history (single batch + CAS)
 
-P3 已实现快照 + CAS + 修订历史；FTS 双写在 P5 加表后补入同一 batch。
+P3 has implemented snapshots + CAS + revision history; FTS dual writes are added to the same batch in P5 once the tables exist.
 
-所有写语句带同一个 `version` 守卫；版本不匹配时整批无操作，用 `meta.changes` 判 409：
+All write statements carry the same `version` guard; when the version does not match the whole batch is a no-op, and `meta.changes` is used to decide 409:
 
 ```ts
 const [, , , upd] = await env.DB.batch([
-  // 1 快照旧内容
+  // 1 Snapshot the old content
   db.prepare(`INSERT INTO post_revisions (id,topic_id,post_id,version,title,content_md,action,editor_id,reason,created_at)
               SELECT ?, p.topic_id, p.id, p.version, p.title, p.content_md, 'edit', ?, ?, ?
               FROM posts p WHERE p.id=? AND p.version=?`).bind(...),
-  // 2 失效旧检索
+  // 2 Invalidate the old search entry
   db.prepare(`DELETE FROM post_search WHERE post_uid=? AND EXISTS
               (SELECT 1 FROM posts WHERE id=? AND version=?)`).bind(...),
-  // 3 写新检索
+  // 3 Write the new search entry
   db.prepare(`INSERT INTO post_search (post_uid,topic_id,title,tokens)
               SELECT ?, topic_id, ?, ? FROM posts WHERE id=? AND version=?`).bind(...),
-  // 4 CAS 更新主表
+  // 4 CAS update the main table
   db.prepare(`UPDATE posts SET title=COALESCE(?,title), content_md=?, content_text=?,
                 version=version+1, edit_count=edit_count+1, edited_at=?, updated_at=?
               WHERE id=? AND version=?`).bind(...),
@@ -110,35 +112,35 @@ const [, , , upd] = await env.DB.batch([
 if (upd.meta.changes === 0) return err('version_conflict', 409);
 ```
 
-- 标题只存首帖，因此主题编辑与回复编辑共用一条路径。
-- 保留最近 N 版（默认 20），同 batch 末尾或每日清理。
-- 删除写 `action='delete'` 快照，恢复写 `restore`。
-- 历史可见性：`public` / `author` / `staff`；管理员始终全量。
+- The title is only stored on the first post, so topic edits and reply edits share a single path.
+- The most recent N versions are kept (20 by default), pruned at the end of the same batch or by a daily cleanup.
+- Deletion writes an `action='delete'` snapshot; restoration writes `restore`.
+- History visibility: `public` / `author` / `staff`; admins always see everything.
 
-## 通知与邮件
+## Notifications and email
 
-站内通知永远写入；邮件另走通道：
+In-site notifications are always written; email goes through a separate channel:
 
-| 类别 | 通道 |
+| Category | Channel |
 |---|---|
-| 验证、重置 | `waitUntil` 直发 |
-| @提及、管理员操作 | `waitUntil` 直发（每帖最多 5 人） |
-| 主题被回复、回复被回复 | `notifications` 表 + Cron 每 5 分钟摘要 |
+| Verification, reset | `waitUntil` direct send |
+| @mentions, admin actions | `waitUntil` direct send (max 5 people per post) |
+| Topic receives a reply, reply receives a reply | `notifications` table + Cron digest every 5 minutes |
 
-P4 实现：站内通知/偏好/退订/摘要已落地；无 Resend key 时写 dev outbox；@提及时通过 `waitUntil` 直发，并生成退订令牌。
+P4 implementation: in-site notifications/preferences/unsubscribe/digests are in place; without a Resend key, mail goes to a dev outbox; @mentions are sent directly through `waitUntil` and generate unsubscribe tokens.
 
-摘要任务：取 20 个待发用户 → 每用户最多取 50 条并原子 claim（`email_batch_key=claim:<ts>:<id>`，参数数 ≤ 100）→ 过滤全局开关/用户偏好/退订/已验证/账户状态 → 一次查询当日预算 → 合并为一封（最多 10 条）→ 先写 `email_logs(queued)`，再调 Resend（8s 超时、5xx 重试 1 次）→ 一条 UPDATE 批量更新状态。每个用户独立 try/catch；预算不足时 release 顺延而非 skipped；未处理 claim 由 5 分钟任务回收。
+Digest job: take 20 users with pending mail → take at most 50 rows per user with an atomic claim (`email_batch_key=claim:<ts>:<id>`, ≤ 100 parameters) → filter by global switch/user preference/unsubscribe/verified/account status → fetch the daily budget in one query → merge into one email (max 10 rows) → write `email_logs(queued)` first, then call Resend (8s timeout, retry 5xx once) → update statuses in bulk with one UPDATE. Each user has its own try/catch; when the budget is insufficient, release and defer instead of marking skipped; unprocessed claims are reclaimed by the 5-minute job.
 
-用户默认偏好：站内全开；邮件 `mention=on`、`topicReply=on`、`postReply=on`、`moderation=on 且不可关闭`。
+User default preferences: all in-site notifications on; email `mention=on`, `topicReply=on`, `postReply=on`, `moderation=on` and cannot be turned off.
 
-退订：每类一个 32 字节随机令牌，库存 SHA-256，180 天过期，`version` 递增即旧链接失效。邮件底部 `GET /unsubscribe?token=` 只展示确认页，`POST /api/unsubscribe` 才生效；同时支持 `List-Unsubscribe` 与 `List-Unsubscribe-Post: One-Click`。
+Unsubscribe: one 32-byte random token per category, stored as SHA-256, 180-day expiry, and incrementing `version` invalidates old links. The `GET /unsubscribe?token=` link at the bottom of emails only shows a confirmation page; it only takes effect via `POST /api/unsubscribe`. Both `List-Unsubscribe` and `List-Unsubscribe-Post: One-Click` are supported.
 
-Resend 免费 100 封/日、1 个域名。接 `email.bounced` / `complained` webhook（Svix 校验），命中后停发并标记；发送带 `Idempotency-Key`；`dailyBudget` 默认 80 留余量。
+Resend allows 100 emails/day and 1 domain on the free plan. Wire up the `email.bounced` / `complained` webhooks (Svix verification), and stop sending and mark the address once hit; sends carry an `Idempotency-Key`; `dailyBudget` defaults to 80 to leave headroom.
 
-## 注销实现（P5）
+## Account deletion implementation (P5)
 
-`POST /api/me/delete` 校验派生密码后把 `status` 置 `deleting`、写 `deletedAt`、删除全部 session；冷静期内登录不会自动恢复；需显式调用 `POST /api/me/delete/cancel`。每日 Cron 在 `deletionGraceDays` 后匿名化昵称/邮箱/头像/简介，保留主题与回复；清理任务也可由管理员手动触发。导出走 `POST /api/me/export`，返回 JSON 附件。
+`POST /api/me/delete` verifies the derived password, then sets `status` to `deleting`, writes `deletedAt`, and deletes all sessions; logging in during the grace period does not restore the account automatically — it requires an explicit `POST /api/me/delete/cancel`. A daily Cron anonymizes nickname/email/avatar/bio after `deletionGraceDays` while keeping topics and replies; the cleanup job can also be triggered manually by an admin. Export is done through `POST /api/me/export`, which returns a JSON attachment.
 
-## 首个管理员
+## First administrator
 
-`ADMIN_EMAILS` 环境变量；用户首次验证/登录命中则升 `admin` 并写审计。日常授权用 `pnpm admin:grant <email>`。
+The `ADMIN_EMAILS` environment variable; when a user matches it on first verification/login they are promoted to `admin` and an audit entry is written. For day-to-day grants use `pnpm admin:grant <email>`.

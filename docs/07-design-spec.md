@@ -1,74 +1,76 @@
-# 07 视觉与排版规范（Pineboard · 2026-10 定稿）
+# 07 Visual and Typography Spec (Pineboard · finalized 2026-10)
 
-> **状态：定稿，唯一视觉依据。** 本文件取代 `docs/05-frontend-theming-ops.md` 中原有的「Pineboard / Workbench v1.1」视觉段落。旧实现的宋体大标题、`#F0F1EB` 纸色、1180 工作台刊头不再使用。
+English | [简体中文](zh-CN/07-design-spec.md)
+
+> **Status: final, the sole visual source of truth.** This document replaces the original "Pineboard / Workbench v1.1" visual section in `docs/05-frontend-theming-ops.md`. The old implementation's serif large headings, `#F0F1EB` paper background, and 1180 workbench masthead are no longer used.
 >
-> 逐页确认已经完成，**实现阶段不再重新讨论配色、字号、列宽、页面结构**。若实现中发现与本文件冲突，先改本文件，再改代码。
+> Page-by-page confirmation is complete; **the implementation phase no longer reopens color, font size, column width, or page structure**. If an implementation conflict with this document appears, change this document first, then change the code.
 >
-> - 上游不附带个人站点截图；运行后按本文件重新生成 Pineboard 截图。
-> - 数据与 API：以 `docs/02-data-api-config.md` 为基线，本文件第 10 节列出增量
-> - 认证/权限/邮件：`docs/03-auth-permissions-email.md`
-> - 开工前置：`docs/06-roadmap-risks.md` 的 5 个 spike，尤其 Better Auth + D1 事务
+> - Upstream does not ship personal site screenshots; regenerate Pineboard screenshots per this document after running.
+> - Data and API: `docs/02-data-api-config.md` is the baseline; section 10 of this document lists the increments
+> - Auth/permissions/email: `docs/03-auth-permissions-email.md`
+> - Before starting: the 5 spikes in `docs/06-roadmap-risks.md`, especially Better Auth + D1 transactions
 
 ---
 
-## 1. 设计目标
+## 1. Design goals
 
-「Pineboard」是一个以**主题和回复**为中心的论坛，不是内容站、不是 SaaS 仪表盘。视觉隐喻是**共享工作台 + 现场手册**：信息密度高、列对齐、数字可扫读、边界用 1px 发丝线而不是卡片阴影。
+"Pineboard" is a forum centered on **topics and replies**, not a content site and not a SaaS dashboard. The visual metaphor is a **shared workbench + field manual**: high information density, aligned columns, scannable numbers, and boundaries drawn with 1px hairlines instead of card shadows.
 
-三条硬原则：
+Three hard principles:
 
-1. **论坛感来自结构**：固定列（标题 / 回复 / 查看 / 最后回复）、头像、楼层号、最后回复人、页码、版块色点。不要靠大标题、留白、圆角卡片制造「高级感」。
-2. **一屏看到内容**：桌面 900px 高度内，首页至少看到 8 条主题；主题页首屏至少看到首帖正文和一条回复。
-3. **颜色各管一件事**：松绿 = 结构与操作；橙 = 当前状态与主行动；赭黄 = 精华、公告、提示。危险操作只用橙色文字，不做整块红底。
+1. **Forum feel comes from structure**: fixed columns (title / replies / views / last reply), avatars, floor numbers, last replier, page numbers, category color dots. Do not manufacture "premium feel" with big headings, whitespace, or rounded cards.
+2. **See content in one screen**: within 900px of desktop height, the homepage shows at least 8 topics; the topic page's first screen shows at least the first post body and one reply.
+3. **Each color does one job**: pine green = structure and actions; orange = current state and primary action; amber = digest, announcements, notices. Destructive actions use orange text only, never a solid red block.
 
 ---
 
-## 2. 已定稿页面
+## 2. Finalized pages
 
-| 页面 | 路径 | 定稿要点 |
+| Page | Path | Finalization points |
 |---|---|---|
-| 首页 | `/` | 深松绿页头 56、公告 36、52px 列表行、176 右栏；版块入口在页头下拉与右栏（2026-10-25 移除胶囊条） |
-| 主题页 | `/t/:id` | 140px 作者栏、14px 正文、常显操作行、楼中楼、上下页码、20 楼/页、只看楼主 |
-| 版块页 | `/c/:slug` | 紧凑头部、四筛选、176 右栏、底部页码、20 主题/页 |
-| 登录 | `/login` | 左品牌右表单、宣言 + 三个数字；独立壳，无全站页头 |
-| 注册 | `/register` | 同壳、昵称 + 用户名、Turnstile |
-| 个人中心 | `/me` | 188 左导航（内容/设置）、完整资料头、四项数字 |
-| 公开主页 | `/u/:username` | 复用个人中心外壳，隐藏设置与私密项 |
-| 发帖 | `/new` | 1180 通排单栏、版块胶囊、编写/预览、标签 chips、右下发布 |
-| 搜索 | `/search` | 帖子级结果、标题 + 片段 + 元信息、赭黄高亮、两排序 |
-| 标签总览 | `/tags` | 两列、带最近主题、搜索框 |
-| 标签详情 | `/tag/:slug` | 紧凑头部三项数字、三排序、底部页码 |
-| 通知 | `/notifications` | 今天/昨天/更早、同主题合并、未读色条、数字分页 30/页 |
-| 错误页 | 403 / 404 / 500 | 共用一套、极简居中、完整页头、联系管理员 |
-| 管理后台 | `/admin` | 桌面 188 深色侧栏；移动端/Pad 顶部栏 + 菜单按钮，导航默认收起 |
+| Home | `/` | Dark pine header 56, announcement 36, 52px list rows, 176 right rail; category entry in the header dropdown and the right rail (pill bar removed 2026-10-25) |
+| Topic page | `/t/:id` | 140px author column, 14px body, always-visible action row, threaded replies, page numbers top and bottom, 20 posts/page, OP only |
+| Category page | `/c/:slug` | Compact header, four filters, 176 right rail, bottom page numbers, 20 topics/page |
+| Login | `/login` | Brand left, form right, manifesto + three numbers; standalone shell, no site-wide header |
+| Register | `/register` | Same shell, nickname + username, Turnstile |
+| Profile center | `/me` | 188 left navigation (content/settings), full profile header, four numbers |
+| Public profile | `/u/:username` | Reuses the profile center shell, hides settings and private items |
+| New topic | `/new` | 1180 full-width single column, category pills, write/preview, tag chips, publish at bottom right |
+| Search | `/search` | Post-level results, title + snippet + meta, amber highlight, two sort orders |
+| Tags overview | `/tags` | Two columns, with recent topics, search box |
+| Tag detail | `/tag/:slug` | Compact header with three numbers, three sort orders, bottom page numbers |
+| Notifications | `/notifications` | Today/yesterday/earlier, merged by topic, unread color bar, numbered pagination 30/page |
+| Error pages | 403 / 404 / 500 | One shared set, minimal and centered, full header, contact administrator |
+| Admin | `/admin` | 188 dark sidebar on desktop; top bar + menu button on mobile/tablet, navigation collapsed by default |
 
-参考图对应关系见第 13 节。
+See section 13 for the reference image mapping.
 
 ---
 
-## 3. 设计令牌
+## 3. Design tokens
 
-### 3.1 颜色
+### 3.1 Color
 
-| 语义 | CSS 变量 | 亮色 | 暗色 |
+| Semantics | CSS variable | Light | Dark |
 |---|---|---|---|
-| 页面底 | `--page` | `#F1F3F1` | `#0E1411` |
-| 面 / 面板 | `--surface` | `#FFFFFF` | `#151D18` |
-| 墨 / 主文字 | `--ink` | `#141C19` | `#E7ECE7` |
-| 次文字 | `--muted` | `#5F6B66` | `#96A29B` |
-| 发丝线 | `--line` | `#DDE3DF` | `#27332C` |
-| 悬停底 | `--hover` | `#F6F9F7` | `#1B261F` |
-| 松绿 / 结构与操作 | `--pine` | `#14513F` | `#6FBFA3` |
-| 松绿上的字 | `--on-pine` | `#F4F8F4` | `#08120D` |
-| 橙 / 状态与主行动 | `--orange` | `#E2542C` | `#F0703F` |
-| 赭黄 / 精华与提示 | `--amber` | `#B4791A` | `#E0B25A` |
-| 页头底 | `--head` | `#14513F` | `#0B2B22` |
-| 公告底 / 线 | `--notice` / `--notice-line` | `#FBF6EA` / `#E8D9B8` | `#1C1910` / `#3B331E` |
-| 后台侧栏 | `--admin-side` | `#0F4032` | `#0B2B22` |
+| Page background | `--page` | `#F1F3F1` | `#0E1411` |
+| Surface / panel | `--surface` | `#FFFFFF` | `#151D18` |
+| Ink / primary text | `--ink` | `#141C19` | `#E7ECE7` |
+| Secondary text | `--muted` | `#5F6B66` | `#96A29B` |
+| Hairline | `--line` | `#DDE3DF` | `#27332C` |
+| Hover background | `--hover` | `#F6F9F7` | `#1B261F` |
+| Pine green / structure and actions | `--pine` | `#14513F` | `#6FBFA3` |
+| Text on pine | `--on-pine` | `#F4F8F4` | `#08120D` |
+| Orange / state and primary action | `--orange` | `#E2542C` | `#F0703F` |
+| Amber / digest and notices | `--amber` | `#B4791A` | `#E0B25A` |
+| Header background | `--head` | `#14513F` | `#0B2B22` |
+| Announcement background / line | `--notice` / `--notice-line` | `#FBF6EA` / `#E8D9B8` | `#1C1910` / `#3B331E` |
+| Admin sidebar | `--admin-side` | `#0F4032` | `#0B2B22` |
 
-映射到现有 shadcn / Tailwind token（`apps/web/src/styles.css`）：
+Mapped to the existing shadcn / Tailwind tokens (`apps/web/src/styles.css`):
 
-| 现有变量 | 新值 |
+| Existing variable | New value |
 |---|---|
 | `--background` | `var(--page)` |
 | `--foreground` | `var(--ink)` |
@@ -78,12 +80,12 @@
 | `--primary` | `var(--pine)` |
 | `--primary-foreground` | `var(--on-pine)` |
 | `--brand` | `var(--orange)` |
-| `--brand-foreground` | `#FFFFFF`（暗色 `#1A0E0A`） |
+| `--brand-foreground` | `#FFFFFF` (dark `#1A0E0A`) |
 | `--signal` | `var(--amber)` |
-| `--destructive` | `var(--orange)`；只用于文字与描边，不做整块填充 |
+| `--destructive` | `var(--orange)`; only for text and strokes, never a solid fill |
 | `--ring` | `var(--pine)` |
 
-派生色一律用 `color-mix(in srgb, ...)`，不要新增零散 hex：
+Derived colors always use `color-mix(in srgb, ...)`; do not add scattered hex values:
 
 ```css
 --pine-soft: color-mix(in srgb, var(--pine) 4%, var(--surface));
@@ -93,536 +95,536 @@
 --amber-mark: color-mix(in srgb, var(--amber) 26%, transparent);
 ```
 
-### 3.2 版块色
+### 3.2 Category colors
 
-| 版块 | 亮色 | 暗色 |
+| Category | Light | Dark |
 |---|---|---|
-| 工具与效率 | `#14513F` | `#6FBFA3` |
-| 综合讨论 | `#3C5A8A` | `#7E9BD0` |
-| 游戏攻略 | `#B4791A` | `#E0B25A` |
-| 开发与折腾 | `#C0472B` | `#E27C5C` |
-| 闲聊 | `#6B4C7A` | `#A98BB8` |
+| Tools & Productivity | `#14513F` | `#6FBFA3` |
+| General Discussion | `#3C5A8A` | `#7E9BD0` |
+| Game Guides | `#B4791A` | `#E0B25A` |
+| Development & Tinkering | `#C0472B` | `#E27C5C` |
+| Chit-chat | `#6B4C7A` | `#A98BB8` |
 
-- 版块色只用于 **6px 圆点、3px 列表左条、分类名文字**，不做大面积背景。
-- 无版块色时回退 `--muted`；不要用随机色。
-- 标签不使用版块色，统一中性描边胶囊；需要颜色时用 `tags.color`，但不得覆盖可读性。
+- Category color is used only for the **6px dot, 3px list left bar, category name text**; never as a large background area.
+- When there is no category color, fall back to `--muted`; do not use random colors.
+- Tags do not use category colors; they are uniformly neutral outlined pills; when color is needed use `tags.color`, but it must not override readability.
 
-### 3.3 字体
+### 3.3 Typeface
 
 ```css
 --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
   "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
 ```
 
-- **全站无衬线**。宋体只用于品牌「工」印记（24×24，13px / 700）。
-- 数字一律 `font-variant-numeric: tabular-nums`，用于回复数、查看数、楼层、统计、页码。
-- 不引入 Web Font；使用系统字体，避免 FOUT 和额外请求。
+- **Sans-serif site-wide**. Serif is used only for the brand "工" mark (24×24, 13px / 700).
+- All numbers use `font-variant-numeric: tabular-nums`, for reply counts, view counts, floors, stats, and page numbers.
+- Do not introduce web fonts; use system fonts to avoid FOUT and extra requests.
 
-### 3.4 字号
+### 3.4 Font sizes
 
-| 层级 | 字号 / 行高 / 字重 | 备注 |
+| Level | Size / line height / weight | Notes |
 |---|---|---|
-| 站点名 | 17 / 1.2 / 700 | 页头 |
-| 主题页标题 | 21 / 1.35 / 700，`-0.015em` | `h1` |
-| 页面标题 | 20 / 1.3 / 700，`-0.02em` | 版块、标签、通知、发帖、后台 |
-| 列表标题 | 14.5 / 1.45 / 600，`-0.01em` | 首页、版块、标签、个人中心 |
-| 搜索结果标题 | 15 / 1.45 / 600 | 可两行 |
-| 楼层正文 | 14 / 1.8 | 最大 64ch |
-| 楼中楼正文 | 13.5 / 1.75 | |
-| 表单输入 | 13 / 1.4 | 手机 14 |
-| 元信息 | 11.5 | 作者、时间、版块 |
-| 小字 | 10.5 | 最后回复时间、统计标签 |
-| 微字 | 9.5 | 角标、角色、提示 |
-| 侧栏数字 | 19 / 600 | 首页站点数字 |
-| 后台数字 | 21 / 600 | 概览四格 |
-| 错误码 | 56 / 1 / 700，`-0.045em` | 404 |
+| Site name | 17 / 1.2 / 700 | Header |
+| Topic page title | 21 / 1.35 / 700, `-0.015em` | `h1` |
+| Page title | 20 / 1.3 / 700, `-0.02em` | Category, tag, notifications, new topic, admin |
+| List title | 14.5 / 1.45 / 600, `-0.01em` | Home, category, tag, profile center |
+| Search result title | 15 / 1.45 / 600 | May wrap to two lines |
+| Post body | 14 / 1.8 | Max 64ch |
+| Threaded reply body | 13.5 / 1.75 | |
+| Form input | 13 / 1.4 | 14 on mobile |
+| Meta | 11.5 | Author, time, category |
+| Small text | 10.5 | Last reply time, stat labels |
+| Micro text | 9.5 | Badges, roles, notices |
+| Sidebar numbers | 19 / 600 | Home site numbers |
+| Admin numbers | 21 / 600 | Overview four-cell grid |
+| Error code | 56 / 1 / 700, `-0.045em` | 404 |
 
-不超过 4 级字号跳跃；不要用 4rem 大标题。
+No more than 4 font-size jumps; do not use 4rem headings.
 
 ---
 
-## 4. 间距、宽度、形状
+## 4. Spacing, widths, shapes
 
-- 基准 4px。区块间距 12 / 14 / 16 / 18 / 20；页面主区上下 14–20。
-- 列表行 52px；通知行约 76px；楼层高度由内容决定。
-- 圆角：按钮/输入 **3px**；搜索框 **4px**；面板 **6px**；胶囊 **999px**。不超过 6px。
-- 同一行内的输入框/下拉框与按钮统一 **38px** 高（`.v2-inline-controls`）；表格行内的紧凑图标按钮仍用 26px。
-- 阴影：**默认无**。仅 PWA 更新提示、弹窗允许 `0 12px 32px rgba(0,0,0,.18)`。
+- Base 4px. Block spacing 12 / 14 / 16 / 18 / 20; page main area top and bottom 14–20.
+- List rows 52px; notification rows about 76px; post height determined by content.
+- Corner radius: buttons/inputs **3px**; search box **4px**; panels **6px**; pills **999px**. Never more than 6px.
+- Inputs/selects and buttons on the same row are uniformly **38px** tall (`.v2-inline-controls`); compact icon buttons inside table rows stay 26px.
+- Shadows: **none by default**. Only the PWA update prompt and dialogs may use `0 12px 32px rgba(0,0,0,.18)`.
 
-| 页面 | 内容宽度 |
+| Page | Content width |
 |---|---|
-| 首页 / 版块 / 标签页 / 标签列表 / 搜索 | 1180（主栏 + 176 右栏 + 18 间距） |
-| 主题详情 / 发帖 / 编辑 / 修订历史 | 1180 通排，无右栏 |
-| 通知 | 1180（AccountShell 内） |
-| 个人中心 / 公开主页 | 1180（188 导航 + 20 间距 + 内容） |
-| 登录 / 注册 | 1180 两栏（1.02fr / 1fr） |
-| 后台 | 全宽；188 侧栏 + 内容 |
+| Home / category / tag page / tag list / search | 1180 (main column + 176 right rail + 18 gap) |
+| Topic detail / new topic / edit / revision history | 1180 full width, no right rail |
+| Notifications | 1180 (inside AccountShell) |
+| Profile center / public profile | 1180 (188 navigation + 20 gap + content) |
+| Login / register | 1180 two columns (1.02fr / 1fr) |
+| Admin | Full width; 188 sidebar + content |
 
-页面水平内边距：桌面 16–18px，手机 10–12px。内容容器居中，不要用百分比宽度做正文。
-
----
-
-## 5. 全局框架
-
-### 5.1 页头
-
-- 高度 **56px**（手机 **50px**），深松绿 `--head` 通栏，内容最大 1180px 居中，左右 18px。
-- 左侧：24×24 米白方块「工」（宋体 13/700，松绿字），间距 9px，站名 17/700。
-- 中间：首页、版块、标签，13px，间距 16px；当前项白色 + 2px 橙色下划线（`inset 0 -2px`）。
-- 搜索：160×30，半透明白底 8%，1px 白 16%，圆角 4px，放大镜 + 11.5px 占位文字。**`/search` 页面隐藏页头搜索框**，避免同屏两个入口。
-- 右侧未登录：登录（文字）+ 注册（橙底白字，3px 圆角，5×11 内边距）。
-- 右侧已登录：发帖（橙底）、通知铃铛（有未读时橙点或橙数字）、头像 26px 圆形。管理员/版主可多一个「管理/审阅」入口，但不得挤压搜索框。
-- 手机：站名靠左；中间为搜索框（占满剩余宽度）；通知、头像、菜单靠右。导航收进抽屉。抽屉为全屏右侧面板，背景 `--head`，链接 15px，底部放管理入口。搜索框与右侧按钮必须保持同一行，不得横向溢出。
-- 页头 `position: sticky; top: 0; z-index: 30`；滚动时保持不透明，不加阴影。
-
-### 5.2 首页版块入口（2026-10-25 调整）
-
-- 首页不再渲染 `#categories` 版块胶囊条，避免与顶部导航重复占高。
-- 版块入口保留在两处：页头「版块」悬停下拉（箭头 + 失焦自动收起）与首页右栏「版块」模块。
-- 手机端不再有版块横滑条；版块列表收进右侧抽屉的「版块」分组。
-- 发帖入口保持在页头/抽屉，不依赖版块条。
-
-### 5.3 公告条
-
-- 高度 **36px**（手机 34），`--notice` 底，下边 1px `--notice-line`。
-- 左侧 3×14 橙色竖条 + 10.5/600「公告」+ 11.5px 正文，单行省略。
-- 右侧关闭 ×；关闭状态写 `localStorage`，key 为 `announcement.dismissed.<announcement.id>`。
-- 无公告或已关闭时不占高度。公告内容来自 `site.announcement`（见 10.2），不要硬编码。
-
-### 5.4 页脚
-
-- 高 **54px**，白底，上边 1px `--line`；内容最大 1180，左右 18px。
-- 左：16×16 松绿方块「工」+ 12/600 站名 + 10.5 标语；右：导航（首页 · 版块 · 标签 · 搜索）+ © 年份。
-- 手机保留页脚：品牌 + 一句话介绍占第一行，导航链接与版权占第二行；不得直接 `display:none`。
+Page horizontal padding: 16–18px desktop, 10–12px mobile. Content containers are centered; do not use percentage widths for body text.
 
 ---
 
-## 6. 通用组件
+## 5. Global frame
 
-### 6.1 主题列表行
+### 5.1 Header
 
-所有主题列表共用一套（首页、版块、标签、个人中心、公开主页、搜索结果除外）。
+- Height **56px** (mobile **50px**), dark pine `--head` full-bleed, content max 1180px centered, 18px left and right.
+- Left: 24×24 off-white square "工" (serif 13/700, pine text), 9px gap, site name 17/700.
+- Middle: Home, Categories, Tags, 13px, 16px gap; current item white + 2px orange underline (`inset 0 -2px`).
+- Search: 160×30, 8% translucent white fill, 1px white 16%, 4px radius, magnifier + 11.5px placeholder. **The `/search` page hides the header search box** so two entry points never share a screen.
+- Right when logged out: Login (text) + Register (orange fill, white text, 3px radius, 5×11 padding).
+- Right when logged in: New topic (orange fill), notification bell (orange dot or orange number when unread), 26px round avatar. Admin/moderator may get one extra "Admin/Review" entry, but it must not squeeze the search box.
+- Mobile: site name on the left; search box in the middle (filling remaining width); notifications, avatar, menu on the right. Navigation folds into a drawer. The drawer is a full-screen right panel, background `--head`, links 15px, admin entry at the bottom. The search box and right-side buttons must stay on the same line and must not overflow horizontally.
+- Header `position: sticky; top: 0; z-index: 30`; stays opaque when scrolling, no shadow.
 
-```
-┌ 3px 分类色条 ─────────────────────────────────────────────┐
-│ 标题（置顶/精华角标 + 14.5/600）        回复   查看   最后回复 │
-│ 手机：标题两行 + 分类 · 时间 · N 回复                       │
-└───────────────────────────────────────────────────────────┘
-```
+### 5.2 Homepage category entry (adjusted 2026-10-25)
 
-- 行高 **52px**，上下 1px `--line`；最后一行也有下边线；左 3px 版块色条。
-- 桌面列：`minmax(0,1fr) 32px 46px 68px`，gap 6，右对齐数字。
-- 标题单行省略；hover 变松绿 + 下划线（1px，offset 3px）。
-- 角标：置顶橙描边/8% 底；精华赭黄描边/8% 底；9.5px，圆角 2，行高 1.6。角标文字必须存在，不能只靠颜色。
-- 回复数 12.5/600 墨色；查看数 11.5 `--muted`；最后回复 68px 右对齐，第一行 11/500 人名，第二行 10.5 相对时间；无人回复显示「—」+ 时间。
-- 手机（<600）：隐藏表头、回复/查看/最后回复列；行高改为自适应（约 60），标题最多两行，下面 10.5px「版块 · 时间 · N 回复」。
-- 不显示摘要；不在列表里放头像（版块色点 + 标题优先）。
+- The homepage no longer renders the `#categories` category pill bar, to avoid duplicating height with the top navigation.
+- Category entries remain in two places: the header "Categories" hover dropdown (arrow + auto-collapse on blur) and the "Categories" module in the homepage right rail.
+- There is no category horizontal scroller on mobile; the category list folds into the "Categories" group of the right drawer.
+- The new-topic entry stays in the header/drawer and does not depend on the category bar.
 
-### 6.2 分页
+### 5.3 Announcement bar
 
-- 传统页码，不用「加载更多」；列表页只在底部，主题页上下都有。
-- 页码：最小 24×22，11px，tabular-nums；当前页松绿实底 `--on-pine`；hover 显示 1px 边框；禁用箭头 35% 透明。
-- 超过 7 页：`1 … 4 5 [6] 7 8 … 20`；首末 + 当前前后各 2。
-- 主题页顶部条高 36，背景松绿 3% 淡底，左侧「第 x 页 / 共 y 页 · N 楼」，右侧页码；底部条高 40，居中页码 +「共 N 楼」。
-- 列表页底部条高 46，居中页码；右侧可显示「共 N 个主题」。
-- 页码变化写 URL query `?page=`，浏览器前进/后退可用；滚动到列表顶部（主题页滚到楼顶）。
-- 20 条/页（主题页 20 楼/页，列表页 20 主题/页），来自 `seo.postsPerPage` / `seo.topicsPerPage`；不要在前端写死，但 UI 以 20 为默认。
+- Height **36px** (mobile 34), `--notice` background, 1px `--notice-line` bottom border.
+- Left 3×14 orange vertical bar + 10.5/600 "Announcement" + 11.5px body, single line with ellipsis.
+- Right close ×; dismissed state is written to `localStorage`, key `announcement.dismissed.<announcement.id>`.
+- Takes no height when there is no announcement or it is dismissed. Announcement content comes from `site.announcement` (see 10.2); do not hardcode it.
 
-### 6.3 标签页 / 筛选 / 按钮
+### 5.4 Footer
 
-- 筛选 tabs：12.5px，激活墨色 600 + 2px 松绿下划线；高 38–40；不做成胶囊。
-- 标签 chips：高 26，圆角 999，1px `--line`，11.5px；选中松绿 8% 底 + 松绿描边；最多 5 个，超过禁用未选项。
-- 主按钮：松绿实底，`--on-pine`，高 36–40，圆角 3，12.5/600；hover 松绿 90%。
-- 次按钮：透明底 + 1px `--line`，高 26–34，11.5px。
-- 文字按钮：11.5px `--muted`，hover 墨色；危险动作用橙色文字，不加红底。
-- 输入框：高 38（手机 42），1px `--line`，圆角 3，13px；focus 松绿边框 + 2px 松绿 18% 外圈；placeholder `--muted` 60%。
-
-### 6.4 编辑器
-
-- 容器白底 1px `--line` 圆角 6。
-- 标题输入：高 58，19/600（手机 17），右侧 15/120 计数，10.5 `--muted`。
-- 标签栏：高 34，「编写 / 预览」两个 tab + 分隔线 + 工具栏图标；tab 激活 2px 松绿下划线。
-- 正文：14/1.85，内边距 12×16；发帖页高 252（手机 236），回复框高 88。
-- 底部：字数 / Markdown 提示 + 预览 + 发布（松绿 36）；发帖页发布在右下，取消在左。
-- 标签选择在正文下方：26px chips，右侧「2 / 5」计数。
-- 草稿：`localStorage`，key `draft:new-topic`，输入停止 800ms 后保存；恢复时提示「已恢复草稿」，提供清除。不要为草稿加服务端接口。
-- 校验：字段级错误紧贴字段下方（11px 橙色），底部再汇总一条；提交中禁用按钮并显示「发布中…」。
-
-### 6.5 空、加载、错误
-
-- 空状态：上下 1px 线，垂直 40–56px，居中 12.5px `--muted`；可带一个主行动（如「去发第一帖」）。
-- 加载：骨架条 3–4 行，高度与真实行一致，避免跳动；不用全屏 spinner。
-- 请求错误：行内 1px 橙描边 + 8% 橙底，12px，带「重试」文字按钮；不要 alert。
-- 表单错误：同 6.4；网络错误保留用户输入。
+- Height **54px**, white background, 1px `--line` top border; content max 1180, 18px left and right.
+- Left: 16×16 pine square "工" + 12/600 site name + 10.5 tagline; right: navigation (Home · Categories · Tags · Search) + © year.
+- Mobile keeps the footer: brand + one-line description on the first line, navigation links and copyright on the second line; do not simply `display:none`.
 
 ---
 
-## 7. 逐页规格
+## 6. Shared components
 
-### 7.1 首页 `/`
+### 6.1 Topic list row
+
+All topic lists share one row (except home, category, tag, profile center, public profile, and search results).
 
 ```
-页头 56
-公告 36（可选）
-┌ 主栏 1fr ───────────────────────────────┐ ┌ 右栏 176 ┐
-│ 最新回复 最新发布 热门        共 N 个主题 │ │ 站点      │
-│ 主题                回复  查看  最后回复  │ │ 2×2 数字  │
-│ ▍置顶 标题…            2  1286  林深     │ │ 版块      │
-│ ▍精华 标题…            2   932  北岸     │ │ 色点+最新 │
-│ …                                       │ │ 热门标签  │
-└─────────────────────────────────────────┘ └───────────┘
-页脚 54
+┌ 3px category color bar ──────────────────────────────────────┐
+│ Title (pinned/digest badge + 14.5/600)   Replies  Views  Last │
+│ Mobile: title two lines + category · time · N replies        │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-- 内容 1180；主栏与右栏间距 18；主区上 16、下 22、左右 16。
-- 主栏白底 1px 线圆角 6；工具条高 40（排序 tabs + 右侧计数）；表头 28；行 52；主题每页条数由 `seo.topicsPerPage` 控制（默认 20，5–50），底部显示页码。
-- 排序：最新回复 / 最新发布 / 热门；默认最新回复。只改排序，不跳页。
-- 右栏模块顺序：**站点**（今日发帖 / 主题 / 回复 / 成员，2×2，19px 数字，格线）→ **版块**（色点 + 名称 + 主题数，下一行最新主题标题，10px 省略）→ **热门标签**（最多 12 个，10.5px 胶囊）。
-- 右栏 **176px**，不加面板边框；模块之间 18px；模块标题 10.5/600 `--muted`，字距 0.05em。
-- 手机：右栏落到列表下方，三个模块折叠为「站点信息」一个可展开条（44px），默认收起；行高约 60；内容左右留白约 10px。
-- 首页不显示「在线人数」。不做摘要，不做分类列。
+- Row height **52px**, 1px `--line` top and bottom; the last row also has a bottom line; 3px category color bar on the left.
+- Desktop columns: `minmax(0,1fr) 32px 46px 68px`, gap 6, numbers right-aligned.
+- Title single line with ellipsis; on hover turns pine green + underline (1px, offset 3px).
+- Badges: pinned orange stroke/8% fill; digest amber stroke/8% fill; 9.5px, radius 2, line height 1.6. Badge text is mandatory; color alone is not enough.
+- Reply count 12.5/600 ink; view count 11.5 `--muted`; last reply 68px right-aligned, first line 11/500 name, second line 10.5 relative time; when nobody has replied show "—" + time.
+- Mobile (<600): hide the table header and the replies/views/last-reply columns; row height becomes adaptive (about 60), title at most two lines, with 10.5px "category · time · N replies" below.
+- No excerpt; no avatars in the list (category dot + title take priority).
 
-### 7.2 主题页 `/t/:id`
+### 6.2 Pagination
 
-- 内容 1180 通排，不设右栏。
-- 顶部面包屑 11.5：首页 / 版块色点 + 版块名。
-- 标题区：`h1` 21/1.35/700；下方元信息 11.5：作者 · 相对时间 · N 回复 · N 浏览；标签 chips 单独一行。
-- 右侧操作：只看楼主开关（24×14 轨道）、收藏（26 高描边）、更多「…」；仅作者/版主显示编辑、历史、举报（放在楼层操作行，不重复在标题区）。
-- 楼层分页：顶部 36 淡底条 + 底部 40 条；每页楼层数由 `seo.postsPerPage` 控制（默认 20，5–50）；`?page=`；首帖永远在第 1 页。
-- 楼层：`grid-template-columns: 140px minmax(0,1fr)`；作者栏右侧 1px 线。
-  - 作者栏：36 头像（圆角 3，松绿底米白字）、12.5/600 名字、角色角标 9px、10.5 时间、楼层号 `#N` 10.5。
-  - 正文：14/1.8，占满内容区宽度（不再限制 64ch）；段落间距 16；引用块 2px 松绿左边 + `--muted`；代码块 `--page` 底、1px 线。
-  - 操作行：**底部左侧常显**「引用 · 回复 · 赞 N」，不要 hover 才出现；右侧「编辑 · 历史 · 举报」10.5。
-  - 已编辑：时间后加「· 已编辑」，hover 显示编辑次数。
-- 楼中楼：**与主楼同宽**，`grid-template-columns: 140px minmax(0,1fr)`；松绿 4% 底 + 3px 松绿左边；作者栏与主楼同宽，用户名允许换行，不省略；正文 13.5/1.75；最多两级，子楼不显示「回复」按钮。
-- 「引用」= 在正文顶部插入引用块后新增普通楼层；「回复」= 追加到被回复楼层下方（`parentPostId`），两者不要混用。
-- 底部编辑器：帖尾常驻、默认展开（不悬浮遮挡）；标题「回复主题」38 高；工具栏 32；textarea 88；底部「请勿发布广告…」+ 预览 + 发表回复（松绿 28）。手机按钮通栏。
-- 锁帖：编辑器替换为 1px 线提示「主题已锁定，不再接受新回复」；隐藏发表按钮。
-- 锚点：每楼 `id="post-<floor>"`；通知/引用跳转 `#post-<floor>` 并高亮 2 秒（松绿 6% 底）。
-- 只看楼主：切换 `?onlyOp=1`，重置到第 1 页；首帖始终显示；开关状态写 URL，便于分享。
-- 删除/隐藏楼：保留占位「该楼层已删除」10.5 `--muted`，不显示正文；版主可展开原文。
+- Traditional page numbers, no "load more"; on list pages at the bottom only, on topic pages both top and bottom.
+- Page number: minimum 24×22, 11px, tabular-nums; current page solid pine with `--on-pine`; hover shows a 1px border; disabled arrows 35% opacity.
+- More than 7 pages: `1 … 4 5 [6] 7 8 … 20`; first and last + 2 on each side of the current page.
+- Topic page top bar height 36, background 3% pine tint, left "Page x of y · N posts", right page numbers; bottom bar height 40, centered page numbers + "N posts total".
+- List page bottom bar height 46, centered page numbers; the right side may show "N topics total".
+- Page changes write the URL query `?page=`; browser back/forward works; scroll to the top of the list (on topic pages scroll to the top post).
+- 20 items/page (topic pages 20 posts/page, list pages 20 topics/page), from `seo.postsPerPage` / `seo.topicsPerPage`; do not hardcode in the frontend, but the UI defaults to 20.
 
-### 7.3 版块页 `/c/:slug`
+### 6.3 Tabs / filters / buttons
 
-- 内容 1180，主栏 + **176 右栏**，间距 18。
-- 头部紧凑：面包屑 11.5；`h1` 20/1.3/700；描述 11.5；右侧三项数字（主题 / 今日 / 回复，15px）+ 橙色「＋ 发帖」；下边 1px 线。
-- 筛选条高 40：**最新回复 / 最新发布 / 热门 / 精华**；默认最新回复；激活 2px 松绿下划线；右侧「共 N 个主题」。
-- 列表与首页同一套 52px 行、四列。
-- 右栏：**版块**（当前版块高亮，其他版块色点 + 名称 + 主题数 + 最新主题）→ **站点**（2×2 数字）。顺序与首页不同，版块在前。
-- 底部页码 46；20 主题/页。
-- 手机：右栏折叠到列表下方；筛选条横向滚动；行两行；页码保留。
-- 「精华」筛选对应 `isDigest=1`（见 10.2）；无精华时显示空状态「这个版块还没有精华主题」。
+- Filter tabs: 12.5px, active ink 600 + 2px pine underline; height 38–40; not pills.
+- Tag chips: height 26, radius 999, 1px `--line`, 11.5px; selected has 8% pine fill + pine stroke; at most 5, beyond that disable the unselected options.
+- Primary button: solid pine, `--on-pine`, height 36–40, radius 3, 12.5/600; hover 90% pine.
+- Secondary button: transparent fill + 1px `--line`, height 26–34, 11.5px.
+- Text button: 11.5px `--muted`, hover ink; destructive actions use orange text, no red fill.
+- Input: height 38 (mobile 42), 1px `--line`, radius 3, 13px; focus pine border + 2px pine 18% outer ring; placeholder `--muted` 60%.
 
-### 7.4 登录 `/login` 与注册 `/register`
+### 6.4 Editor
 
-- **独立壳**：不渲染全站页头/页脚；路由 `meta.bare = true`。页面最大 1180，两栏 `1.02fr 1fr`，最小高 540；外底色 `--page`，面板圆角 8。
-- 左品牌栏：松绿 `--head`，内边距 28×30；顶部 26 方块「工」+ 16/700 站名 + 10.5 标语；中部宣言 24/1.5/600「把问题带上来，把方法留下来。」+ 11/1.85 说明；底部三个数字（主题 / 成员 / 今日，17/600）+ 9 运行环境。
-- 右表单栏：白底，内边距 20×28；右上「← 返回首页」10.5；表单最大 300 居中。
-  - 登录：`h1` 22「登录」；副标题 11.5「使用邮箱和密码进入论坛。」；邮箱、密码（带「显示」）；右对齐「忘记密码」10.5；提交 40 松绿；底部「还没有账户？创建一个」。
-  - 注册：`h1` 22「创建账户」；副标题 11.5「注册后即可登录；发帖前需要验证邮箱。」；昵称、用户名（3–20 位小写字母/数字/_/-，注册后不可改）、邮箱、密码（至少 10 位）、确认密码；Turnstile 默认静默（仅需确认时显示）；提交 40；底部「已有账户？登录」。
-  - 字段标签 11/500 `--muted`，间距 11；错误 11 橙色；Turnstile 失败必须 `reset()`。
-- 手机（<600）：隐藏左品牌栏，右栏占满；顶部显示 22px「工」+ 16 站名；表单边距 16×18；输入 42、提交 44。
-- 三个数字来自 `/api/site/stats`；验证/重置/忘记密码复用同一壳（见第 12 节）。
-- 注册成功后不自动登录（按 `docs/03`），跳转验证邮箱提示页；登录后回跳 `redirect`，默认 `/`。
+- Container white background, 1px `--line`, radius 6.
+- Title input: height 58, 19/600 (mobile 17), counter 15/120 on the right, 10.5 `--muted`.
+- Tab bar: height 34, "Write / Preview" tabs + divider + toolbar icons; active tab 2px pine underline.
+- Body: 14/1.85, padding 12×16; new topic page height 252 (mobile 236), reply box height 88.
+- Bottom: word count / Markdown hint + preview + publish (pine 36); on the new topic page publish is at the bottom right, cancel on the left.
+- Tag selection sits below the body: 26px chips, "2 / 5" counter on the right.
+- Draft: `localStorage`, key `draft:new-topic`, saved 800ms after typing stops; on restore show "Draft restored" and offer clearing. Do not add a server endpoint for drafts.
+- Validation: field-level errors directly below the field (11px orange), plus one summary line at the bottom; while submitting disable the button and show "Publishing…".
 
-### 7.5 个人中心 `/me` 与公开主页 `/u/:username`
+### 6.5 Empty, loading, error
 
-- 内容 1180；`grid-template-columns: 188px minmax(0,1fr)`，间距 20；顶部面包屑。
-- 左导航（188，sticky top 72）：
-  - 「内容」：我的主题 12、我的回复 48、我的收藏 6（右侧 10.5 数字）。
-  - 「设置」：通知 3、邮件偏好、账户与数据。
-  - 底部「退出登录」。
-  - 条目高 32，左 2px 透明；激活左 2px 松绿 + 松绿 4% 底 + 墨色；hover `--hover`。
-- 邮箱未验证：34 高提示条，3px 赭黄左条 + 赭黄 8% 底，11px；右侧「重新发送」橙色文字。
-- 资料头：白底 1px 线圆角 6，内边距 16；54 头像（圆角 4，松绿底）；名字 19/700 + 角色角标；`@username · 加入于 YYYY 年 M 月 D 日` 11；bio 11.5；右侧「编辑资料」+「…」。
-- 四项数字：主题 / 回复 / 获赞 / 收藏，16/600 + 10.5 标签，等宽四列，上边 1px 线。
-- 内容区标题行：`h2` 13/600「我的主题」+「共 12 个」10.5 + 右侧「＋ 发新帖」26 高松绿。
-- 列表复用 52px 行；个人中心不显示分类列，但保留 3px 色条；底部页码。
-- `/u/:username`：同壳，隐藏「设置」组、退出登录、编辑资料；保留公开内容 tabs（主题 / 回复 / 收藏? 收藏不公开，改为「获赞」或隐藏）。公开页只展示主题、回复、获赞三项；收藏数不公开。
-- 手机（<900）：左导航变横向 tabs（高 30，底部 2px 激活线，横向滚动）；资料头保留，操作按钮隐藏；四数字改 2×2；列表两行。
-- 空状态：我的主题「还没有发过主题」+「去发第一帖」；收藏「还没有收藏」。
-
-### 7.6 发帖 `/new`
-
-- 内容 **1180** 通排；页面内边距 16；顶部面包屑可省略。
-- 标题行：`h1` 20「发布主题」；右侧 10.5「草稿已自动保存 · HH:MM」。
-- 版块选择：标题上方一行，左侧 10.5「发到」，右侧版块胶囊（28 高，6px 色点，选中松绿 8% 底 + 松绿描边）；手机横向滚动。
-- 编辑面板：白底 1px 线圆角 6；工具栏含图片/附件上传（后台 `feature.uploads` 控制）。
-  - 标题输入 58 高、19/600；右侧 15/120。
-  - 标签栏 34：「编写 / 预览」+ 工具栏（B / I / 引用 / 代码 / 链接 / 图片 / 压缩附件）；右侧「Markdown」10.5。
-  - 正文 252 高、14/1.85、内边距 12×16。
-  - 字数 +「Ctrl + Enter 发布」10.5。
-  - 标签区：10.5「标签 最多 5 个」+ 右侧「2 / 5」；chips 26，最多 5。
-  - Turnstile：300×60（手机通栏），左侧说明 10.5「发布前需要完成一次人机验证，避免机器人刷帖。」
-  - 底部：左侧 10「发布后仍可编辑；有回复后是否可编辑取决于站点规则。」；右侧「取消」+「发布主题」36 松绿。
-- 未验证邮箱：整页替换为提示卡（不显示编辑器）：赭黄左条 + 标题「发帖前需要验证邮箱」+ 说明 + 「重新发送验证邮件」+「返回首页」；已发送显示倒计时。
-- 校验：标题为空/超 120、正文为空/超 32KB、版块未选、标签超 5、Turnstile 未完成；字段下 + 底部汇总；失败 `reset()` Turnstile。
-- 手机：单栏通栏；标题 17；正文 236；工具栏横向滚动；发布按钮通栏；Turnstile 通栏。
-- 草稿：进入页面读取 `draft:new-topic`；有内容时提示恢复；发布成功清除；切换版块不清除。
-
-### 7.7 搜索 `/search`
-
-- 内容 **1180**；主栏 + **176 右栏**；顶部面包屑；不显示页面 `h1`，搜索框就是标题。
-- 搜索条：高 44，白底 1px 线圆角 4；左侧放大镜；输入 14；有内容时显示清除 ×；右侧松绿「搜索」按钮（宽约 72，全高）。
-- 结果头：11.5「找到 N 条结果」；右侧排序「相关度 / 最新」，激活松绿 600；只有这两个排序。
-- 结果列表：白底 1px 线圆角 6；每条上下 12×14，1px 分隔。
-  - 标题 15/600 单行省略；命中词 `<mark>` 赭黄 26% 底、圆角 1。
-  - 片段 12.5/1.7 `--muted`，最多 2 行，前后带省略号；同样高亮。
-  - 元信息 10.5：版块色点 + 版块名 · 作者 · `#楼层` · 相对时间。
-  - 同一主题的多个命中帖子分别展示（帖子级结果），标题可重复；不要合并。
-- 底部页码 46；20 条/页。
-- 空状态：居中「没有找到「q」」15/600 + 说明 11.5；热门标签 chips；1px 分隔；「最新主题」3 条（版块点 + 标题 + 时间），点击进入主题。
-- 页头小搜索框在 `/search` 隐藏；其他页面保留。
-- 搜索词为空时显示空状态 + 热门标签，不请求空查询。
-- 手机：搜索条 42；结果标题可两行；片段 2 行；元信息换行；页码保留。
-
-### 7.8 标签总览 `/tags`
-
-- 内容 **1180** 主栏 + **176 右栏**；`h1` 20「标签」+ 11.5 说明「用标签找到相关主题。标签不是分类，更像主题上的记号。」；右侧搜索框 220×32（手机通栏，排在标题下）。
-- 两列网格，1px 分隔线；每项内边距 12×14：
-  - 第一行：`#` + 标签名 15/600（`#` 松绿）；右侧「23 个主题」10.5。
-  - 第二行：最近主题标题 10.5，左缩进 11，单行省略；无主题显示「还没有主题」。
-- 按使用量降序；搜索在前端过滤（`name/slug` 包含），或后端 `?q=`；首版 200 个以内可前端过滤。
-- 手机：单列；搜索框 36 高；每项 11×12。
-- 底部无页码（总览一次展示全部；超过 200 个再分页）。
-
-### 7.9 标签详情 `/tag/:slug`
-
-- 内容 **1180** 主栏 + **176 右栏**；面包屑「首页 / 标签 / 动手」。
-- 紧凑头部：`h1` 20，`#` 松绿；描述 11.5；右侧三项数字：**23 主题 / 2 今日 / 128 回复**（15/600）。
-- 列表条高 40：**最新发布 / 最新回复 / 热门**（三个排序，不是四个）；默认最新发布；右侧「共 23 个主题」。
-- 列表与首页同一套 52px 行、四列；底部页码 46；20 主题/页。
-- 手机：头部数字换行到标题下；排序横向滚动；行两行。
-- 标签不存在：404 文案「这个标签还没有主题」+ 去标签总览。
-
-### 7.10 通知 `/notifications`
-
-- 内容 **1180**；`h1` 20「通知」+ 11.5「有人回复、提到你，或处理了你的举报。」；右侧「只看未读」开关（26 高描边）+「全部标为已读」文字。
-- 分组标题：今天 / 昨天 / 更早，10.5 `--muted` + 右侧 1px 线；组间距 14。
-- 通知行：`grid-template-columns: 32px minmax(0,1fr)`，gap 10，内边距 11×14；1px 分隔；最小高约 76。
-  - 未读：左侧 3px 松绿条 + 松绿 4.5% 底；已读透明。
-  - 头像 32 圆角 3；系统通知用赭黄方块「工」或图标。
-  - 第一行 11 `--muted`：actor + 动作（回复了你的主题 / 在回复里提到了你 / 你的举报已处理 / 系统）。
-  - 标题 14/600，单行省略；合并条目在标题后加「3 条」胶囊（9px，1px 线）。
-  - 摘要 11/1.55，单行省略。
-  - 右侧时间 10.5（今天用相对时间，昨天及更早用「昨天 18:20」「3 天前」）。
-- 合并规则：同一 `topicId` + `type=reply` + 同一日期分组 → 合并为一条；标题取最新一条；actor 去重后「A、B 等 3 人」；点击跳到该组最新回复（`?page=last#post-<floor>`）。
-- 通知分页：每页 **30**，使用全站统一 PaginationBar；URL `?page=N` 同步。
-- 空状态：今天没有新通知时显示「暂时没有通知」+「去看看最新主题」。
-- 手机：内容通栏；行 28 头像；标题可两行；时间移到标题下方；「只看未读」保留。
-- 未读数在页头铃铛显示；进入页面不自动全部已读，必须点「全部标为已读」或逐条点击。
-
-### 7.11 错误页 403 / 404 / 500
-
-- 保留完整页头 + 页脚；内容居中，最小高 396（手机 360），上下 40/34。
-- 顶部 34×3 松绿短线；错误码 56/700；标题 18/700；说明 11.5/1.85，最大 340；两个按钮：回首页（松绿实底 34）、去搜索（描边 34）；下方 10.5「遇到问题？联系管理员」（mailto）。
-- 文案：
-  - 404「这个页面不在了」：链接过期、主题被删除、地址写错。
-  - 403「你没有权限看这里」：登录状态不足/版块可见性；提供「登录」与「回首页」。
-  - 500「服务暂时出了点问题」：稍后重试；提供「刷新」与「回首页」。
-- 不显示堆栈、请求 ID 只在开发环境显示。
-- 手机：按钮通栏并排；错误码 48。
-
-### 7.12 管理后台 `/admin`
-
-- 独立布局：桌面（≥900）左侧 **188** 深色侧栏（`--admin-side`）+ 右侧内容；内容区沿用前台 token，不再套前台页头。
-- 移动端/Pad（<900）：侧栏变为 55 高顶部品牌栏，右侧菜单图标；导航默认收起，点击图标展开为纵向链接与账户区，再次点击或切换页面后收起。
-- 侧栏：
-  - 顶部 24「工」+ 15/700「Pineboard」+ 10「管理后台」。
-  - 分组「站点」：概览、举报处理（右侧橙数字 3）、版块维护、标签维护、导航维护、站点设置、集成配置、邮件日志、维护工具、审计日志。
-  - 条目 32 高，左 2px 透明；激活橙色左条 + 白色文字 + 白 6% 底；未激活白 70%。
-  - 底部「← 返回论坛」+ 22 头像 + 名字/角色。
-- 概览页头部：`h1` 19「概览」+ 10.5 副标题；右侧 10.5「配置 v12 · 最后部署 2 天前」。
-- 四格统计：白底 1px 线圆角 6，四列；数字 21/600；标签 10.5；待处理举报数字橙色，邮件失败橙色。
-- 待处理举报：标题行 12/600 +「全部 →」10.5；列表每行：赭黄理由角标 + 标题 12.5/600 + 举报人/时间 10.5；右侧「忽略」描边 +「处理」松绿实底（24 高）。
-- 维护工具：2×2 卡片（手机 1 列）；每张：工具名 11/600 + 上次运行 10.5 + 右侧「运行 →」；点击弹二次确认（标题 + 影响说明 + 取消/确认），确认按钮松绿；危险操作确认按钮用橙色文字，不做红块。
-- 子页复用同一外壳：
-  - 举报处理：筛选（待处理/已处理/已驳回）+ 表格 + 分页。
-  - 站点设置：左侧分组锚点/分组标题 + 表单；保存条固定在底部，显示「有未保存修改」。
-  - 版块维护：列表（颜色、名称、slug、主题数、版主、排序/可见性）+ 新建/编辑表单；行内「版主管理」按用户名/邮箱添加或移除版主。
-  - 标签维护：列表（颜色、`#名称`、slug、使用数、状态）+ 搜索 + 新建/编辑/显示隐藏；有引用时禁止删除。
-  - 导航维护：列表（类型、链接、顺序、可见性）+ 新建/编辑。
-  - 集成配置：Cloudflare/R2/Turnstile/Resend 非密钥字段 + 加密密钥录入。
-  - 邮件日志：状态筛选 + 表格（收件人、类型、状态、时间）+ 分页；退信原因可展开。
-  - 审计日志：最近 200 条操作；删除主题/回复可直接恢复。
-  - 维护工具：同概览的工具区 + 运行记录。
-- 手机（<600）：顶部品牌栏 + 菜单按钮；导航默认收起，点开后为纵向列表；统计 2×2；工具 1 列；表格横向滚动。
-- 权限：版主只能进「举报处理」，其余项隐藏；管理员全量。前端隐藏不等于权限，API 必须 `requireAdmin`（举报处理允许 moderator）。
+- Empty state: 1px lines top and bottom, 40–56px vertical, centered 12.5px `--muted`; may carry one primary action (e.g. "Go post the first topic").
+- Loading: 3–4 skeleton rows, same height as real rows, to avoid jumping; no full-screen spinner.
+- Request error: inline 1px orange stroke + 8% orange fill, 12px, with a "Retry" text button; no alert.
+- Form error: same as 6.4; network errors preserve user input.
 
 ---
 
-## 8. 响应式
+## 7. Per-page specs
 
-| 断点 | 行为 |
+### 7.1 Home `/`
+
+```
+Header 56
+Announcement 36 (optional)
+┌ Main column 1fr ───────────────────────────┐ ┌ Right rail 176 ┐
+│ Latest reply  Latest  Hot      N topics    │ │ Site           │
+│ Topic                Replies Views  Last   │ │ 2×2 numbers    │
+│ ▍Pinned  Title…         2  1286  Linshen   │ │ Categories     │
+│ ▍Digest  Title…         2   932  Beian     │ │ dot + latest   │
+│ …                                          │ │ Popular tags   │
+└────────────────────────────────────────────┘ └────────────────┘
+Footer 54
+```
+
+- Content 1180; 18px between main column and right rail; main area 16 top, 22 bottom, 16 left and right.
+- Main column white background, 1px line, radius 6; toolbar height 40 (sort tabs + count on the right); table header 28; rows 52; topics per page controlled by `seo.topicsPerPage` (default 20, 5–50), page numbers at the bottom.
+- Sorting: Latest reply / Latest / Hot; default Latest reply. Only the sort changes, no page jump.
+- Right rail module order: **Site** (today's posts / topics / replies / members, 2×2, 19px numbers, grid lines) → **Categories** (color dot + name + topic count, latest topic title on the next line, 10px ellipsis) → **Popular tags** (at most 12, 10.5px pills).
+- Right rail **176px**, no panel border; 18px between modules; module titles 10.5/600 `--muted`, letter-spacing 0.05em.
+- Mobile: the right rail drops below the list, and the three modules collapse into one expandable "Site info" bar (44px), collapsed by default; row height about 60; about 10px content padding.
+- The homepage does not show "online users". No excerpts, no category column.
+
+### 7.2 Topic page `/t/:id`
+
+- Content 1180 full width, no right rail.
+- Top breadcrumb 11.5: Home / category dot + category name.
+- Title area: `h1` 21/1.35/700; meta below at 11.5: author · relative time · N replies · N views; tag chips on their own line.
+- Right actions: OP only toggle (24×14 track), bookmark (26 height, outlined), more "…"; edit, history, report are shown only to the author/moderator (placed in the post action row, not repeated in the title area).
+- Post pagination: top 36 tinted bar + bottom 40 bar; posts per page controlled by `seo.postsPerPage` (default 20, 5–50); `?page=`; the first post is always on page 1.
+- Post: `grid-template-columns: 140px minmax(0,1fr)`; 1px line on the right of the author column.
+  - Author column: 36 avatar (radius 3, pine fill with off-white text), 12.5/600 name, role badge 9px, 10.5 time, floor number `#N` 10.5.
+  - Body: 14/1.8, filling the content column width (no longer limited to 64ch); paragraph spacing 16; blockquote 2px pine left border + `--muted`; code block `--page` background, 1px line.
+  - Action row: **always visible at the bottom left** "Quote · Reply · Like N", not revealed on hover; right side "Edit · History · Report" 10.5.
+  - Edited: append "· edited" after the time, hover shows the edit count.
+- Threaded replies: **same width as the main post**, `grid-template-columns: 140px minmax(0,1fr)`; 4% pine background + 3px pine left border; the author column is the same width as the main post, usernames may wrap and are not truncated; body 13.5/1.75; at most two levels, child posts do not show a "Reply" button.
+- "Quote" = insert a quote block at the top of the body and add a normal post; "Reply" = append below the replied-to post (`parentPostId`); do not mix the two.
+- Bottom editor: persistent at the end of the topic, expanded by default (not floating over content); heading "Reply to topic" 38 high; toolbar 32; textarea 88; bottom "Please don't post ads…" + preview + post reply (pine 28). On mobile the button is full width.
+- Locked topic: the editor is replaced by a 1px line notice "This topic is locked and no longer accepts new replies"; hide the submit button.
+- Anchors: each post has `id="post-<floor>"`; notification/quote jumps go to `#post-<floor>` and highlight for 2 seconds (6% pine background).
+- OP only: toggles `?onlyOp=1`, resets to page 1; the first post is always shown; the toggle state is written to the URL so it can be shared.
+- Deleted/hidden post: keep a placeholder "This post was deleted" 10.5 `--muted`, do not show the body; moderators can expand the original text.
+
+### 7.3 Category page `/c/:slug`
+
+- Content 1180, main column + **176 right rail**, gap 18.
+- Compact header: breadcrumb 11.5; `h1` 20/1.3/700; description 11.5; three numbers on the right (topics / today / replies, 15px) + orange "＋ New topic"; 1px line below.
+- Filter bar height 40: **Latest reply / Latest / Hot / Digest**; default Latest reply; active 2px pine underline; "N topics total" on the right.
+- The list uses the same 52px rows and four columns as the homepage.
+- Right rail: **Categories** (current category highlighted, other categories with color dot + name + topic count + latest topic) → **Site** (2×2 numbers). The order differs from the homepage; categories come first.
+- Bottom page numbers 46; 20 topics/page.
+- Mobile: the right rail folds below the list; the filter bar scrolls horizontally; rows become two lines; page numbers are kept.
+- The "Digest" filter corresponds to `isDigest=1` (see 10.2); when there is no digest show the empty state "This category has no digest topics yet".
+
+### 7.4 Login `/login` and register `/register`
+
+- **Standalone shell**: does not render the site-wide header/footer; route `meta.bare = true`. Page max 1180, two columns `1.02fr 1fr`, min height 540; outer background `--page`, panel radius 8.
+- Left brand column: pine `--head`, padding 28×30; top 26 square "工" + 16/700 site name + 10.5 tagline; middle manifesto 24/1.5/600 "Bring your questions here, leave the methods behind." + 11/1.85 description; bottom three numbers (topics / members / today, 17/600) + 9 runtime environment.
+- Right form column: white background, padding 20×28; "← Back to home" 10.5 at top right; form max 300 centered.
+  - Login: `h1` 22 "Log in"; subtitle 11.5 "Use your email and password to enter the forum."; email, password (with "Show"); right-aligned "Forgot password" 10.5; submit 40 pine; bottom "Don't have an account yet? Create one".
+  - Register: `h1` 22 "Create account"; subtitle 11.5 "You can log in right after registering; you must verify your email before posting."; nickname, username (3–20 lowercase letters/digits/_/-, cannot be changed after registration), email, password (at least 10 characters), confirm password; Turnstile silent by default (shown only when confirmation is required); submit 40; bottom "Already have an account? Log in".
+  - Field labels 11/500 `--muted`, 11px gap; errors 11 orange; on Turnstile failure you must call `reset()`.
+- Mobile (<600): hide the left brand column, the right column fills the width; show 22px "工" + 16 site name at the top; form padding 16×18; input 42, submit 44.
+- The three numbers come from `/api/site/stats`; verification/reset/forgot password reuse the same shell (see section 12).
+- After successful registration do not log in automatically (per `docs/03`); redirect to the verify-email notice page; after login return to `redirect`, default `/`.
+
+### 7.5 Profile center `/me` and public profile `/u/:username`
+
+- Content 1180; `grid-template-columns: 188px minmax(0,1fr)`, gap 20; breadcrumb at the top.
+- Left navigation (188, sticky top 72):
+  - "Content": My topics 12, My replies 48, My bookmarks 6 (10.5 numbers on the right).
+  - "Settings": Notifications 3, Email preferences, Account and data.
+  - "Log out" at the bottom.
+  - Item height 32, 2px transparent left border; active gets 2px pine left border + 4% pine fill + ink; hover `--hover`.
+- Email unverified: 34-high notice bar, 3px amber left bar + 8% amber fill, 11px; "Resend" orange text on the right.
+- Profile header: white background, 1px line, radius 6, padding 16; 54 avatar (radius 4, pine fill); name 19/700 + role badge; `@username · joined YYYY-MM-DD` 11; bio 11.5; "Edit profile" + "…" on the right.
+- Four numbers: topics / replies / likes received / bookmarks, 16/600 + 10.5 labels, four equal columns, 1px line above.
+- Content section heading row: `h2` 13/600 "My topics" + "12 total" 10.5 + "＋ New topic" 26-high pine on the right.
+- The list reuses 52px rows; the profile center does not show a category column but keeps the 3px color bar; page numbers at the bottom.
+- `/u/:username`: same shell, hides the "Settings" group, log out, and edit profile; keeps the public content tabs (topics / replies / bookmarks? bookmarks are not public, replace with "Likes received" or hide). The public page shows only topics, replies, and likes received; bookmark counts are not public.
+- Mobile (<900): the left navigation becomes horizontal tabs (height 30, 2px active line at the bottom, horizontal scroll); the profile header is kept, action buttons hidden; the four numbers become 2×2; list rows two lines.
+- Empty states: My topics "You haven't posted any topics yet" + "Go post the first topic"; Bookmarks "No bookmarks yet".
+
+### 7.6 New topic `/new`
+
+- Content **1180** full width; page padding 16; the top breadcrumb may be omitted.
+- Title row: `h1` 20 "Post a topic"; 10.5 "Draft autosaved · HH:MM" on the right.
+- Category selection: one row above the title, 10.5 "Post to" on the left, category pills on the right (28 high, 6px color dot, selected has 8% pine fill + pine stroke); horizontal scroll on mobile.
+- Editor panel: white background, 1px line, radius 6; toolbar includes image/attachment upload (controlled by the admin `feature.uploads`).
+  - Title input 58 high, 19/600; 15/120 on the right.
+  - Tab bar 34: "Write / Preview" + toolbar (B / I / Quote / Code / Link / Image / Compressed attachment); "Markdown" 10.5 on the right.
+  - Body 252 high, 14/1.85, padding 12×16.
+  - Word count + "Ctrl + Enter to publish" 10.5.
+  - Tag area: 10.5 "Tags, up to 5" + "2 / 5" on the right; chips 26, at most 5.
+  - Turnstile: 300×60 (full width on mobile), 10.5 explanation on the left "One human verification is required before publishing, to keep bots from spamming."
+  - Bottom: 10 on the left "You can still edit after publishing; whether editing is allowed after replies depends on site rules."; "Cancel" + "Post topic" 36 pine on the right.
+- Email unverified: replace the whole page with a notice card (do not show the editor): amber left bar + heading "Verify your email before posting" + description + "Resend verification email" + "Back to home"; after sending, show a countdown.
+- Validation: title empty/over 120, body empty/over 32KB, no category selected, more than 5 tags, Turnstile not completed; below the field + a summary at the bottom; on failure `reset()` Turnstile.
+- Mobile: single full-width column; title 17; body 236; toolbar scrolls horizontally; publish button full width; Turnstile full width.
+- Draft: on entering the page read `draft:new-topic`; if it has content, offer to restore; clear on successful publish; switching category does not clear it.
+
+### 7.7 Search `/search`
+
+- Content **1180**; main column + **176 right rail**; breadcrumb at the top; no page `h1`, the search box is the title.
+- Search bar: height 44, white background, 1px line, radius 4; magnifier on the left; input 14; clear × when it has content; pine "Search" button on the right (about 72 wide, full height).
+- Result header: 11.5 "N results found"; sorting on the right "Relevance / Latest", active pine 600; only these two orders.
+- Result list: white background, 1px line, radius 6; each item 12×14 padding, 1px separators.
+  - Title 15/600 single line with ellipsis; matched term `<mark>` with 26% amber background, radius 1.
+  - Snippet 12.5/1.7 `--muted`, at most 2 lines, with ellipses around it; highlighted the same way.
+  - Meta 10.5: category dot + category name · author · `#floor` · relative time.
+  - Multiple matching posts in the same topic are shown separately (post-level results); titles may repeat; do not merge.
+- Bottom page numbers 46; 20 items/page.
+- Empty state: centered "No results for "q"" 15/600 + 11.5 description; popular tag chips; 1px separator; "Latest topics" 3 items (category dot + title + time), clicking enters the topic.
+- The header's small search box is hidden on `/search`; kept on other pages.
+- When the query is empty show the empty state + popular tags and do not request an empty query.
+- Mobile: search bar 42; result titles may wrap to two lines; snippets 2 lines; meta wraps; page numbers kept.
+
+### 7.8 Tags overview `/tags`
+
+- Content **1180** main column + **176 right rail**; `h1` 20 "Tags" + 11.5 description "Use tags to find related topics. Tags are not categories; they are more like marks on a topic."; search box 220×32 on the right (full width on mobile, placed below the title).
+- Two-column grid, 1px separators; each item padding 12×14:
+  - First line: `#` + tag name 15/600 (`#` pine); "23 topics" 10.5 on the right.
+  - Second line: latest topic title 10.5, indented 11, single line with ellipsis; "No topics yet" when there is none.
+- Sorted by usage descending; search filters on the frontend (`name/slug` contains), or backend `?q=`; frontend filtering is fine for up to 200 in the first version.
+- Mobile: single column; search box 36 high; each item 11×12.
+- No page numbers at the bottom (the overview shows everything at once; paginate only beyond 200).
+
+### 7.9 Tag detail `/tag/:slug`
+
+- Content **1180** main column + **176 right rail**; breadcrumb "Home / Tags / Hands-on".
+- Compact header: `h1` 20, `#` pine; description 11.5; three numbers on the right: **23 topics / 2 today / 128 replies** (15/600).
+- List bar height 40: **Latest / Latest reply / Hot** (three sorts, not four); default Latest; "23 topics total" on the right.
+- The list uses the same 52px rows and four columns as the homepage; bottom page numbers 46; 20 topics/page.
+- Mobile: header numbers wrap below the title; sorting scrolls horizontally; rows two lines.
+- Tag missing: 404 copy "This tag has no topics yet" + go to tags overview.
+
+### 7.10 Notifications `/notifications`
+
+- Content **1180**; `h1` 20 "Notifications" + 11.5 "Someone replied, mentioned you, or handled your report."; "Unread only" toggle (26 high, outlined) + "Mark all as read" text on the right.
+- Group headings: Today / Yesterday / Earlier, 10.5 `--muted` + 1px line on the right; 14 between groups.
+- Notification row: `grid-template-columns: 32px minmax(0,1fr)`, gap 10, padding 11×14; 1px separator; min height about 76.
+  - Unread: 3px pine bar on the left + 4.5% pine fill; read is transparent.
+  - Avatar 32, radius 3; system notifications use an amber square "工" or icon.
+  - First line 11 `--muted`: actor + action (replied to your topic / mentioned you in a reply / your report was handled / system).
+  - Title 14/600, single line with ellipsis; merged items get a "3 items" pill after the title (9px, 1px line).
+  - Excerpt 11/1.55, single line with ellipsis.
+  - Time 10.5 on the right (relative time for today; "Yesterday 18:20" or "3 days ago" for yesterday and earlier).
+- Merge rules: same `topicId` + `type=reply` + same date group → merged into one; the title is taken from the newest; actors deduplicated as "A, B and 1 other"; clicking jumps to the newest reply in that group (`?page=last#post-<floor>`).
+- Notification pagination: **30** per page, using the site-wide PaginationBar; URL `?page=N` synced.
+- Empty state: when there are no new notifications today show "No notifications yet" + "Go see the latest topics".
+- Mobile: content full width; rows 28 avatar; titles may wrap to two lines; time moves below the title; "Unread only" is kept.
+- The unread count is shown on the header bell; entering the page does not automatically mark everything read; you must click "Mark all as read" or click items one by one.
+
+### 7.11 Error pages 403 / 404 / 500
+
+- Keep the full header + footer; content centered, min height 396 (mobile 360), 40/34 top and bottom.
+- Top 34×3 pine short line; error code 56/700; title 18/700; description 11.5/1.85, max 340; two buttons: back home (solid pine 34), go to search (outlined 34); 10.5 "Having trouble? Contact the administrator" (mailto) below.
+- Copy:
+  - 404 "This page is gone": link expired, topic deleted, mistyped address.
+  - 403 "You don't have permission to view this": insufficient login state / category visibility; provide "Log in" and "Back home".
+  - 500 "Something went wrong on our side": try again later; provide "Refresh" and "Back home".
+- Do not show stack traces; the request ID is shown only in development.
+- Mobile: buttons side by side, full width; error code 48.
+
+### 7.12 Admin `/admin`
+
+- Standalone layout: desktop (≥900) has a **188** dark sidebar (`--admin-side`) on the left + content on the right; the content area reuses the public tokens and no longer nests the public header.
+- Mobile/tablet (<900): the sidebar becomes a 55-high top brand bar with a menu icon on the right; navigation is collapsed by default, clicking the icon expands it into vertical links and the account area, and it collapses again on a second click or page change.
+- Sidebar:
+  - Top 24 "工" + 15/700 "Pineboard" + 10 "Admin".
+  - Group "Site": Overview, Reports (orange number 3 on the right), Category maintenance, Tag maintenance, Navigation maintenance, Site settings, Integrations, Email log, Maintenance tools, Audit log.
+  - Item height 32, 2px transparent left border; active has an orange left bar + white text + 6% white fill; inactive is 70% white.
+  - Bottom "← Back to forum" + 22 avatar + name/role.
+- Overview page header: `h1` 19 "Overview" + 10.5 subtitle; 10.5 "Config v12 · last deployed 2 days ago" on the right.
+- Four stat cells: white background, 1px line, radius 6, four columns; numbers 21/600; labels 10.5; pending report numbers orange, email failures orange.
+- Pending reports: heading row 12/600 + "All →" 10.5; each list row: amber reason badge + title 12.5/600 + reporter/time 10.5; on the right "Ignore" outlined + "Handle" solid pine (24 high).
+- Maintenance tools: 2×2 cards (1 column on mobile); each: tool name 11/600 + last run 10.5 + "Run →" on the right; clicking opens a confirmation dialog (title + impact description + cancel/confirm), confirm button pine; for destructive actions the confirm button uses orange text, no red block.
+- Subpages reuse the same shell:
+  - Reports: filters (pending/handled/rejected) + table + pagination.
+  - Site settings: left group anchors/group headings + form; the save bar is fixed at the bottom and shows "Unsaved changes".
+  - Category maintenance: list (color, name, slug, topic count, moderators, order/visibility) + create/edit form; inline "Manage moderators" adds or removes moderators by username/email.
+  - Tag maintenance: list (color, `#name`, slug, usage count, status) + search + create/edit/show-hide; deletion is blocked while references exist.
+  - Navigation maintenance: list (type, link, order, visibility) + create/edit.
+  - Integrations: Cloudflare/R2/Turnstile/Resend non-secret fields + encrypted secret entry.
+  - Email log: status filter + table (recipient, type, status, time) + pagination; bounce reasons are expandable.
+  - Audit log: the most recent 200 operations; deleted topics/replies can be restored directly.
+  - Maintenance tools: the same tool area as the overview + run history.
+- Mobile (<600): top brand bar + menu button; navigation collapsed by default, expands into a vertical list; stats 2×2; tools 1 column; tables scroll horizontally.
+- Permissions: moderators can only enter "Reports"; other items are hidden. Frontend hiding is not permission; the API must use `requireAdmin` (Reports allows moderator).
+
+---
+
+## 8. Responsive
+
+| Breakpoint | Behavior |
 |---|---|
-| ≥1280 | 主题页出现 240 相关主题右栏；首页/版块保持 176 右栏 |
-| <1280 | 列表页右栏折叠为顶部可展开块；正文页保持 1180 通排 |
-| <900 | 首页/版块右栏落到正文下方；个人中心 188 导航变横向 tabs；后台变顶部栏 + 菜单按钮，导航默认收起 |
-| <600 | 单列；页头 50；隐藏表头与数字列；列表两行 60；页脚保留（两行）；发帖/登录按钮通栏；后台顶部栏 + 菜单按钮，导航默认收起 |
+| ≥1280 | Topic pages get a 240 related-topics right rail; home/category keep the 176 right rail |
+| <1280 | List page right rails fold into an expandable block at the top; content pages stay 1180 full width |
+| <900 | Home/category right rail drops below the content; profile center 188 navigation becomes horizontal tabs; admin becomes a top bar + menu button, navigation collapsed by default |
+| <600 | Single column; header 50; hide table headers and number columns; list rows two lines at 60; footer kept (two lines); new topic/login buttons full width; admin top bar + menu button, navigation collapsed by default |
 
-- 用 viewport media query，不用容器查询做页面级布局（设计稿里的 `@container` 只是预览壳）。
-- 任何宽度下不得出现横向滚动；表格/代码块/工具栏自身 `overflow-x: auto`。
-- 手机点击目标不小于 44×44（列表行整行可点；图标按钮加内边距）。
-- 图片 `max-width:100%`；头像固定尺寸；长标题/长用户名必须省略。
-
----
-
-## 9. 交互与无障碍
-
-- 焦点：`outline: 2px solid var(--orange); outline-offset: 2px`；不要 `outline:none`。
-- 链接 hover 下划线；当前导航 `aria-current="page"`；排序/筛选用 `role="tablist"` + `aria-selected`。
-- 分页 `<nav aria-label="分页">`；当前页 `aria-current="page"`；禁用箭头 `aria-disabled`。
-- 只看楼主/只看未读用 `role="switch"` + `aria-checked`。
-- 表单：每个输入有 `<label>`；错误用 `aria-describedby` + `aria-invalid`；提交失败把焦点移到汇总或第一个错误。
-- 通知未读不只靠色条：加粗标题 + `aria-label="未读"`。
-- 置顶/精华角标有文字；版块色点旁必须有名称。
-- 对比度：`#5F6B66` on `#FFFFFF` ≈ 5.4:1，on `#F1F3F1` ≈ 4.8:1；暗色 `#96A29B` on `#151D18` ≈ 6.2:1。橙色只用于大字/图标/描边，不用于小号正文。
-- 尊重 `prefers-reduced-motion`；只保留颜色过渡 120–160ms，不做位移动画。
-- 键盘：Esc 关闭抽屉/弹窗；弹窗焦点陷阱；返回后恢复焦点。
-- 图片 `alt`；头像无图时用首字，`aria-hidden` 装饰。
-- 时区：展示层用 `Intl.DateTimeFormat`；相对时间 `<time datetime>`；站点时区默认，用户可切换。
+- Use viewport media queries, not container queries, for page-level layout (the `@container` in the design mock is only a preview shell).
+- No horizontal scrolling at any width; tables/code blocks/toolbars get their own `overflow-x: auto`.
+- Mobile tap targets are at least 44×44 (list rows are tappable as a whole; icon buttons get padding).
+- Images `max-width:100%`; avatars fixed size; long titles/long usernames must be truncated.
 
 ---
 
-## 10. 数据与接口缺口
+## 9. Interaction and accessibility
 
-部署顺序固定：**additive migration → API → 前端**。下列接口全部保持 `{ ok, data, meta? }` / `{ ok:false, error:{ code, message, fields? } }` 信封。
+- Focus: `outline: 2px solid var(--orange); outline-offset: 2px`; never `outline:none`.
+- Link hover underline; current navigation `aria-current="page"`; sorting/filters use `role="tablist"` + `aria-selected`.
+- Pagination `<nav aria-label="Pagination">`; current page `aria-current="page"`; disabled arrows `aria-disabled`.
+- OP only / unread only use `role="switch"` + `aria-checked`.
+- Forms: every input has a `<label>`; errors use `aria-describedby` + `aria-invalid`; on submit failure move focus to the summary or the first error.
+- Unread notifications do not rely on the color bar alone: bold title + `aria-label="Unread"`.
+- Pinned/digest badges have text; a category dot must be accompanied by a name.
+- Contrast: `#5F6B66` on `#FFFFFF` ≈ 5.4:1, on `#F1F3F1` ≈ 4.8:1; dark `#96A29B` on `#151D18` ≈ 6.2:1. Orange is only for large text/icons/strokes, not for small body text.
+- Respect `prefers-reduced-motion`; keep only color transitions of 120–160ms, no movement animations.
+- Keyboard: Esc closes drawers/dialogs; dialogs trap focus; focus is restored on return.
+- Images have `alt`; when an avatar has no image use the first character, decorated with `aria-hidden`.
+- Time zones: use `Intl.DateTimeFormat` in the display layer; relative time in `<time datetime>`; site time zone by default, users may switch.
 
-### 10.1 v1 已列的 11 项
+---
 
-| # | 需求 | 改法 | 影响 |
+## 10. Data and API gaps
+
+Deployment order is fixed: **additive migration → API → frontend**. All the interfaces below keep the `{ ok, data, meta? }` / `{ ok:false, error:{ code, message, fields? } }` envelope.
+
+### 10.1 The 11 items already listed in v1
+
+| # | Requirement | Change | Impact |
 |---|---|---|---|
-| 1 | 列表「最后回复人」 | `TopicSummary` 加 `lastPostUser: { id, username, name } \| null`；`topics.last_post_user_id` LEFT JOIN `user` | 小 |
-| 2 | 站点数字 | 新增 `GET /api/site/stats`：`{ todayPosts, topics, replies, members }`，60s 缓存 | 小 |
-| 3 | 主题回复分页 | `GET /api/topics/:id/posts?page=&perPage=&onlyOp=`；返回 `{ items, page, perPage, total, totalPages }`；保留 `after` 过渡 | 中 |
-| 4 | 资料头获赞/收藏 | `/api/users/:username` 增加 `likeCount`（收到的赞）与 `bookmarkCount`；收藏数公开、收藏列表仅本人 | 小 |
-| 5 | 标签详情三项数字 | 新增 `GET /api/tags/:slug`：`{ ...tag, description, stats:{ topics, todayTopics, replies } }`；`/api/tags` 增加 `topicCount` + `recentTopic` | 小 |
-| 6 | 搜索排序 | `/api/search?sort=relevance\|latest`；默认相关度；最新按帖子 `created_at DESC` | 小 |
-| 7 | 通知合并 | 前端按 `topicId + type=reply + 日期分组` 合并；API 增加 `postFloor`，便于跳转最新楼 | 中 |
-| 8 | 通知分页 | 复用 `page/perPage`，前端 `perPage=30`；使用 PaginationBar，返回 `total/totalPages` | 小 |
-| 9 | 发帖草稿 | `localStorage`，key `draft:new-topic`；无需接口 | 无 |
-| 10 | 后台概览数字 | 新增 `GET /api/admin/overview`：今日发帖、待处理举报、本周新增成员、邮件失败、配置版本、待处理举报列表 | 小 |
-| 11 | 维护工具 | 复用 `/api/admin/search/reindex`、`/api/admin/maintenance/cleanup`、`/api/admin/emails/digest`、`/api/admin/maintenance/daily`；前端二次确认 | 无 |
+| 1 | List "last replier" | Add `lastPostUser: { id, username, name } \| null` to `TopicSummary`; `topics.last_post_user_id` LEFT JOIN `user` | Small |
+| 2 | Site numbers | New `GET /api/site/stats`: `{ todayPosts, topics, replies, members }`, 60s cache | Small |
+| 3 | Topic reply pagination | `GET /api/topics/:id/posts?page=&perPage=&onlyOp=`; returns `{ items, page, perPage, total, totalPages }`; keep `after` as a transition | Medium |
+| 4 | Profile header likes/bookmarks | `/api/users/:username` gains `likeCount` (likes received) and `bookmarkCount`; bookmark count is public, bookmark list is owner-only | Small |
+| 5 | Tag detail three numbers | New `GET /api/tags/:slug`: `{ ...tag, description, stats:{ topics, todayTopics, replies } }`; `/api/tags` gains `topicCount` + `recentTopic` | Small |
+| 6 | Search sorting | `/api/search?sort=relevance\|latest`; default relevance; latest sorts by post `created_at DESC` | Small |
+| 7 | Notification merging | Frontend merges by `topicId + type=reply + date group`; API adds `postFloor` to make jumping to the newest post easier | Medium |
+| 8 | Notification pagination | Reuse `page/perPage`, frontend `perPage=30`; use PaginationBar, return `total/totalPages` | Small |
+| 9 | New topic draft | `localStorage`, key `draft:new-topic`; no interface needed | None |
+| 10 | Admin overview numbers | New `GET /api/admin/overview`: today's posts, pending reports, new members this week, email failures, config version, pending report list | Small |
+| 11 | Maintenance tools | Reuse `/api/admin/search/reindex`, `/api/admin/maintenance/cleanup`, `/api/admin/emails/digest`, `/api/admin/maintenance/daily`; frontend adds confirmation | None |
 
-补充约定：
+Additional conventions:
 
-- **今日**按 `site.timezone` 计算日界；`todayPosts` = 当日新主题 + 当日新回复（`is_first=0`）。
-- **回复分页**：第 1 页返回 floor 2–20（floor 1 由 `topicDetail.firstPost` 提供），第 2 页 21–40；`total` 含首帖，`totalPages = ceil(total/perPage)`。`onlyOp=1` 时只返回楼主回复，仍排除首帖。
-- **标签/版块统计**：`topics` = published 主题；`replies` = published 非首帖；`todayTopics` = 当日新主题。
-- **搜索**：`latest` 只影响排序，不改变相关度排名逻辑；`q` 为空直接返回空结果，不查库。
-- **通知**：合并只影响展示，不改变已读语义；点击合并项把组内所有通知标为已读。
-- **后台概览**：「最后部署」优先读构建注入的 `BUILD_TIME`；没有则显示「—」，不要编造。
+- **Today** is computed with the day boundary from `site.timezone`; `todayPosts` = new topics today + new replies today (`is_first=0`).
+- **Reply pagination**: page 1 returns floors 2–20 (floor 1 comes from `topicDetail.firstPost`), page 2 returns 21–40; `total` includes the first post, `totalPages = ceil(total/perPage)`. With `onlyOp=1` only OP replies are returned, still excluding the first post.
+- **Tag/category stats**: `topics` = published topics; `replies` = published non-first posts; `todayTopics` = new topics today.
+- **Search**: `latest` only affects sorting, it does not change the relevance ranking logic; an empty `q` returns empty results directly, without querying the database.
+- **Notifications**: merging only affects display, it does not change read semantics; clicking a merged item marks all notifications in the group as read.
+- **Admin overview**: "last deployed" prefers the build-injected `BUILD_TIME`; otherwise show "—", do not invent one.
 
-### 10.2 设计稿隐含、v1 表未列出的改动
+### 10.2 Changes implied by the design mock but not listed in the v1 tables
 
-这些在预览里已经出现，实现时必须补齐，否则页面不完整：
+These already appear in the preview and must be filled in during implementation, otherwise pages are incomplete:
 
-1. **精华（digest）**：`topics` 增加 `is_digest INTEGER NOT NULL DEFAULT 0`（additive migration）；`PATCH /api/topics/:id/digest`（版主/管理员，写审计）；`GET /api/topics?digest=1`；列表返回 `isDigest`；角标与「精华」筛选使用它，**不要复用 `pin_level`**。
-2. **站点公告**：`site.announcement = { id, enabled, text, href? }`；同步 `DEFAULTS`、Zod schema、后台「站点设置」分组与 `docs/02`；前端按 `announcement.id` 记 localStorage 关闭状态。
-3. **版块头部数字**：`GET /api/categories/:slug` 增加 `stats: { topics, todayTopics, replies }`；`/api/categories` 增加 `todayTopics`、`replies`（右栏与首页版块入口用）。
-4. **标签描述**：`tags.description TEXT NOT NULL DEFAULT ''` 已在 `0002_black_frank_castle.sql` 中存在，本次不再重复 ALTER；后台标签管理可编辑；详情页无描述时回退「关于 #<name> 的主题」。
-5. **维护运行时间**：概览「上次运行」目前无来源。优先在 `settings` 写 `maintenance.last.<job>`（时间戳），由对应接口成功后更新；若后续需要历史，再加 `job_runs` 表。不要在 Cron 里做重活。
-6. **发帖入口（手机）**：发帖入口放页头抽屉/登录后菜单；未登录点击跳登录并带 `redirect=/new`。
-7. **认证独立壳**：`/login`、`/register`、`/forgot-password`、`/reset-password`、`/verify-email` 使用 `meta.bare`，不渲染全站页头/页脚；`/unsubscribe` 同样。
-8. **PWA/离线**：离线时发帖按钮禁用并显示横幅；编辑器保留本地草稿；不要缓存 `/api/**`。
+1. **Digest**: `topics` gains `is_digest INTEGER NOT NULL DEFAULT 0` (additive migration); `PATCH /api/topics/:id/digest` (moderator/admin, writes audit); `GET /api/topics?digest=1`; lists return `isDigest`; the badge and the "Digest" filter use it, **do not reuse `pin_level`**.
+2. **Site announcement**: `site.announcement = { id, enabled, text, href? }`; sync `DEFAULTS`, the Zod schema, the admin "Site settings" group, and `docs/02`; the frontend records the dismissed state in localStorage by `announcement.id`.
+3. **Category header numbers**: `GET /api/categories/:slug` gains `stats: { topics, todayTopics, replies }`; `/api/categories` gains `todayTopics`, `replies` (used by the right rail and the homepage category entry).
+4. **Tag description**: `tags.description TEXT NOT NULL DEFAULT ''` already exists in `0002_black_frank_castle.sql`; do not repeat the ALTER this time; editable in admin tag management; the detail page falls back to "Topics about #<name>" when there is no description.
+5. **Maintenance run times**: the overview's "last run" currently has no source. Prefer writing `maintenance.last.<job>` (timestamp) into `settings`, updated by the corresponding interface after success; if history is needed later, add a `job_runs` table. Do not do heavy work in Cron.
+6. **New-topic entry (mobile)**: the new-topic entry goes in the header drawer/logged-in menu; when logged out, clicking goes to login with `redirect=/new`.
+7. **Standalone auth shell**: `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email` use `meta.bare` and do not render the site-wide header/footer; `/unsubscribe` likewise.
+8. **PWA/offline**: when offline, the new-topic button is disabled and a banner is shown; the editor keeps the local draft; do not cache `/api/**`.
 
-### 10.3 不建议做的
+### 10.3 Not recommended
 
-- 在线人数：不做。Worker 上需要 Durable Object 或心跳表，成本与真实性都不划算。
-- 首页摘要、悬停展开摘要：不做。
-- 分类列：首页不做；版块页/标签页也不加。
-- 无限滚动：不做；统一传统页码。
-- 富文本 HTML：继续 Markdown；编辑器不引入 contenteditable 富文本。
-- 二级以上楼中楼：不做；第三层回复仍挂到顶层父楼。
-- 主题包上传 zip/JS：禁止（见 `docs/05` 安全约束）。
-
----
-
-## 11. 落地顺序与验收
-
-### 11.1 顺序
-
-1. **前置**：跑完 `docs/06` 的 5 个 spike；确认 `pnpm typecheck` / `pnpm test` / `pnpm build` 绿。
-2. **迁移**：`topics.is_digest`、`tags.description`（additive）；更新 `packages/db` schema 与迁移文件；本地 `pnpm db:migrate`。
-3. **契约**：`packages/shared` 增加 `lastPostUser`、`PostPage`、`SiteStats`、`TagDetail`、`CategoryStats`、`SearchSort`、`AdminOverview`、`isDigest`；前后端共用，不各写一份。
-4. **API**：按 10.1 + 10.2 实现；补 vitest（分页边界、onlyOp、今日时区、排序、digest、overview）。
-5. **前端基础**：替换 `styles.css` token/排版；实现页头、列表行、分页、编辑器、空/错/骨架屏等基础组件（首页版块条已移除）。
-6. **页面**：首页 → 版块 → 主题 → 登录/注册 → 个人中心/公开主页 → 发帖 → 搜索 → 标签 → 通知 → 错误页。
-7. **后台**：外壳 → 概览 → 举报 → 设置 → 邮件日志 → 维护。
-8. **收尾**：E2E、视觉回归、a11y、Lighthouse、真机离线；更新 `README` 与 `docs/02`（新增字段/配置）。
-
-> v1 原顺序把 API 放最后；因为新页面依赖 `lastPostUser`、分页、统计，实际执行把 API 提前到前端之前，页面顺序不变。
-
-### 11.2 验收清单
-
-- [ ] 1440 / 1280 / 1024 / 768 / 390 宽度无横向滚动；首页 900 高度内 ≥8 行。
-- [ ] 全站无衬线；宋体只出现在「工」印记；无卡片阴影；圆角 ≤6。
-- [ ] 页头 56/50、公告 36/34、列表 52、右栏 176、正文通排 1180；手机页脚与版权可见。
-- [ ] 列表最后回复显示「人名 + 时间」；无人回复显示「—」。
-- [ ] 主题页 20 楼/页、上下页码、>7 页省略规则、只看楼主、楼中楼、锚点、底部编辑器。
-- [ ] 版块四筛选（含精华）、标签三排序、搜索两排序；排序切换不丢 query。
-- [ ] 搜索页隐藏页头搜索框；空状态有热门标签 + 最新主题。
-- [ ] 通知今天/昨天/更早、同主题合并、未读色条、数字分页 30/页、合并跳最新楼。
-- [ ] 认证独立壳、三数字、昵称+用户名、Turnstile 失败 reset。
-- [ ] 个人中心 188 导航、四数字、手机横向 tabs；公开主页隐藏设置。
-- [ ] 发帖通排 1180、标签上限 5、草稿恢复、未验证整页提示、字段+汇总错误。
-- [ ] 后台 188 深色侧栏、五项导航、概览四格、维护二次确认、手机顶部栏。
-- [ ] 亮/暗 token 全量；默认跟随系统；首屏无主题闪烁。
-- [ ] 键盘可完成登录、发帖、翻页、只看楼主、关闭公告；焦点可见。
-- [ ] `pnpm typecheck`、`pnpm test`、`pnpm test:e2e:p1..p6`、`pnpm build` 全绿。
-- [ ] 运行站点后重新生成视觉截图，差异只允许数据/字体渲染导致，不允许结构差异。
+- Online users: no. It would need a Durable Object or a heartbeat table on Workers; neither the cost nor the authenticity is worth it.
+- Homepage excerpts, hover-to-expand excerpts: no.
+- Category column: not on the homepage; not added on category/tag pages either.
+- Infinite scroll: no; use traditional page numbers everywhere.
+- Rich-text HTML: keep Markdown; do not introduce contenteditable rich text into the editor.
+- Threaded replies deeper than two levels: no; third-level replies still attach to the top-level parent post.
+- Theme package zip/JS upload: forbidden (see the security constraints in `docs/05`).
 
 ---
 
-## 12. 尚未单独设计、但必须复用的页面
+## 11. Landing order and acceptance
 
-以下页面不在本轮逐页确认范围内。实现时**复用已定稿的壳与组件，不引入新视觉语言**；若必须新增结构，先补本文件再写代码。
+### 11.1 Order
 
-| 页面 | 复用方式 |
+1. **Prerequisites**: finish the 5 spikes in `docs/06`; confirm `pnpm typecheck` / `pnpm test` / `pnpm build` are green.
+2. **Migration**: `topics.is_digest`, `tags.description` (additive); update the `packages/db` schema and migration files; run `pnpm db:migrate` locally.
+3. **Contracts**: `packages/shared` gains `lastPostUser`, `PostPage`, `SiteStats`, `TagDetail`, `CategoryStats`, `SearchSort`, `AdminOverview`, `isDigest`; shared by frontend and backend, do not write two copies.
+4. **API**: implement per 10.1 + 10.2; add vitest (pagination boundaries, onlyOp, today's timezone, sorting, digest, overview).
+5. **Frontend foundation**: replace `styles.css` tokens/typography; implement the header, list rows, pagination, editor, and empty/error/skeleton components (the homepage category bar has been removed).
+6. **Pages**: Home → Category → Topic → Login/Register → Profile center/Public profile → New topic → Search → Tags → Notifications → Error pages.
+7. **Admin**: shell → overview → reports → settings → email log → maintenance.
+8. **Wrap-up**: E2E, visual regression, a11y, Lighthouse, real-device offline; update `README` and `docs/02` (new fields/config).
+
+> The original v1 order put the API last; because the new pages depend on `lastPostUser`, pagination, and stats, execution actually moves the API ahead of the frontend while the page order stays the same.
+
+### 11.2 Acceptance checklist
+
+- [ ] No horizontal scrolling at 1440 / 1280 / 1024 / 768 / 390 widths; ≥8 rows on the homepage within 900 height.
+- [ ] Sans-serif site-wide; serif appears only in the "工" mark; no card shadows; radius ≤6.
+- [ ] Header 56/50, announcement 36/34, list 52, right rail 176, body full width 1180; mobile footer and copyright visible.
+- [ ] List last reply shows "name + time"; shows "—" when nobody has replied.
+- [ ] Topic page 20 posts/page, page numbers top and bottom, >7 page ellipsis rule, OP only, threaded replies, anchors, bottom editor.
+- [ ] Category four filters (including digest), tag three sorts, search two sorts; switching sort does not lose the query.
+- [ ] The search page hides the header search box; the empty state has popular tags + latest topics.
+- [ ] Notifications today/yesterday/earlier, merged by topic, unread color bar, numbered pagination 30/page, merged jump to the newest post.
+- [ ] Standalone auth shell, three numbers, nickname + username, Turnstile reset on failure.
+- [ ] Profile center 188 navigation, four numbers, mobile horizontal tabs; public profile hides settings.
+- [ ] New topic full width 1180, tag limit 5, draft restore, full-page notice when unverified, field + summary errors.
+- [ ] Admin 188 dark sidebar, five-item navigation, overview four cells, maintenance confirmation, mobile top bar.
+- [ ] Full light/dark tokens; follows the system by default; no theme flash on first paint.
+- [ ] Keyboard can complete login, new topic, paging, OP only, dismiss announcement; focus is visible.
+- [ ] `pnpm typecheck`, `pnpm test`, `pnpm test:e2e:p1..p6`, `pnpm build` all green.
+- [ ] Regenerate visual screenshots after running the site; differences may only come from data/font rendering, never structural differences.
+
+---
+
+## 12. Pages not yet separately designed but that must be reused
+
+The following pages are outside this round's page-by-page confirmation. During implementation **reuse the finalized shell and components and do not introduce a new visual language**; if new structure is truly required, update this document first, then write the code.
+
+| Page | How to reuse |
 |---|---|
-| 编辑主题 `/t/:id/edit` | 发帖页 1180 通排；标题可编辑；加「编辑原因」可选；提交带 `version` CAS；409 提示「内容已被修改，请刷新」 |
-| 编辑回复 | 楼层内切换为编辑器；工具栏 32；保存/取消；同样 CAS |
-| 历史版本 `/t/:id/history` | 1180 通排；左侧版本列表 + 右侧只读正文；顶部「当前版本 / vN」；不引入彩色 diff，先用「新增/删除」两段文本 |
-| 忘记密码 / 重置密码 / 验证邮箱 | AuthShell 单表单 300；标题 22；说明 11.5；提交 40；成功态用 34 高赭黄提示条 |
-| 我的主题 / 我的回复 / 我的收藏 | 个人中心壳；列表复用 52px 行；我的回复显示「回复了《主题》」+ 片段；收藏不显示分类列 |
-| 通知偏好 / 账户与数据 | 个人中心壳；分组表单；保存条底部；注销二次确认 + 冷静期说明 |
-| 举报弹窗 | 420 宽弹窗；理由单选（垃圾广告/人身攻击/违法/跑题/其他）+ 说明 1000 字；提交松绿；取消描边 |
-| 后台举报/设置/邮件/维护子页 | 后台壳；表格/分组表单/工具卡；沿用 24–36 高控件与 1px 线 |
-| 退订 `/unsubscribe?token=` | 居中单卡 420；标题 20；说明 11.5；确认/取消；成功/过期两种状态 |
-| 410 | 错误页同壳；文案「这个主题已被删除」；不泄露标题 |
+| Edit topic `/t/:id/edit` | New topic page 1180 full width; title editable; add optional "reason for edit"; submit with `version` CAS; 409 shows "Content was modified, please refresh" |
+| Edit reply | Switch to an editor inside the post; toolbar 32; save/cancel; same CAS |
+| Revision history `/t/:id/history` | 1180 full width; version list on the left + read-only body on the right; "Current version / vN" at the top; no colored diff for now, use "added/removed" two text blocks |
+| Forgot password / reset password / verify email | AuthShell single form 300; title 22; description 11.5; submit 40; success state uses a 34-high amber notice bar |
+| My topics / My replies / My bookmarks | Profile center shell; list reuses 52px rows; My replies shows "Replied to <topic>" + snippet; bookmarks do not show a category column |
+| Notification preferences / Account and data | Profile center shell; grouped form; save bar at the bottom; account deletion confirmation + grace period explanation |
+| Report dialog | 420-wide dialog; reason radio (spam/ad hominem/illegal/off-topic/other) + description up to 1000 characters; submit pine; cancel outlined |
+| Admin reports/settings/email/maintenance subpages | Admin shell; tables/grouped forms/tool cards; reuse 24–36-high controls and 1px lines |
+| Unsubscribe `/unsubscribe?token=` | Centered single card 420; title 20; description 11.5; confirm/cancel; success/expired states |
+| 410 | Same shell as error pages; copy "This topic has been deleted"; do not leak the title |
 
 ---
 
-## 13. 参考图索引
+## 13. Reference image index
 
-截图不随上游发布；运行站点后按 1180 内容宽（1280 画布）/390 手机生成自己的截图。**以本文件数值为准**。
+Screenshots are not shipped upstream; after running the site, generate your own screenshots at 1180 content width (1280 canvas) / 390 mobile. **The numbers in this document take precedence**.
 
-| 文件 | 内容 |
+| File | Content |
 |---|---|
-| `home.png` | 首页亮色桌面：页头、公告、列表、176 右栏（为旧稿，版块条已移除） |
-| `home-dark.png` | 首页暗色桌面 |
-| `home-mobile.png` | 首页 390：两行列表、右栏折叠 |
-| `topic.png` | 主题页：作者栏、楼中楼、上下页码、底部编辑器 |
-| `topic-mobile.png` | 主题页 390 |
-| `category.png` | 版块页：紧凑头部、四筛选、右栏、底部页码 |
-| `auth-login.png` | 登录页独立壳 |
-| `auth-register.png` | 注册页（昵称、用户名、Turnstile） |
-| `me.png` | 个人中心：188 导航、资料头四数字、列表 |
-| `new-topic.png` | 发帖页：1180、版块胶囊、标签、Turnstile |
-| `search.png` | 搜索结果：帖子级、赭黄高亮、两排序 |
-| `search-empty.png` | 搜索空状态：热门标签 + 最新主题 |
-| `tags.png` | 标签总览两列 |
-| `tags-detail.png` | 标签详情：三项数字、三排序 |
-| `notifications.png` | 通知：分段、合并、未读色条 |
-| `error.png` | 404 错误页 |
-| `admin.png` | 后台概览：深色侧栏、四格、举报、维护 |
+| `home.png` | Home light desktop: header, announcement, list, 176 right rail (from an older draft, category bar already removed) |
+| `home-dark.png` | Home dark desktop |
+| `home-mobile.png` | Home 390: two-line list, right rail folded |
+| `topic.png` | Topic page: author column, threaded replies, page numbers top and bottom, bottom editor |
+| `topic-mobile.png` | Topic page 390 |
+| `category.png` | Category page: compact header, four filters, right rail, bottom page numbers |
+| `auth-login.png` | Login page standalone shell |
+| `auth-register.png` | Register page (nickname, username, Turnstile) |
+| `me.png` | Profile center: 188 navigation, profile header four numbers, list |
+| `new-topic.png` | New topic page: 1180, category pills, tags, Turnstile |
+| `search.png` | Search results: post-level, amber highlight, two sorts |
+| `search-empty.png` | Search empty state: popular tags + latest topics |
+| `tags.png` | Tags overview two columns |
+| `tags-detail.png` | Tag detail: three numbers, three sorts |
+| `notifications.png` | Notifications: sections, merging, unread color bar |
+| `error.png` | 404 error page |
+| `admin.png` | Admin overview: dark sidebar, four cells, reports, maintenance |
 
-上游不附带可交互预览；页面实现以本文件为准。
+Upstream does not ship an interactive preview; page implementation follows this document.
 
 ---
 
-## 14. 一句话交接
+## 14. One-sentence handoff
 
-> 先把 token 和四个基础组件换掉，再按「首页 → 版块 → 主题 → 认证 → 个人中心 → 发帖 → 搜索/标签/通知 → 后台」推进；API 按 10.1 先补齐，迁移只增不删。任何与本文件冲突的想法，先改文档，不要直接改代码。
+> Replace tokens and the four base components first, then proceed "Home → Category → Topic → Auth → Profile center → New topic → Search/Tags/Notifications → Admin"; fill in the API per 10.1 first, and only add migrations, never delete. For any idea that conflicts with this document, change the document first, not the code directly.
 >
-> 实现澄清（2026-10-23）：`tags.description` 已在 0002 存在，无需新增列；页头「版块」为下拉，列出可见版块，不新增版块总览页。
+> Implementation clarification (2026-10-23): `tags.description` already exists in 0002, no new column is needed; the header "Categories" is a dropdown listing visible categories, and no categories overview page is added.

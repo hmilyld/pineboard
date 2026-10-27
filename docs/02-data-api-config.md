@@ -1,52 +1,54 @@
-# 02 数据模型、API 与配置
+# 02 Data model, API and configuration
 
-## 约定
+English | [简体中文](zh-CN/02-data-api-config.md)
 
-- 主键 `TEXT` ULID；时间 `INTEGER` unix 秒（UTC）；软删除用 `status + deleted_at`。
-- 外键 `ON DELETE RESTRICT`；所有 status 用 `CHECK` 限定枚举。
-- 计数列（`reply_count`、`like_count`、`usage_count`）与主写入同 batch 更新，每日对账。
-- `posts` 统一承载首帖与回复：首帖 `is_first=1` 且 `title` 有值，主题标题不存在 `topics` 表。
+## Conventions
 
-## 认证表（Better Auth 托管 + 扩展）
+- Primary keys are `TEXT` ULIDs; times are `INTEGER` unix seconds (UTC); soft deletes use `status + deleted_at`.
+- Foreign keys use `ON DELETE RESTRICT`; every status is constrained to an enum by `CHECK`.
+- Counter columns (`reply_count`, `like_count`, `usage_count`) are updated in the same batch as the primary write and reconciled daily.
+- `posts` carries both first posts and replies: a first post has `is_first=1` and a non-null `title`; topic titles do not live in a `topics` table.
 
-| 表 | 关键字段 |
+## Authentication tables (Better Auth managed + extended)
+
+| Table | Key fields |
 |---|---|
-| `user` | id, name, email(unique, **COLLATE NOCASE**；Drizzle schema 无 collate API，迁移文件为准), emailVerified, image, **username(unique)**, **role**(user/moderator/admin), **status**(active/suspended/deleting/deleted), bio, avatarKey, timezone, lastSeenAt, deletedAt, createdAt, updatedAt |
-| `session` | id, userId, token, expiresAt, ipAddress, userAgent；索引 userId、expiresAt |
+| `user` | id, name, email(unique, **COLLATE NOCASE**; the Drizzle schema has no collate API, the migration file is authoritative), emailVerified, image, **username(unique)**, **role**(user/moderator/admin), **status**(active/suspended/deleting/deleted), bio, avatarKey, timezone, lastSeenAt, deletedAt, createdAt, updatedAt |
+| `session` | id, userId, token, expiresAt, ipAddress, userAgent; indexes on userId, expiresAt |
 | `account` | id, userId, providerId(credential/google/github), accountId, password, scope |
 | `verification` | id, identifier, value, expiresAt |
-| `rateLimit` | id, key(unique), count, lastRequest（Better Auth `storage='database'`；`lastRequest` 由库内写毫秒，属 unix 秒约定的唯一例外） |
+| `rateLimit` | id, key(unique), count, lastRequest (Better Auth `storage='database'`; `lastRequest` is written in milliseconds by the library and is the only exception to the unix-seconds convention) |
 
-## 论坛表
+## Forum tables
 
-| 表 | 关键字段 |
+| Table | Key fields |
 |---|---|
 | `categories` | id, slug(unique), name, description, color(#rrggbb), sortOrder, isVisible, createdAt |
-| `category_moderators` | categoryId, userId（联合主键） |
-| `nav_items` | id, label, href, kind(link/categories/dropdown), parentId, sortOrder, isVisible, openInNewTab, createdAt, updatedAt；`dropdown` 子项通过 `parentId` 组成树，`categories` 项渲染为版块下拉 |
-| `tags` | id, slug(unique), name, description, color, usageCount(冗余，仅保留兼容), status, createdAt |
-| `topic_tags` | topicId, tagId（联合主键）；`tag_id` 单独索引 |
-| `topics` | id, categoryId, authorId, firstPostId, status(published/hidden/deleted；预留 pending/rejected), pinLevel(0/1/2), pinOrder, isLocked, isDigest, replyCount, likeCount, viewCount, lastPostAt, lastPostUserId, createdAt, updatedAt, deletedAt, deletedBy |
-| `posts` | id, topicId, authorId, parentPostId, floor, isFirst, title, contentMd, contentText, status(published/hidden/deleted；预留 pending/rejected), likeCount, version, editCount, editedAt, createdAt, updatedAt, deletedAt, deletedBy |
-| `post_revisions` | id, topicId, postId, version, title, contentMd, action(edit/delete/restore), editorId, reason, createdAt；`UNIQUE(postId, version)` |
-| `post_likes` | userId, postId（联合主键）, createdAt |
-| `bookmarks` | userId, topicId（联合主键）, createdAt |
-| `reports` | id, reporterId, targetType(topic/post), targetId, **categoryId/topicId/postId/targetTitle/targetSnippet 快照**, reasonCode, detail, status(pending/resolved/dismissed), handledBy, handledAt, resolutionNote, createdAt；`UNIQUE(reporterId,targetType,targetId) WHERE status='pending'` |
+| `category_moderators` | categoryId, userId (composite primary key) |
+| `nav_items` | id, label, href, kind(link/categories/dropdown), parentId, sortOrder, isVisible, openInNewTab, createdAt, updatedAt; `dropdown` children form a tree via `parentId`, `categories` items render as a category dropdown |
+| `tags` | id, slug(unique), name, description, color, usageCount(redundant, kept for compatibility only), status, createdAt |
+| `topic_tags` | topicId, tagId (composite primary key); `tag_id` is indexed separately |
+| `topics` | id, categoryId, authorId, firstPostId, status(published/hidden/deleted; pending/rejected reserved), pinLevel(0/1/2), pinOrder, isLocked, isDigest, replyCount, likeCount, viewCount, lastPostAt, lastPostUserId, createdAt, updatedAt, deletedAt, deletedBy |
+| `posts` | id, topicId, authorId, parentPostId, floor, isFirst, title, contentMd, contentText, status(published/hidden/deleted; pending/rejected reserved), likeCount, version, editCount, editedAt, createdAt, updatedAt, deletedAt, deletedBy |
+| `post_revisions` | id, topicId, postId, version, title, contentMd, action(edit/delete/restore), editorId, reason, createdAt; `UNIQUE(postId, version)` |
+| `post_likes` | userId, postId (composite primary key), createdAt |
+| `bookmarks` | userId, topicId (composite primary key), createdAt |
+| `reports` | id, reporterId, targetType(topic/post), targetId, **categoryId/topicId/postId/targetTitle/targetSnippet snapshot**, reasonCode, detail, status(pending/resolved/dismissed), handledBy, handledAt, resolutionNote, createdAt; `UNIQUE(reporterId,targetType,targetId) WHERE status='pending'` |
 | `notifications` | id, userId, type(topic_reply/post_reply/mention/moderation/system), actorId, topicId, postId, title, snippet, readAt, emailStatus(pending/sent/skipped/failed), emailBatchKey, createdAt |
-| `notification_preferences` | userId, category（联合主键）, emailEnabled, updatedAt |
+| `notification_preferences` | userId, category (composite primary key), emailEnabled, updatedAt |
 | `email_unsubscribe_tokens` | id, userId, category, tokenHash(unique), version, expiresAt, usedAt |
 | `email_logs` | id, userId, toEmail, category, template, status(queued/sent/failed/skipped), providerId, errorCode, errorMessage, attempts, notificationId, createdAt, sentAt |
 | `audit_logs` | id, actorId, action, targetType, targetId, metaJson, ipHash, createdAt |
 | `settings` | key(PK), valueJson, groupName, updatedAt, updatedBy, version |
-| `rate_limits` | key, windowStart（联合主键）, count |
+| `rate_limits` | key, windowStart (composite primary key), count |
 
-v1.1 预留：`drafts`、`sensitive_words`；`status` 枚举已预留 `pending/rejected`，无需改主表。
+Reserved for v1.1: `drafts`, `sensitive_words`; the `status` enums already reserve `pending/rejected`, so the main tables need no change.
 
-> 上传当前不落 `upload_intents`/`attachments` 表：`sign` 校验后直接返回预签名 URL，`complete` 通过 R2 `HEAD` 复核并返回 CDN URL；Worker 直传回退校验 magic bytes。若后续需要配额核销、附件楼层绑定或孤儿清理，再补这两张表。
+> Uploads currently write no `upload_intents`/`attachments` tables: `sign` validates and returns a presigned URL directly, `complete` re-checks via R2 `HEAD` and returns the CDN URL, and the Worker direct-upload fallback validates magic bytes. If quota accounting, floor-level attachment binding or orphan cleanup is needed later, add those two tables then.
 
-初始迁移会幂等插入一个「综合讨论」版块和「攻略/求助/资讯」标签，便于新站直接使用；用户内容不随迁移写入。迁移 `0009` 增加 `categories.color` 与 `nav_items`，并幂等写入「首页 / 版块 / 标签」默认导航；`0010` 增加举报快照与索引，`0011` 增加配置版本行，`0012` 增加 `email_logs.to_email` 索引，`0013` 重建 `nav_items` 增加 `parent_id` 与 `dropdown` 类型（SQLite CHECK 无法 ALTER，这是 additive 原则的显式例外）。手写迁移 `0003` 不在 drizzle journal 中，`wrangler d1 migrations apply` 仍会执行。
+The initial migration idempotently inserts one "General Discussion" category and the "Guide/Help/News" tags so a new site is usable right away; user content is never written by migrations. Migration `0009` adds `categories.color` and `nav_items` and idempotently writes the default "Home / Categories / Tags" navigation; `0010` adds report snapshots and indexes, `0011` adds the configuration version row, `0012` adds the `email_logs.to_email` index, and `0013` rebuilds `nav_items` to add `parent_id` and the `dropdown` type (SQLite `CHECK` cannot be altered, an explicit exception to the additive principle). The hand-written migration `0003` is not in the drizzle journal, yet `wrangler d1 migrations apply` still runs it.
 
-## 检索表
+## Search table
 
 ```sql
 CREATE VIRTUAL TABLE post_search USING fts5(
@@ -58,11 +60,11 @@ CREATE VIRTUAL TABLE post_search USING fts5(
 );
 ```
 
-- 写入前把正文规范化为 bigram 串：`游戏攻略 → 游戏 戏攻 攻略`，英文单词整体保留。
-- 增删改按 `post_uid`；查询由服务端拼词项并转义双引号，禁止原样拼 `MATCH`。
-- 查询侧 join `posts/topics` 过滤 `published`，防止索引滞后泄露隐藏内容。
+- Before writing, normalize the body into a bigram string: `游戏攻略 → 游戏 戏攻 攻略`, while English words are kept whole.
+- Insert, update and delete by `post_uid`; queries have the server build the terms and escape double quotes, building `MATCH` from raw input is forbidden.
+- The query side joins `posts/topics` and filters on `published`, so index lag cannot leak hidden content.
 
-## 索引
+## Indexes
 
 ```
 topics (status, pinLevel DESC, pinOrder, lastPostAt DESC)
@@ -85,102 +87,102 @@ audit_logs (targetType, targetId), (createdAt)
 
 ## API
 
-统一返回 `{ ok:true, data, meta? }`；错误 `{ ok:false, error:{ code, message, fields? } }`。
-错误码：`auth_required / email_unverified / forbidden / not_found / gone / validation_error / version_conflict / edit_window_expired / edit_locked / captcha_failed / captcha_unavailable / rate_limited / conflict / maintenance / internal_error`。
+Uniform response `{ ok:true, data, meta? }`; errors `{ ok:false, error:{ code, message, fields? } }`.
+Error codes: `auth_required / email_unverified / forbidden / not_found / gone / validation_error / version_conflict / edit_window_expired / edit_locked / captcha_failed / captcha_unavailable / rate_limited / conflict / maintenance / internal_error`.
 
-### 认证（Better Auth 挂载 `/api/auth/*`）
+### Authentication (Better Auth mounted at `/api/auth/*`)
 
-v1 只启用邮箱密码；`sign-in/social`、`callback/:provider` 与 Google/GitHub secrets 预留给 v1.1。
+v1 enables email + password only; `sign-in/social`, `callback/:provider` and the Google/GitHub secrets are reserved for v1.1.
 
-`sign-up/email`（Turnstile）、`sign-in/email`、`sign-in/social`、`callback/:provider`、`verify-email`、`send-verification-email`、`request-password-reset`（旧文档写作 forget-password）、`reset-password`、`change-password`、`list-sessions`、`revoke-session`、`sign-out`。
+`sign-up/email` (Turnstile), `sign-in/email`, `sign-in/social`, `callback/:provider`, `verify-email`, `send-verification-email`, `request-password-reset` (written as forget-password in older docs), `reset-password`, `change-password`, `list-sessions`, `revoke-session`, `sign-out`.
 
-Spike 实测（Better Auth 1.7.12）：验证邮件与重置邮件里的 token 是自包含 JWT，可不在 `verification` 持久化；重置 token 会以 `reset-password:<token>` 落 `verification`。
+Spike measurements (Better Auth 1.7.12): the tokens in verification and reset emails are self-contained JWTs and need not be persisted in `verification`; a reset token is stored in `verification` as `reset-password:<token>`.
 
-### 公共读
+### Public reads
 
-| 方法 | 路径 | 说明 |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/api/site` | 公开配置（含 `site.announcement`），`s-maxage=60` |
-| GET | `/api/site/stats` | 今日发帖 / 主题 / 回复 / 成员，`s-maxage=60` |
-| GET | `/api/nav` | 可见顶部导航项（`link` / `categories`），`no-store` |
-| GET | `/api/me` | 当前用户摘要，未登录 401，`no-store` |
-| GET | `/api/me/optional` | 当前用户摘要；未登录 200 `{user:null,permissions:null}`，用于首屏探测 |
-| GET | `/api/categories`、`/api/categories/:slug` | 版块 |
-| GET | `/api/topics` | `category,tag,sort=latest\|new\|hot,digest=1,page,perPage`；`lastPostUser`,`isDigest` |
-| GET | `/api/topics/:id` | 主题 + 首帖 + 标签 + viewerPermissions |
-| GET | `/api/topics/:id/posts` | `page`/`perPage`/`onlyOp=1`，20 楼/页；首帖不在 items，`total` 含首帖；`onlyOp` 的 total 只计首帖+楼主回复；游标模式同样排除首帖 |
-| GET | `/api/tags`、`/api/tags/:slug` | 标签、标签详情（三项统计） |
-| GET | `/api/search` | `q,page,perPage,sort=relevance\|latest`；帖子级结果 |
-| GET | `/api/users/:username`、`/topics`、`/replies` | 用户主页（含 topicCount/replyCount/likeCount/bookmarkCount） |
-| GET | `/api/health` | 版本、配置版本、DB/R2 连通；R2 探测缓存 30s；`turnstileConfigured` 表示 Site Key + Secret 均已配置 |
+| GET | `/api/site` | Public configuration (including `site.announcement`), `s-maxage=60` |
+| GET | `/api/site/stats` | Posts / topics / replies / members today, `s-maxage=60` |
+| GET | `/api/nav` | Visible top navigation items (`link` / `categories`), `no-store` |
+| GET | `/api/me` | Current user summary, 401 when signed out, `no-store` |
+| GET | `/api/me/optional` | Current user summary; 200 `{user:null,permissions:null}` when signed out, used for first-paint detection |
+| GET | `/api/categories`, `/api/categories/:slug` | Categories |
+| GET | `/api/topics` | `category,tag,sort=latest\|new\|hot,digest=1,page,perPage`; `lastPostUser`,`isDigest` |
+| GET | `/api/topics/:id` | Topic + first post + tags + viewerPermissions |
+| GET | `/api/topics/:id/posts` | `page`/`perPage`/`onlyOp=1`, 20 floors per page; the first post is not in items, `total` includes it; for `onlyOp` the total counts only the first post + the OP's replies; cursor mode also excludes the first post |
+| GET | `/api/tags`, `/api/tags/:slug` | Tags, tag detail (three statistics) |
+| GET | `/api/search` | `q,page,perPage,sort=relevance\|latest`; post-level results |
+| GET | `/api/users/:username`, `/topics`, `/replies` | User profile (including topicCount/replyCount/likeCount/bookmarkCount) |
+| GET | `/api/health` | Version, configuration version, DB/R2 connectivity; R2 probe cached for 30s; `turnstileConfigured` means both Site Key and Secret are configured |
 
-### 写入
+### Writes
 
-| 方法 | 路径 | 权限 | 说明 |
+| Method | Path | Permissions | Description |
 |---|---|---|---|
-| POST | `/api/topics` | 已验证 + Turnstile | `{categoryId,title,contentMd,tagIds}` |
-| PATCH | `/api/topics/:id` | 作者/版主/管理员 | 带 `version`，409 冲突 |
-| DELETE | `/api/topics/:id` | 作者(受配置)/版主/管理员 | 软删除 |
-| POST | `/api/topics/:id/view` | 公开 | 按 `topic + IP hash` 5 分钟去重，同一窗口只 +1 |
-| POST | `/api/topics/:id/posts` | 已验证 + Turnstile | `{contentMd,parentPostId?}`；`parentPostId` 仅表示楼层回复（最多 2 层）；引用不传 `parentPostId`，按普通新楼层写入 |
-| PATCH/DELETE | `/api/posts/:id` | 作者/版主/管理员 | 同上 |
-| POST | `/api/posts/:id/like`、`/api/topics/:id/bookmark` | 幂等切换；点赞为单条 INSERT OR IGNORE + 计数重算 |
-| GET | `/api/topics/:id/revisions?postId=` | 按可见性配置（P3 已实现 public/author/staff） |
-| POST | `/api/reports` | 登录 | 24h 同目标去重 |
-| POST | `/api/mod/topics/:id/digest` | 版主/管理员 | `{isDigest}`，精华 |
-| POST | `/api/uploads/sign`、`/api/uploads/complete`、`/api/uploads/direct` | 已验证 + `feature.uploads` | 预签名直传 / HEAD 复核 / Worker 回退直传；图片仅 JPG/PNG/WebP/GIF/AVIF，附件仅 ZIP/RAR/7Z |
-| GET | `/files/*` | 公开 | 本地/无 CDN 时的 R2 对象回退读取 |
+| POST | `/api/topics` | Verified + Turnstile | `{categoryId,title,contentMd,tagIds}` |
+| PATCH | `/api/topics/:id` | Author/moderator/admin | Carries `version`, 409 on conflict |
+| DELETE | `/api/topics/:id` | Author(as configured)/moderator/admin | Soft delete |
+| POST | `/api/topics/:id/view` | Public | Deduplicated per `topic + IP hash` for 5 minutes, only +1 per window |
+| POST | `/api/topics/:id/posts` | Verified + Turnstile | `{contentMd,parentPostId?}`; `parentPostId` means a floor reply only (at most 2 levels); quotes pass no `parentPostId` and are written as an ordinary new floor |
+| PATCH/DELETE | `/api/posts/:id` | Author/moderator/admin | Same as above |
+| POST | `/api/posts/:id/like`, `/api/topics/:id/bookmark` | Idempotent toggle; a like is a single INSERT OR IGNORE plus a count recalculation |
+| GET | `/api/topics/:id/revisions?postId=` | Per history visibility configuration (P3 already implements public/author/staff) |
+| POST | `/api/reports` | Signed in | Deduplicated per target for 24h |
+| POST | `/api/mod/topics/:id/digest` | Moderator/admin | `{isDigest}`, digest |
+| POST | `/api/uploads/sign`, `/api/uploads/complete`, `/api/uploads/direct` | Verified + `feature.uploads` | Presigned direct upload / HEAD re-check / Worker fallback direct upload; images are JPG/PNG/WebP/GIF/AVIF only, attachments are ZIP/RAR/7Z only |
+| GET | `/files/*` | Public | R2 object fallback reads locally or without a CDN |
 
-### 个人中心与管理
+### Personal center and administration
 
-`GET /api/me/summary|topics|replies|bookmarks|notifications`、`POST /api/me/notifications/read`、`GET|PATCH /api/me/preferences`、`POST /api/me/delete|delete/cancel|export`、`POST /api/unsubscribe`、`GET /api/unsubscribe/preview`。头像/资料编辑端点尚未实现。
+`GET /api/me/summary|topics|replies|bookmarks|notifications`, `POST /api/me/notifications/read`, `GET|PATCH /api/me/preferences`, `POST /api/me/delete|delete/cancel|export`, `POST /api/unsubscribe`, `GET /api/unsubscribe/preview`. Avatar and profile editing endpoints are not implemented yet.
 
-版主：`GET /api/mod/reports`、`POST /api/mod/reports/:id/resolve`、`POST /api/mod/topics/:id/pin|lock|move`。
-管理员运维：`GET /api/mod/audit`、`POST /api/mod/posts/:id/restore`；后台「审计日志」页可直接恢复删除的主题/回复。
-管理员：`GET /api/admin/overview`、`settings`、`emails`、`search/reindex`、`maintenance/daily`、`users`。
+Moderator: `GET /api/mod/reports`, `POST /api/mod/reports/:id/resolve`, `POST /api/mod/topics/:id/pin|lock|move`.
+Administrator operations: `GET /api/mod/audit`, `POST /api/mod/posts/:id/restore`; the admin "Audit Log" page can restore deleted topics/replies directly.
+Administrator: `GET /api/admin/overview`, `settings`, `emails`, `search/reindex`, `maintenance/daily`, `users`.
 
-用户管理（管理员）：`GET /api/admin/users?q=&status=&role=&page=`（20/页），`PATCH /api/admin/users/:id`（角色），`POST /api/admin/users/:id/suspend|unsuspend`；禁止操作自己，禁止降级/封禁最后一个活跃管理员，封禁会删除该用户全部 session 并写 `user.suspend` 审计。
+User management (administrator): `GET /api/admin/users?q=&status=&role=&page=` (20 per page), `PATCH /api/admin/users/:id` (role), `POST /api/admin/users/:id/suspend|unsuspend`; operating on yourself is forbidden, demoting/banning the last active administrator is forbidden, and a suspension deletes all of that user's sessions and writes a `user.suspend` audit entry.
 
-版块维护（管理员）：`GET|POST /api/admin/categories`、`PATCH|DELETE /api/admin/categories/:id`、`PATCH /api/admin/categories/reorder`。删除前检查版块下是否仍有主题，有主题返回 `conflict`。
+Category maintenance (administrator): `GET|POST /api/admin/categories`, `PATCH|DELETE /api/admin/categories/:id`, `PATCH /api/admin/categories/reorder`. Deletion first checks whether the category still contains topics, and returns `conflict` if it does.
 
-版主分配（管理员）：`POST /api/admin/categories/:id/moderators`（`{username}`，也接受邮箱）、`DELETE /api/admin/categories/:id/moderators/:userId`。添加普通用户时自动把 `user.role` 提升为 `moderator`；移除最后一个版块映射后自动回退为 `user`；管理员拥有全站权限，拒绝分配。
+Moderator assignment (administrator): `POST /api/admin/categories/:id/moderators` (`{username}`, email also accepted), `DELETE /api/admin/categories/:id/moderators/:userId`. Adding a regular user automatically raises `user.role` to `moderator`; removing the last category mapping automatically falls back to `user`; administrators already hold site-wide permissions and are rejected.
 
-标签维护（管理员）：`GET|POST /api/admin/tags`、`PATCH|DELETE /api/admin/tags/:id`。支持名称、slug、说明、颜色与 `active/hidden/merged` 状态；仍被主题引用的标签禁止删除，返回 `conflict`。
+Tag maintenance (administrator): `GET|POST /api/admin/tags`, `PATCH|DELETE /api/admin/tags/:id`. Supports name, slug, description, color and the `active/hidden/merged` status; a tag still referenced by topics cannot be deleted and returns `conflict`.
 
-导航维护（管理员）：`GET|POST /api/admin/nav`、`PATCH|DELETE /api/admin/nav/:id`、`PATCH /api/admin/nav/reorder`；公开读 `GET /api/nav`（`no-store`，只返回可见项）。
+Navigation maintenance (administrator): `GET|POST /api/admin/nav`, `PATCH|DELETE /api/admin/nav/:id`, `PATCH /api/admin/nav/reorder`; the public read is `GET /api/nav` (`no-store`, visible items only).
 
-集成配置（管理员）：`GET|PATCH /api/admin/integrations`、`POST /api/admin/integrations/test`。PATCH 同时接受 `version`、非密钥 `integration.cloudflare` 与 `secrets.{resendApiKey,resendWebhookSecret,turnstileSecret,r2AccessKeyId,r2SecretAccessKey}`；写入非密钥需带当前 `version`，响应返回新 `version`；密钥写入后不回显，只返回 `configured/source/updatedAt`。
+Integrations (administrator): `GET|PATCH /api/admin/integrations`, `POST /api/admin/integrations/test`. PATCH accepts `version`, the non-secret `integration.cloudflare` and `secrets.{resendApiKey,resendWebhookSecret,turnstileSecret,r2AccessKeyId,r2SecretAccessKey}`; writing non-secrets requires the current `version` and the response returns the new `version`; secrets are never echoed back after writing, only `configured/source/updatedAt` is returned.
 
-v2 通知额外返回 `postFloor`，前端据此拼 `?page=N#post-F`；首页/版块/标签/用户列表均返回 `lastPostUser`（可能为 null）。
+v2 notifications additionally return `postFloor`, which the front end uses to build `?page=N#post-F`; the home page, categories, tags and user lists all return `lastPostUser` (may be null).
 
-举报列表按 `reports.category_id` 在 SQL 侧过滤并用 `LIMIT/OFFSET` 直接分页，返回 `total/totalPages`，后台页面已接页码；举报创建时写入目标快照，目标被删除后列表仍展示快照，处理接口允许关闭并审计 `contentRemoved`，不再返回 410。移动主题时同步更新待处理举报的 `category_id`。标签的公开/后台使用数是 `topic_tags JOIN topics(published)` 的实时聚合，`tags.usage_count` 只作为兼容冗余。
+The report list filters on `reports.category_id` on the SQL side and paginates directly with `LIMIT/OFFSET`, returning `total/totalPages`; the admin page is already wired to page numbers. Creating a report writes a target snapshot, so after the target is deleted the list still shows the snapshot; the resolve endpoint allows closing it and audits `contentRemoved` instead of returning 410. Moving a topic updates the `category_id` of pending reports in step. Tag usage counts, public and in admin, are live aggregates of `topic_tags JOIN topics(published)`; `tags.usage_count` is a compatibility redundancy only.
 
-## 配置项
+## Configuration items
 
-`settings` 存覆盖值，代码内 `DEFAULTS` 提供全量默认；读取深合并，写时 Zod 校验，读时安全解析（坏值回退默认并告警）。普通域 45s 缓存，安全域 5s。`PATCH /api/admin/settings` 必须带 `{version, patch}`；版本推进使用 `settings('__config_version')` 行上的单条条件 `UPDATE version = version + 1 WHERE version = ?`，不匹配返回 409 `version_conflict`，避免多 isolate TOCTOU。
+`settings` stores override values while `DEFAULTS` in code provides the full set; reads deep-merge, writes are Zod-validated, reads are parsed safely (a bad value falls back to the default with a warning). Regular domains are cached for 45s, security domains for 5s. `PATCH /api/admin/settings` must carry `{version, patch}`; the version advances with a single conditional `UPDATE version = version + 1 WHERE version = ?` on the `settings('__config_version')` row, and a mismatch returns 409 `version_conflict`, avoiding TOCTOU across isolates.
 
-| 域 | 键与默认值 |
+| Domain | Keys and defaults |
 |---|---|
-| site | name=Pineboard；tagline=轻量、专注讨论的社区；url；description；keywords；logoKey；faviconKey；ogImageKey；timezone=Asia/Shanghai；language=zh-CN；icp；announcement={id,enabled,text,href} |
-| seo | titleTemplate=`{title} · {siteName}`；homeTitle；description；noindex=false；topicsPerPage=20（5–50）；postsPerPage=20（5–50）；sitemapEnabled=true |
-| account | registrationOpen=true；allowUnverifiedLogin=true；requireVerificationForWrite=true；passwordMinLength=8；usernameMin=3；usernameMax=20；sessionDays=30；deletionGraceDays=7 |
-| edit | windowUserMinutes=60；windowModeratorMinutes=0；allowStaffEditOthers=true；lockAfterReply=false；allowSelfDelete=true；historyVisibility=author；keepRevisions=20；requireReason=false |
-| mail | enabled=true；fromName；fromAddress=no-reply@mail.example.com；replyTo；notifyTopicReply=true；notifyPostReply=true；notifyMention=true；notifyModeration=true；includeUnsubscribe=true；dailyBudget=80；userDailyCap=10；digestWindowMinutes=10；verificationTtlMinutes=60；resetTtlMinutes=30；unsubscribeTokenDays=180 |
-| feature | turnstile=true；pwa=true；markdown=true；search=true；uploads=true；reports=true；guestRead=true |
-| maintenance | enabled=false；message；allowAdmin=true |
-| upload | imageMaxMb=5；fileMaxMb=10；userDailyCount=20；orphanTtlHours=24（文件类型由路由白名单校验：图片 JPG/PNG/WebP/GIF/AVIF，附件 ZIP/RAR/7Z） |
-| security | postMinIntervalSeconds=30；newUserDailyPosts=10；mentionMaxPerPost=5；reportDailyLimit=10；signupPerHour=5（Turnstile 前的按 IP 固定窗口） |
-| integration | cloudflare.accountId=""；cloudflare.r2Bucket=""；cloudflare.cdnUrl=""；cloudflare.turnstileSiteKey=""（空值回退 Worker 变量） |
-| theme | layout=classic；tokens={}；darkMode=system |
+| site | name=Pineboard; tagline=轻量、专注讨论的社区 (a lightweight, discussion-focused community); url; description; keywords; logoKey; faviconKey; ogImageKey; timezone=Asia/Shanghai; language=zh-CN; icp; announcement={id,enabled,text,href} |
+| seo | titleTemplate=`{title} · {siteName}`; homeTitle; description; noindex=false; topicsPerPage=20 (5–50); postsPerPage=20 (5–50); sitemapEnabled=true |
+| account | registrationOpen=true; allowUnverifiedLogin=true; requireVerificationForWrite=true; passwordMinLength=8; usernameMin=3; usernameMax=20; sessionDays=30; deletionGraceDays=7 |
+| edit | windowUserMinutes=60; windowModeratorMinutes=0; allowStaffEditOthers=true; lockAfterReply=false; allowSelfDelete=true; historyVisibility=author; keepRevisions=20; requireReason=false |
+| mail | enabled=true; fromName; fromAddress=no-reply@mail.example.com; replyTo; notifyTopicReply=true; notifyPostReply=true; notifyMention=true; notifyModeration=true; includeUnsubscribe=true; dailyBudget=80; userDailyCap=10; digestWindowMinutes=10; verificationTtlMinutes=60; resetTtlMinutes=30; unsubscribeTokenDays=180 |
+| feature | turnstile=true; pwa=true; markdown=true; search=true; uploads=true; reports=true; guestRead=true |
+| maintenance | enabled=false; message; allowAdmin=true |
+| upload | imageMaxMb=5; fileMaxMb=10; userDailyCount=20; orphanTtlHours=24 (file types are validated by the route whitelist: images JPG/PNG/WebP/GIF/AVIF, attachments ZIP/RAR/7Z) |
+| security | postMinIntervalSeconds=30; newUserDailyPosts=10; mentionMaxPerPost=5; reportDailyLimit=10; signupPerHour=5 (fixed IP window before Turnstile) |
+| integration | cloudflare.accountId=""; cloudflare.r2Bucket=""; cloudflare.cdnUrl=""; cloudflare.turnstileSiteKey="" (empty values fall back to Worker variables) |
+| theme | layout=classic; tokens={}; darkMode=system |
 
-### 集成密钥（加密存储）
+### Integration secrets (encrypted storage)
 
-- 非密钥标识存 `settings.integration.*`，走普通配置版本与 45s 缓存。
-- 密钥存 `settings` 的 `secrets.<name>`（`group_name='secrets'`），值为 AES-GCM 密文（密钥由 `BETTER_AUTH_SECRET` 派生），后台只看到状态。
-- 运行时优先数据库密钥，其次 Worker secret；因此轮换 Resend/Turnstile/R2 凭据无需重新部署。
-- Turnstile Site Key 从 `integration.cloudflare.turnstileSiteKey` → `TURNSTILE_SITE_KEY` 解析；Secret 从 `secrets.turnstileSecret` → `TURNSTILE_SECRET` 解析。
-- `/api/site` 仍只暴露公开 Site Key，不返回任何密钥或 `integration` 组。
+- Non-secret identifiers live in `settings.integration.*` and follow the regular configuration version and 45s cache.
+- Secrets live in `settings` as `secrets.<name>` (`group_name='secrets'`) with an AES-GCM ciphertext value (the key is derived from `BETTER_AUTH_SECRET`); the admin UI only sees status.
+- At runtime database secrets take precedence over Worker secrets; rotating Resend/Turnstile/R2 credentials therefore needs no redeploy.
+- The Turnstile Site Key resolves as `integration.cloudflare.turnstileSiteKey` → `TURNSTILE_SITE_KEY`; the Secret resolves as `secrets.turnstileSecret` → `TURNSTILE_SECRET`.
+- `/api/site` still exposes only the public Site Key and returns no secrets or the `integration` group.
 
-## 内容限制
+## Content limits
 
-正文 ≤32KB；标签 ≤5；附件 ≤10；单请求体 ≤100KB；用户名单 `[a-z0-9_-]{3,20}` 且过保留字黑名单。楼层用单语句 `COALESCE(MAX(floor),0)+1` 取号，`UNIQUE(topicId,floor)`。
+Body ≤32KB; ≤5 tags; ≤10 attachments; single request body ≤100KB; usernames match `[a-z0-9_-]{3,20}` and pass a reserved-word blacklist. Floors take their number with the single statement `COALESCE(MAX(floor),0)+1`, with `UNIQUE(topicId,floor)`.

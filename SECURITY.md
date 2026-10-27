@@ -1,14 +1,16 @@
 # Security
 
-## 报告漏洞
+English | [简体中文](SECURITY.zh-CN.md)
 
-请不要在公开 issue 中粘贴利用细节、密钥、用户数据或生产 URL。
-通过 GitHub Security Advisories 私下报告，或联系维护者。
+## Reporting Vulnerabilities
 
-## 部署者注意
+Please do not paste exploit details, secrets, user data, or production URLs into public issues.
+Report privately through GitHub Security Advisories, or contact the maintainers.
 
-- 不要提交 `.dev.vars`、`.env*`、`wrangler.site.jsonc`、备份或 D1 导出。
-- 使用独立随机值生成 `BETTER_AUTH_SECRET`、`PASSWORD_PEPPER`、`IP_HASH_SALT`。
-- 定期轮换 Resend/Turnstile/R2 密钥；`BETTER_AUTH_SECRET` 轮换前先迁移加密集成密钥。
-- 开启 GitHub secret scanning / push protection。
-- 生产 D1/R2 只允许部署者与最小权限 token 访问。
+## Notes for Deployers
+
+- Do not commit `.dev.vars`, `.env*`, `wrangler.site.jsonc`, backups, or D1 exports.
+- Generate `BETTER_AUTH_SECRET`, `PASSWORD_PEPPER`, and `IP_HASH_SALT` using independent random values.
+- Rotate Resend/Turnstile/R2 secrets regularly; before rotating `BETTER_AUTH_SECRET`, migrate the encrypted integration secrets first.
+- Enable GitHub secret scanning / push protection.
+- Production D1/R2 must be accessible only to deployers and least-privilege tokens.

@@ -1,25 +1,27 @@
-# 08 配置与部署入口
+# 08 Configuration and deployment entry points
 
-> 从零创建 Cloudflare 资源、初始化管理员、备份/回滚与开源清理，见 [09 部署指南](09-deployment.md)。本文只负责运行时配置清单与优先级。
+English | [简体中文](zh-CN/08-configuration.md)
 
-本文是运行时配置的唯一清单。原则：
+> For creating Cloudflare resources from scratch, initializing an administrator, backups/rollback and open-source cleanup, see the [09 Deployment Guide](09-deployment.md). This document covers only the runtime configuration inventory and its precedence.
 
-1. **能启动系统的硬性依赖放 Cloudflare Worker 变量/Secrets**，不依赖数据库。
-2. **可运营轮换的集成凭据优先放数据库**（`/admin/integrations`，AES-GCM 加密）；未在 CF 配置时必须有数据库值。
-3. **站点业务配置放 D1 `settings`**，按组 Zod 校验，数据库值覆盖 `DEFAULTS`。
-4. 一个配置只保留一个主要入口；环境变量只作为运行时兜底，不再复制一份到文档之外。
+This document is the single inventory of runtime configuration. Principles:
 
-## 1. 配置来源与优先级
+1. **Hard dependencies required to start the system live in Cloudflare Worker variables/Secrets**, never in the database.
+2. **Integration credentials that can be rotated operationally belong in the database first** (`/admin/integrations`, AES-GCM encrypted); when they are not configured in CF, a database value must exist.
+3. **Site business configuration lives in D1 `settings`**, validated per group with Zod, and database values override `DEFAULTS`.
+4. Each piece of configuration keeps exactly one primary entry point; environment variables are only a runtime fallback and are not duplicated anywhere outside this document.
 
-| 来源 | 内容 | 入口 |
+## 1. Configuration sources and precedence
+
+| Source | Content | Entry point |
 |---|---|---|
-| `wrangler.jsonc` `vars` | 公开、部署时固定的 Worker 变量 | 仓库配置，随代码部署 |
-| Cloudflare Worker Secrets | 启动必需密钥、认证/加密根密钥 | `wrangler secret put` 或 Cloudflare Dashboard |
-| D1 `settings` | 站点、SEO、账号、邮件、功能开关、上传、安全、主题、集成非密钥 | `/admin/settings`、`/admin/integrations` |
-| D1 `settings` (`secrets.*`) | Resend/Turnstile/R2 密钥密文 | `/admin/integrations` |
-| GitHub Environment `production` Secrets | 仅 CI 部署凭据 | GitHub Actions |
+| `wrangler.jsonc` `vars` | Public Worker variables fixed at deploy time | Repository configuration, deployed with the code |
+| Cloudflare Worker Secrets | Startup-critical secrets, authentication/encryption root keys | `wrangler secret put` or the Cloudflare Dashboard |
+| D1 `settings` | Site, SEO, account, mail, feature flags, upload, security, theme, non-secret integration values | `/admin/settings`, `/admin/integrations` |
+| D1 `settings` (`secrets.*`) | Resend/Turnstile/R2 encrypted secrets | `/admin/integrations` |
+| GitHub Environment `production` Secrets | CI deployment credentials only | GitHub Actions |
 
-覆盖顺序：
+Override order:
 
 ```text
 secrets.* (DB)                 > RESEND_API_KEY / TURNSTILE_SECRET / R2_* (Worker Secrets)
@@ -27,136 +29,136 @@ integration.cloudflare.* (DB)  > R2_ACCOUNT_ID / R2_BUCKET_NAME / CDN_URL / TURN
 settings.* (DB)                > DEFAULTS
 ```
 
-`SITE_URL`、`ENVIRONMENT`、`BETTER_AUTH_SECRET`、`PASSWORD_PEPPER`、`IP_HASH_SALT`、`ADMIN_EMAILS`、`EMAIL_TRANSPORT`、`DEV_RESET_TOKEN` **只从 Worker 环境读取，不落数据库**。OAuth 变量当前未启用，已从 `.dev.vars.example` 移除。
+`SITE_URL`, `ENVIRONMENT`, `BETTER_AUTH_SECRET`, `PASSWORD_PEPPER`, `IP_HASH_SALT`, `ADMIN_EMAILS`, `EMAIL_TRANSPORT` and `DEV_RESET_TOKEN` **are read from the Worker environment only and are never stored in the database**. The OAuth variables are currently disabled and have been removed from `.dev.vars.example`.
 
-## 2. 必须配置（缺失系统不可用）
+## 2. Required (the system is unusable without them)
 
-这些必须在 Cloudflare Worker 部署前配置，不能只放数据库：
+These must be configured before deploying the Cloudflare Worker and cannot live in the database alone:
 
-| 名称 | 类型 | 说明 |
+| Name | Type | Description |
 |---|---|---|
-| `DB` | D1 binding | `wrangler.jsonc`，主数据库 |
-| `BUCKET` | R2 binding | `wrangler.jsonc`，上传对象存储 |
-| `ASSETS` | Assets binding | `wrangler.jsonc`，前端静态产物 |
-| `CF_VERSION_METADATA` | binding | `wrangler.jsonc`，健康检查版本 |
-| `SITE_URL` | Worker var | 例如 `https://forum.example.com`；Better Auth baseURL，缺失会导致认证请求异常 |
-| `ENVIRONMENT` | Worker var | 生产必须为 `production`；本地 `.dev.vars` 覆盖为 `development` |
-| `BETTER_AUTH_SECRET` | Worker secret | Better Auth 签名密钥，同时派生集成密钥加密密钥；轮换会导致已存集成密文不可读 |
-| `PASSWORD_PEPPER` | Worker secret | 浏览器 PBKDF2 派生后的 HMAC pepper；缺失会使密码链路不安全 |
-| `IP_HASH_SALT` | Worker secret | IP 哈希盐；缺失会削弱限流/审计隐私 |
+| `DB` | D1 binding | `wrangler.jsonc`, the main database |
+| `BUCKET` | R2 binding | `wrangler.jsonc`, uploaded object storage |
+| `ASSETS` | Assets binding | `wrangler.jsonc`, the front-end static build |
+| `CF_VERSION_METADATA` | binding | `wrangler.jsonc`, version for the health check |
+| `SITE_URL` | Worker var | For example `https://forum.example.com`; Better Auth baseURL, authentication requests misbehave without it |
+| `ENVIRONMENT` | Worker var | Must be `production` in production; local `.dev.vars` overrides it to `development` |
+| `BETTER_AUTH_SECRET` | Worker secret | Better Auth signing key, also derives the integration secret encryption key; rotating it makes stored integration ciphertexts unreadable |
+| `PASSWORD_PEPPER` | Worker secret | HMAC pepper applied after the browser-side PBKDF2 derivation; the password chain is insecure without it |
+| `IP_HASH_SALT` | Worker secret | IP hash salt; rate limiting/audit privacy weaken without it |
 
-部署 workflow 会在 tag 部署前执行：
+Before a tag deployment the deploy workflow runs:
 
 ```bash
 wrangler secret list --format json > /tmp/worker-secrets.json
 node scripts/check-worker-secrets.mjs /tmp/worker-secrets.json
 ```
 
-缺失上述三个必需 Secret 时直接失败，不会部署。
+If any of the three required Secrets is missing it fails immediately and nothing is deployed.
 
-## 3. 功能必需（缺失只影响对应功能）
+## 3. Feature-critical (missing values only affect that feature)
 
-| 功能 | CF 变量/Secret | 数据库对应项 | 缺失行为 |
+| Feature | CF variable/Secret | Database counterpart | Behavior when missing |
 |---|---|---|---|
-| 上传/R2 | `R2_BUCKET_NAME`、`R2_ACCOUNT_ID`、`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY` | `integration.cloudflare.r2Bucket/accountId`、`secrets.r2AccessKeyId/r2SecretAccessKey` | `sign` 返回“上传服务未配置”；Worker 直传仍可临时兜底 |
-| CDN | `CDN_URL` | `integration.cloudflare.cdnUrl` | 使用 `/files/*` 本地回退 |
-| Turnstile | `TURNSTILE_SITE_KEY`、`TURNSTILE_SECRET` | `integration.cloudflare.turnstileSiteKey`、`secrets.turnstileSecret` | 无 Site Key 时前后端按未启用处理；只有 Site Key 无 Secret 时返回 `captcha_unavailable` |
-| 邮件/Resend | `RESEND_API_KEY`、`RESEND_WEBHOOK_SECRET` | `secrets.resendApiKey/resendWebhookSecret` | 邮件标记 `skipped`，不发信；生产不会写 dev outbox |
-| 管理员引导 | `ADMIN_EMAILS` | 无 | 可选；管理员也可直接由数据库角色控制 |
-| 发信通道 | `EMAIL_TRANSPORT` | 无 | 生产省略；本地设 `log` 写 `dev_email_outbox` |
-| 本地测试重置 | `DEV_RESET_TOKEN` | 无 | 仅本地；生产设置后端点仍因 `ENVIRONMENT` 非 development 返回 404 |
+| Upload/R2 | `R2_BUCKET_NAME`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | `integration.cloudflare.r2Bucket/accountId`, `secrets.r2AccessKeyId/r2SecretAccessKey` | `sign` returns "upload service not configured"; Worker direct upload still works as a temporary fallback |
+| CDN | `CDN_URL` | `integration.cloudflare.cdnUrl` | Fall back to local `/files/*` |
+| Turnstile | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET` | `integration.cloudflare.turnstileSiteKey`, `secrets.turnstileSecret` | Without a Site Key both front end and back end treat it as disabled; with only a Site Key and no Secret it returns `captcha_unavailable` |
+| Mail/Resend | `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET` | `secrets.resendApiKey/resendWebhookSecret` | Mail is marked `skipped` and not sent; production never writes the dev outbox |
+| Administrator bootstrap | `ADMIN_EMAILS` | none | Optional; administrators can also be controlled purely by the database role |
+| Mail transport | `EMAIL_TRANSPORT` | none | Omitted in production; locally set `log` to write `dev_email_outbox` |
+| Local test reset | `DEV_RESET_TOKEN` | none | Local only; even when set in production the endpoint returns 404 because `ENVIRONMENT` is not development |
 
-> “如果不在 CF 环境变量配置，则需要在数据库配置”适用于上表的集成项。推荐生产把 Resend/Turnstile/R2 密钥放数据库，便于轮换；把 `SITE_URL`、`ENVIRONMENT` 和三个认证根密钥放 CF。
+> "If it is not configured in the CF environment variables, it must be configured in the database" applies to the integration items in the table above. For production we recommend putting the Resend/Turnstile/R2 secrets in the database so they are easy to rotate, and putting `SITE_URL`, `ENVIRONMENT` and the three authentication root keys in CF.
 
-## 4. 后台 UI 覆盖范围
+## 4. Admin UI coverage
 
-以下配置组目前仍只能通过 D1 `settings`/迁移或代码默认值维护，后台设置页尚未提供完整表单（避免把未验证的编辑器暴露给管理员）：
+The following configuration groups can currently still only be maintained through D1 `settings`/migrations or the code defaults, because the admin settings page does not yet provide a complete form (to avoid exposing unvalidated editors to administrators):
 
 - `edit.*`
 - `security.*`
 - `upload.*`
 - `theme.*`
-- `mail` 的预算、摘要窗口、TLL 等高级项
-- `feature` 的搜索/举报/游客阅读等细项
+- advanced `mail` items such as budget, digest window and TLL
+- detailed `feature` items such as search/reports/guest read
 
-站点、SEO、账号基础项、维护模式、分页、Turnstile 上传开关和集成密钥已有 UI。若需要通过后台运营这些组，应先补 UI 与对应 e2e，而不是直接手改生产 D1。
+Site, SEO, the basic account items, maintenance mode, pagination, the Turnstile upload switch and integration secrets already have UI. If these groups need to be operated from the admin panel, add the UI and matching e2e coverage first instead of editing production D1 by hand.
 
-## 5. D1 `settings` 分组
+## 5. D1 `settings` groups
 
-| 分组 | 主要键 | 默认/说明 |
+| Group | Main keys | Defaults/notes |
 |---|---|---|
-| `site` | name, tagline, url, description, keywords, logoKey, faviconKey, ogImageKey, timezone, language, icp, announcement | 默认名称 **Pineboard**；`site.url` 应与 `SITE_URL` 一致 |
-| `seo` | titleTemplate, homeTitle, description, noindex, topicsPerPage, postsPerPage, sitemapEnabled | 分页 5–50 |
-| `account` | registrationOpen, allowUnverifiedLogin, requireVerificationForWrite, passwordMinLength, usernameMin/Max, sessionDays, deletionGraceDays | 注册/验证/注销策略 |
-| `edit` | windowUserMinutes, windowModeratorMinutes, allowStaffEditOthers, lockAfterReply, allowSelfDelete, historyVisibility, keepRevisions, requireReason | 编辑窗口与留痕 |
-| `mail` | enabled, fromName, fromAddress, replyTo, notify*, dailyBudget, userDailyCap, digestWindowMinutes, verificationTtlMinutes, resetTtlMinutes, unsubscribeTokenDays | 摘要与邮件预算 |
-| `feature` | turnstile, pwa, markdown, search, uploads, reports, guestRead | 功能开关 |
-| `maintenance` | enabled, message, allowAdmin | 维护模式 |
-| `upload` | imageMaxMb, fileMaxMb, userDailyCount, orphanTtlHours | 类型白名单在代码中固定 |
-| `security` | postMinIntervalSeconds, newUserDailyPosts, mentionMaxPerPost, reportDailyLimit, signupPerHour | 频率限制 |
-| `integration` | cloudflare.accountId/r2Bucket/cdnUrl/turnstileSiteKey | 缺失回退 CF |
-| `theme` | layout, tokens, darkMode | 主题 token |
-| `secrets` | resendApiKey, resendWebhookSecret, turnstileSecret, r2AccessKeyId, r2SecretAccessKey | AES-GCM 密文，不回显 |
+| `site` | name, tagline, url, description, keywords, logoKey, faviconKey, ogImageKey, timezone, language, icp, announcement | Default name **Pineboard**; `site.url` should match `SITE_URL` |
+| `seo` | titleTemplate, homeTitle, description, noindex, topicsPerPage, postsPerPage, sitemapEnabled | Pagination 5–50 |
+| `account` | registrationOpen, allowUnverifiedLogin, requireVerificationForWrite, passwordMinLength, usernameMin/Max, sessionDays, deletionGraceDays | Registration/verification/account deletion policy |
+| `edit` | windowUserMinutes, windowModeratorMinutes, allowStaffEditOthers, lockAfterReply, allowSelfDelete, historyVisibility, keepRevisions, requireReason | Edit window and edit history |
+| `mail` | enabled, fromName, fromAddress, replyTo, notify*, dailyBudget, userDailyCap, digestWindowMinutes, verificationTtlMinutes, resetTtlMinutes, unsubscribeTokenDays | Digest and mail budget |
+| `feature` | turnstile, pwa, markdown, search, uploads, reports, guestRead | Feature flags |
+| `maintenance` | enabled, message, allowAdmin | Maintenance mode |
+| `upload` | imageMaxMb, fileMaxMb, userDailyCount, orphanTtlHours | The type whitelist is fixed in code |
+| `security` | postMinIntervalSeconds, newUserDailyPosts, mentionMaxPerPost, reportDailyLimit, signupPerHour | Rate limits |
+| `integration` | cloudflare.accountId/r2Bucket/cdnUrl/turnstileSiteKey | Falls back to CF when missing |
+| `theme` | layout, tokens, darkMode | Theme tokens |
+| `secrets` | resendApiKey, resendWebhookSecret, turnstileSecret, r2AccessKeyId, r2SecretAccessKey | AES-GCM ciphertext, never echoed back |
 
-## 6. 部署入口
+## 6. Deployment entry points
 
-### 普通推送
+### Ordinary pushes
 
 ```bash
 git push origin main
 ```
 
-只触发 **CI**（typecheck、单测、构建、部署环境检查），不会部署 Cloudflare。
+Only triggers **CI** (typecheck, unit tests, build, deploy environment check) and does not deploy to Cloudflare.
 
-### 版本发布
+### Version releases
 
-明确打 tag 后才触发生产部署：
+Production deployment is triggered only after an explicit tag:
 
 ```bash
 git tag v0.2.0
 git push origin v0.2.0
 ```
 
-`Deploy` workflow 只在 `v*` tag（或手动 `workflow_dispatch`）运行：
+The `Deploy` workflow runs only for `v*` tags (or a manual `workflow_dispatch`):
 
 1. `pnpm db:migrate:remote`
 2. `pnpm typecheck` + `pnpm test`
-3. 校验必需 Worker Secrets
+3. Validate the required Worker Secrets
 4. `pnpm build`
 5. `wrangler deploy --var ENVIRONMENT:production`
-6. `https://forum.example.com/api/health` 冒烟
+6. `https://forum.example.com/api/health` smoke test
 
-### 生产初始化顺序（摘要）
+### Production initialization order (summary)
 
 ```bash
 pnpm db:migrate:remote
 
-# 必需 Secret（只做一次，后续轮换才重设）
+# Required Secrets (once only, reset only on a later rotation)
 pnpm exec wrangler secret put BETTER_AUTH_SECRET
 pnpm exec wrangler secret put PASSWORD_PEPPER
 pnpm exec wrangler secret put IP_HASH_SALT
 
-# 可选：首次管理员引导
+# Optional: first-time administrator bootstrap
 pnpm exec wrangler secret put ADMIN_EMAILS
 
-# 发布
+# Release
 git tag v0.2.0 && git push origin v0.2.0
 ```
 
-完整步骤见 [09 部署指南](09-deployment.md)。部署后到 `/admin/integrations` 配置 Resend/Turnstile/R2，或以 CF 变量提供；确认：
+See the [09 Deployment Guide](09-deployment.md) for the full steps. After deploying, configure Resend/Turnstile/R2 at `/admin/integrations` or provide them as CF variables; confirm:
 
 ```bash
 curl -s https://forum.example.com/api/health
-# turnstileConfigured=true  （启用 Turnstile 时）
+# turnstileConfigured=true  (when Turnstile is enabled)
 ```
 
 ## 7. GitHub Environment Secrets
 
-`production` environment 只需要部署凭据：
+The `production` environment only needs deployment credentials:
 
-| Secret | 用途 |
+| Secret | Purpose |
 |---|---|
-| `CLOUDFLARE_API_TOKEN` | Wrangler 调用 Cloudflare API |
-| `CLOUDFLARE_ACCOUNT_ID` | 指定账号 |
+| `CLOUDFLARE_API_TOKEN` | Wrangler calls to the Cloudflare API |
+| `CLOUDFLARE_ACCOUNT_ID` | Selects the account |
 
-它们不是应用运行时变量，不会进入 Worker；运行时的必需密钥仍需在 Worker Secrets 中配置。
+These are not application runtime variables and never reach the Worker; the required runtime secrets still have to be configured in Worker Secrets.

@@ -1,86 +1,88 @@
-# 01 架构
+# 01 Architecture
 
-## 部署形态
+English | [简体中文](zh-CN/01-architecture.md)
 
-单 Worker + Workers Static Assets，同源部署：
+## Deployment shape
+
+A single Worker + Workers Static Assets, deployed same-origin:
 
 ```
 Browser
   │ https://forum.example.com
 Cloudflare Edge
-  ├─ /assets/*、图片等静态文件 ──→ Static Assets（CDN，请求免费且不占 Worker 额度）
-  ├─ /api/*                    ──→ Worker（Hono）
-  ├─ /t/* /c/* /u/* /tag/*     ──→ Worker：ASSETS.fetch(index.html) + HTMLRewriter 注入 meta
-  ├─ /sitemap.xml /robots.txt /manifest.webmanifest ──→ Worker 动态生成
-  ├─ D1：论坛、Better Auth、settings、FTS5、日志
-  ├─ R2：public bucket（cdn.example.com）；预签名直传
-  ├─ Resend / Turnstile        ──→ 出站 HTTPS
-  └─ Cron：邮件摘要 */5、清理与对账每日
+  ├─ /assets/*, images and other static files ──→ Static Assets (CDN, requests are free and do not count against Worker quota)
+  ├─ /api/*                    ──→ Worker (Hono)
+  ├─ /t/* /c/* /u/* /tag/*     ──→ Worker: ASSETS.fetch(index.html) + HTMLRewriter meta injection
+  ├─ /sitemap.xml /robots.txt /manifest.webmanifest ──→ generated dynamically by the Worker
+  ├─ D1: forum, Better Auth, settings, FTS5, logs
+  ├─ R2: public bucket (cdn.example.com); presigned direct upload
+  ├─ Resend / Turnstile        ──→ outbound HTTPS
+  └─ Cron: email digest */5, cleanup and reconciliation daily
 ```
 
-Worker 配置要点：`assets.directory = "./apps/web/dist/client"`（Vite client 输出）、`not_found_handling = "single-page-application"`、`run_worker_first = ["/", "/api/*", "/files/*", "/t/*", "/c/*", "/u/*", "/tag/*", "/sitemap.xml", "/robots.txt", "/manifest.webmanifest"]`。
+Worker configuration highlights: `assets.directory = "./apps/web/dist/client"` (Vite client output), `not_found_handling = "single-page-application"`, `run_worker_first = ["/", "/api/*", "/files/*", "/t/*", "/c/*", "/u/*", "/tag/*", "/sitemap.xml", "/robots.txt", "/manifest.webmanifest"]`.
 
-> P0 先只启用 `/api/*`，否则尚未实现的 `/t/*` 等文档路由会被空 Worker 接住、破坏 SPA fallback；P6 实现 meta 注入时再一次性加入其余路径。
+> At P0 only `/api/*` is enabled; otherwise the not-yet-implemented document routes such as `/t/*` would be caught by an empty Worker and break SPA fallback. Add the remaining paths in one go at P6 when meta injection is implemented.
 
-## 请求链路
+## Request flow
 
-**读主题（匿名）**：Worker → 配置（45s 缓存）→ 可选鉴权 → 2 条 D1 查询（主题+首帖+标签；回复分页）→ JSON。文档导航额外注入 meta，`caches.default` 缓存 300s。
+**Read topic (anonymous)**: Worker → config (45s cache) → optional authentication → 2 D1 queries (topic + first post + tags; replies paginated) → JSON. Document navigation additionally injects meta, and `caches.default` caches for 300s.
 
-**发帖**：鉴权 → 邮箱已验证 → 写频率限制 → 载荷校验 → Turnstile → D1 单 batch（插 post、主题计数/lastPostAt、FTS、mentions、notifications、audit）→ 201。不 await 邮件。
+**Create post**: authentication → email verified → write rate limit → payload validation → Turnstile → single D1 batch (insert post, topic counters/lastPostAt, FTS, mentions, notifications, audit) → 201. Emails are not awaited.
 
-**注册/重置**：Turnstile（注册）→ Better Auth → hook 内 `waitUntil` 发信 → 立即响应。
+**Register/reset**: Turnstile (registration) → Better Auth → `waitUntil` sends the email inside the hook → respond immediately.
 
-**文档请求**：`/`、`/t/:id`、`/c/:slug`、`/tag/:slug`、`/u/:username` → 取 meta（缓存）→ `ASSETS.fetch('/index.html')` → HTMLRewriter 改 title/description/og/canonical/robots，注入 JSON-LD；不存在的内容返回 404/410 状态码但仍渲染 SPA 壳。
+**Document request**: `/`, `/t/:id`, `/c/:slug`, `/tag/:slug`, `/u/:username` → fetch meta (cached) → `ASSETS.fetch('/index.html')` → HTMLRewriter rewrites title/description/og/canonical/robots, injects JSON-LD; missing content returns a 404/410 status code but still renders the SPA shell.
 
-## 目录结构
+## Directory structure
 
 ```
 forum.example.com/
-├─ apps/api/          # Hono 路由、服务、Better Auth、Drizzle
+├─ apps/api/          # Hono routes, services, Better Auth, Drizzle
 ├─ apps/web/          # Vue3 + Vite + Tailwind v4 + shadcn-vue
-├─ packages/shared/   # Zod 契约、错误码、配置默认值、权限枚举
-├─ packages/db/       # schema、drizzle-kit、migrations
+├─ packages/shared/   # Zod contracts, error codes, config defaults, permission enums
+├─ packages/db/       # schema, drizzle-kit, migrations
 ├─ docs/
-└─ wrangler.jsonc     # 根级部署配置（assets 指向 apps/web/dist）
+└─ wrangler.jsonc     # root-level deployment config (assets points to apps/web/dist)
 ```
 
-## 绑定与环境变量
+## Bindings and environment variables
 
-> 完整配置清单、优先级与 tag 部署流程见 `docs/08-configuration.md`。
+> For the full configuration list, precedence and tag deployment flow, see `docs/08-configuration.md`.
 
-| 名称 | 类型 | 说明 |
+| Name | Type | Description |
 |---|---|---|
-| `DB` | D1 | 主库 |
-| `BUCKET` | R2 | 头像/附件/站点图 |
-| `ASSETS` | Static Assets | 前端产物 |
+| `DB` | D1 | Primary database |
+| `BUCKET` | R2 | Avatars/attachments/site images |
+| `ASSETS` | Static Assets | Frontend build output |
 | `SITE_URL` | var | `https://forum.example.com` |
 | `CDN_URL` | var | `https://cdn.example.com` |
-| `ENVIRONMENT` | var | **wrangler 默认 production**；本地在 `.dev.vars` 覆盖为 development |
-| `BETTER_AUTH_SECRET` | secret | 会话签名 |
-| `PASSWORD_PEPPER` | secret | 派生密码的 HMAC 密钥，≥32 字节 |
+| `ENVIRONMENT` | var | **wrangler defaults to production**; override to development in `.dev.vars` locally |
+| `BETTER_AUTH_SECRET` | secret | Session signing |
+| `PASSWORD_PEPPER` | secret | HMAC key for password derivation, ≥32 bytes |
 | `GOOGLE_CLIENT_ID/SECRET` | secret | OAuth |
 | `GITHUB_CLIENT_ID/SECRET` | secret | OAuth |
-| `RESEND_API_KEY` | secret | 邮件 |
-| `RESEND_WEBHOOK_SECRET` | secret | Svix 签名 |
+| `RESEND_API_KEY` | secret | Email |
+| `RESEND_WEBHOOK_SECRET` | secret | Svix signature |
 | `TURNSTILE_SECRET` | secret | siteverify |
-| `TURNSTILE_SITE_KEY` | var（可选） | 公开 Site Key；本地/测试用 `1x00000000000000000000AA`，生产应从后台集成配置写入 |
-| `ADMIN_EMAILS` | var/secret | 逗号分隔；首个已验证命中者升 admin |
-| `IP_HASH_SALT` | secret | 审计日志 IP 哈希 |
-| `R2_ACCOUNT_ID` | secret | R2 S3 端点账号；可与 Cloudflare account id 相同 |
-| `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` | secret | R2 API Token（S3 兼容密钥），只用于预签名 PUT；不是 Cloudflare API Token |
-| `R2_BUCKET_NAME` | var | `forum-assets`，预签名时拼 bucket 路径 |
-| `CF_VERSION_METADATA` | binding | 健康检查/日志中的 Worker 版本 |
-| `DEV_RESET_TOKEN` | secret（仅本地） | `/api/dev/reset` 必须携带 `x-dev-reset-token`；非 development 或未配置时端点 404 |
+| `TURNSTILE_SITE_KEY` | var (optional) | Public Site Key; `1x00000000000000000000AA` for local/testing, production should write it from the admin integrations |
+| `ADMIN_EMAILS` | var/secret | Comma-separated; the first verified match is promoted to admin |
+| `IP_HASH_SALT` | secret | Audit log IP hashing |
+| `R2_ACCOUNT_ID` | secret | R2 S3 endpoint account; may be the same as the Cloudflare account id |
+| `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` | secret | R2 API Token (S3-compatible keys), used only for presigned PUT; not a Cloudflare API Token |
+| `R2_BUCKET_NAME` | var | `forum-assets`, used to build the bucket path when presigning |
+| `CF_VERSION_METADATA` | binding | Worker version in health checks/logs |
+| `DEV_RESET_TOKEN` | secret (local only) | `/api/dev/reset` requires `x-dev-reset-token`; the endpoint 404s when not development or not configured |
 
-`/api/dev/reset` 仅用于本地测试，需同时满足 `ENVIRONMENT=development` 与 token 校验；生产构建的 `wrangler.jsonc` 默认 `ENVIRONMENT=production`，CI 会检查该默认值与测试 Turnstile key。Turnstile、Resend、R2 的非密钥标识与密钥可在 `/admin/integrations` 维护：非密钥写 `settings.integration.*`，密钥经 AES-GCM 加密后写 `settings.secrets.*`，运行时优先数据库值、回退到上表 Worker 变量。密钥永不通过 `/api/site` 或后台 GET 接口回显。
+`/api/dev/reset` is for local testing only and requires both `ENVIRONMENT=development` and a valid token; the production build's `wrangler.jsonc` defaults to `ENVIRONMENT=production`, and CI checks that default together with the test Turnstile key. The non-secret identifiers and secrets for Turnstile, Resend and R2 can be maintained at `/admin/integrations`: non-secrets are written to `settings.integration.*`, secrets are encrypted with AES-GCM and written to `settings.secrets.*`, and at runtime database values take precedence, falling back to the Worker variables in the table above. Secrets are never echoed through `/api/site` or admin GET endpoints.
 
-## 缓存策略
+## Caching strategy
 
-- 配置：普通域 45s isolate 内存缓存；安全域（维护/注册/验证/Turnstile/noindex）5s。
-- `GET /api/site`：`s-maxage=60`；`GET /api/me`：`no-store`。**含用户态的响应永不进缓存。**
-- 主题文档 meta：`caches.default` 300s，键含完整路径与配置版本。
-- sitemap 1h；静态资源 immutable。
+- Config: 45s isolate memory cache for normal domains; 5s for security domains (maintenance/registration/verification/Turnstile/noindex).
+- `GET /api/site`: `s-maxage=60`; `GET /api/me`: `no-store`. **Responses containing user state never enter the cache.**
+- Topic document meta: `caches.default` 300s, keyed by full path and config version.
+- sitemap 1h; static assets immutable.
 
-## 为什么不用 Pages
+## Why not Pages
 
-Pages 需要 Pages Functions 才能注入 meta、生成 sitemap/manifest，等于把单 Worker 拆成两个运行时；同时引入 CORS、跨域 Cookie、预览环境登录不可测、两套部署。单 Worker 保留 Git push 自动发版（Workers Builds 或 GitHub Actions），静态资源仍走 CDN。将来若要拆，把 `dist/` 指向 Pages 即可，前端代码不动。
+Pages requires Pages Functions to inject meta and generate sitemap/manifest, which amounts to splitting a single Worker into two runtimes; it also introduces CORS, cross-origin cookies, untestable preview-environment login, and two deployments. A single Worker keeps deploy-on-git-push (Workers Builds or GitHub Actions) while static assets still go through the CDN. If it ever needs splitting, point `dist/` at Pages and the frontend code stays unchanged.

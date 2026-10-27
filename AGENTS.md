@@ -1,9 +1,11 @@
-# AGENTS.md — 开发、设计与运维规范
+# AGENTS.md — Development, Design, and Operations Guidelines
 
-本文件是接手项目的 **agent 入口**。开始工作前按顺序阅读：
+English | [简体中文](AGENTS.zh-CN.md)
 
-1. `AGENTS.md`（本文件）
-2. `docs/README.md`（文档导读）
+This file is the **agent entry point** for taking over the project. Read the following in order before starting work:
+
+1. `AGENTS.md` (this file)
+2. `docs/README.md` (documentation guide)
 3. `docs/01-architecture.md`
 4. `docs/02-data-api-config.md`
 5. `docs/03-auth-permissions-email.md`
@@ -14,80 +16,80 @@
 10. `docs/08-configuration.md`
 11. `docs/09-deployment.md`
 
-设计已经定稿，不要重新讨论已决事项。发现文档与代码冲突时，**先修文档再改代码**；不要把规范重新塞回 `README.md`。
+The design is final; do not reopen settled matters. When you find a conflict between documentation and code, **fix the documentation before changing the code**; do not stuff the guidelines back into `README.md`.
 
-## 1. 产品与设计方向
+## 1. Product and Design Direction
 
-Pineboard 是一个以主题和回复为中心的轻量论坛，视觉隐喻是“共享工作台 + 现场手册”：
+Pineboard is a lightweight forum centered on topics and replies, with the visual metaphor of "shared workbench + field manual":
 
-- 信息密度高、列对齐、数字可扫读
-- 1px 发丝线、少量圆角；不使用卡片阴影堆叠
-- 深松绿 `#14513f` 为品牌底色，橙色 `#e2542c` 为强调色
-- 全站统一 v2-* token，明暗双主题
-- 不引入内容站/SaaS 仪表盘式布局，不做装饰性大图与营销区块
+- High information density, aligned columns, scannable numbers
+- 1px hairlines, minimal rounded corners; no stacked card shadows
+- Deep pine green `#14513f` as the brand base color, orange `#e2542c` as the accent color
+- Site-wide unified v2-* tokens, light and dark themes
+- Do not introduce content-site/SaaS-dashboard layouts; do not add decorative large images or marketing blocks
 
-完整 token、页面规格、响应式断点与组件规则见 `docs/07-design-spec.md`。
+See `docs/07-design-spec.md` for the full token set, page specifications, responsive breakpoints, and component rules.
 
-### v0.2 已定版式
+### Layouts finalized in v0.2
 
-- 全站外框统一 `1180px` 居中
-- 列表页：主栏 + `176px` 右栏（首页、版块、标签列表、标签详情、搜索）
-- 正文页：1180 通排，无右栏（主题详情、发帖、编辑、修订历史）
-- 个人中心/公开主页：1180，左侧导航 188
-- 登录/注册：1180 两栏
-- 楼层作者栏：`140px + minmax(0,1fr)`；移动端单列
-- 错误页也使用 1180 外框
+- Site-wide outer frame uniformly centered at `1180px`
+- List pages: main column + `176px` right rail (home, category, tag list, tag detail, search)
+- Content pages: full-width 1180, no right rail (topic detail, new topic, edit, revision history)
+- Personal center/public profile: 1180, left navigation 188
+- Login/register: 1180, two columns
+- Post author rail: `140px + minmax(0,1fr)`; single column on mobile
+- Error pages also use the 1180 frame
 
-不要重新引入 `760/780/1024/1040` 的页面宽度分层。
+Do not reintroduce the `760/780/1024/1040` page-width tiers.
 
-## 2. 不可违反的技术约束
+## 2. Inviolable Technical Constraints
 
-1. **单 Worker**：前端构建产物走 `assets.directory`，Worker 只处理 `/api/*` 与文档请求。不要引入 Pages、SSR 或第二套部署单元。
-2. **密码链路**：浏览器端 PBKDF2 派生 → Better Auth 自定义 `password.hash/verify` 做 HMAC-SHA256(pepper)。不要在 Worker 里跑 scrypt/argon2。
-3. **Cookie**：host-only，不设 `Domain`，`SameSite=Lax`，`Secure`，`HttpOnly`。不要开 `crossSubDomainCookies`。
-4. **R2 上传**：预签名 PUT；禁 SVG/HTML；`complete` 必须 HEAD 复核大小与 MIME；直传需 magic bytes 校验。
-5. **FTS5**：`post_search` 用 `post_uid UNINDEXED`，不要把 TEXT 主键当 rowid；`MATCH` 查询必须服务端转义。
-6. **Turnstile 顺序**：参数校验 → 权限/邮箱验证 → 频率限制 → siteverify → 写库。校验失败必须让前端 `reset()`；无 Site Key 时前后端一致按未启用处理。
-7. **邮件**：请求路径禁止 await Resend。验证/重置/提及用 `c.executionCtx.waitUntil()`；回复通知只写 `notifications`，由 Cron 摘要发送。发送函数内部 try/catch 并写 `email_logs`。
-8. **编辑留痕**：一个 `db.batch()` 内完成快照 + 失效旧 FTS + 写新 FTS + CAS 更新主表，靠 `meta.changes` 判断 409。
-9. **时间**：库内一律 `INTEGER` unix 秒（UTC），展示层用 `Intl` 按站点时区或浏览器时区。
-10. **迁移**：默认只做 additive migration；部署顺序 `migrations → API → 前端`。
-11. **配置单一入口**：CF 变量/Secrets 与 D1 `settings` 的边界见 `docs/08-configuration.md`；不要在代码里另造一套环境变量。
-12. **认证状态**：注销冷静期用户可读、可显式撤销，但不能执行写操作或后台/版务操作。`requireAdmin` / `requireModerator` 必须同时要求 `status='active'`。
+1. **Single Worker**: frontend build output is served through `assets.directory`; the Worker only handles `/api/*` and document requests. Do not introduce Pages, SSR, or a second deployment unit.
+2. **Password pipeline**: browser-side PBKDF2 derivation → Better Auth custom `password.hash/verify` performing HMAC-SHA256(pepper). Do not run scrypt/argon2 in the Worker.
+3. **Cookie**: host-only, no `Domain`, `SameSite=Lax`, `Secure`, `HttpOnly`. Do not enable `crossSubDomainCookies`.
+4. **R2 upload**: presigned PUT; SVG/HTML forbidden; `complete` must HEAD-verify size and MIME; direct upload requires magic bytes validation.
+5. **FTS5**: `post_search` uses `post_uid UNINDEXED`; do not treat the TEXT primary key as rowid; `MATCH` queries must be escaped server-side.
+6. **Turnstile order**: parameter validation → permissions/email verification → rate limiting → siteverify → database write. A failed verification must make the frontend call `reset()`; with no Site Key, frontend and backend consistently treat it as disabled.
+7. **Email**: no awaiting Resend on the request path. Use `c.executionCtx.waitUntil()` for verification/reset/mention; reply notifications only write to `notifications` and are sent as a Cron digest. Sending functions must try/catch internally and write `email_logs`.
+8. **Edit history**: complete the snapshot + invalidate old FTS + write new FTS + CAS update of the main table within one `db.batch()`, and use `meta.changes` to determine 409.
+9. **Time**: always `INTEGER` unix seconds (UTC) in the database; the presentation layer uses `Intl` according to the site timezone or the browser timezone.
+10. **Migrations**: additive migrations only by default; deployment order `migrations → API → frontend`.
+11. **Single configuration entry point**: for the boundary between CF variables/Secrets and D1 `settings`, see `docs/08-configuration.md`; do not create a separate set of environment variables in code.
+12. **Authentication status**: users in the account-deletion grace period can read and can explicitly revoke, but cannot perform write operations or admin/moderation operations. `requireAdmin` / `requireModerator` must also require `status='active'`.
 
-## 3. 已定架构决策
+## 3. Settled Architecture Decisions
 
-- 单 Worker + Static Assets；不做 Pages。
-- 配置走 D1 `settings` 键值表 + 短缓存；不引入 KV。
-- 集成密钥优先数据库（AES-GCM），环境变量只作兜底。
-- Better Auth 使用 D1，事务关闭；依赖单语句/CAS，而不是交互事务。
-- 证书登录、OAuth、审核队列、草稿箱属于后续范围。
-- 只有主题可置顶；回复只能删除/隐藏。
-- 通知邮件走 `notifications` + 5 分钟 Cron 摘要；验证/重置/提及按请求使用 `waitUntil`。
-- 版本发布只由 `v*` tag 触发 Cloudflare 部署；普通 `main` push 只跑 CI。
+- Single Worker + Static Assets; no Pages.
+- Configuration via the D1 `settings` key-value table + short cache; no KV.
+- Integration secrets prefer the database (AES-GCM); environment variables are fallback only.
+- Better Auth uses D1 with transactions disabled; rely on single statements/CAS rather than interactive transactions.
+- Certificate login, OAuth, moderation queue, and drafts are future scope.
+- Only topics can be pinned; replies can only be deleted/hidden.
+- Notification emails go through `notifications` + a 5-minute Cron digest; verification/reset/mention use `waitUntil` per request.
+- Version releases trigger Cloudflare deployment only via `v*` tags; ordinary `main` pushes only run CI.
 
-## 4. 代码约定
+## 4. Code Conventions
 
-- 单仓库 pnpm workspace：`apps/api`、`apps/web`、`packages/shared`、`packages/db`。
-- 共享类型与 Zod 契约放 `packages/shared`；前后端不得各写一份（包括 API 信封）。
-- 所有 API 返回 `{ ok, data, meta? }` 或 `{ ok:false, error:{ code, message, fields? } }`；错误码见 `docs/02`。
-- 新配置项必须同步 `DEFAULTS`、Zod schema、后台分组与 `docs/02`/`docs/08`。
-- 改数据库必须提交 migration，并在 `docs/02` 记录；手写迁移需说明原因。
-- 新增 UI 优先复用 `v2-*` token、`ConfirmDialog`、`ErrorState`、`PaginationBar`、`BrandMark` 等既有组件。
-- 不再使用 `window.confirm`；危险操作走共享 ConfirmDialog。
-- 长标题、长主题名必须换行或省略，不能撑破网格。
-- 所有写请求必须有 pending 状态，避免双击重复提交。
+- Single-repo pnpm workspace: `apps/api`, `apps/web`, `packages/shared`, `packages/db`.
+- Shared types and Zod contracts live in `packages/shared`; frontend and backend must not each write their own (including the API envelope).
+- All APIs return `{ ok, data, meta? }` or `{ ok:false, error:{ code, message, fields? } }`; for error codes see `docs/02`.
+- New configuration items must be synchronized across `DEFAULTS`, the Zod schema, the admin grouping, and `docs/02`/`docs/08`.
+- Database changes must include a migration and be recorded in `docs/02`; handwritten migrations must explain the reason.
+- New UI should first reuse existing components such as `v2-*` tokens, `ConfirmDialog`, `ErrorState`, `PaginationBar`, `BrandMark`.
+- Do not use `window.confirm` anymore; dangerous operations go through the shared ConfirmDialog.
+- Long titles and long topic names must wrap or be truncated; they must not break the grid.
+- All write requests must have a pending state to prevent duplicate submission on double-click.
 
-## 5. 迁移例外
+## 5. Migration Exception
 
-`0013_nav_dropdown.sql` 是本项目 **唯一一次显式表重建**：SQLite 无法 `ALTER CHECK`，为给 `nav_items` 增加 `parent_id` 与 `dropdown` 类型，必须复制全表。
+`0013_nav_dropdown.sql` is the project's **only explicit table rebuild**: SQLite cannot `ALTER CHECK`, so adding `parent_id` and the `dropdown` type to `nav_items` requires copying the whole table.
 
-后续仍默认 additive；如确需重建表，必须在 migration 文件、`docs/02` 和 PR 说明中同时写明原因、数据复制方案和回滚方式。
+Subsequent migrations remain additive by default; if a table rebuild is truly necessary, the reason, data-copy plan, and rollback approach must be stated at the same time in the migration file, `docs/02`, and the PR description.
 
-## 6. 测试与发布
+## 6. Testing and Release
 
 ```bash
-pnpm run setup   # 仅首次：交互式配置域名/D1/站名并生成 .dev.vars
+pnpm run setup   # First run only: interactively configure domain/D1/site name and generate .dev.vars
 pnpm dev
 pnpm typecheck
 pnpm test
@@ -97,36 +99,38 @@ pnpm test:e2e:p1 ... p6
 pnpm test:p6:build
 ```
 
-发布流程：
+Release process:
 
 ```bash
-# 正常开发
-git push origin main          # 只跑 CI
+# Normal development
+git push origin main          # CI only
 
-# 发布
+# Release
 git tag v0.2.6
-git push origin v0.2.6        # 触发 Deploy：migrations → 必需 Secrets 校验 → build → deploy → smoke
+git push origin v0.2.6        # Triggers Deploy: migrations → required Secrets check → build → deploy → smoke
 ```
 
-部署前检查：
+Pre-deployment checks:
 
 ```bash
 pnpm check:deploy-env
 wrangler secret list --format json
 ```
 
-## 7. 文档规则
+## 7. Documentation Rules
 
-- `README.md` 只保留系统说明、功能、技术栈、仓库结构、快速开始和文档入口。
-- 本文件保留 agent 工作流、设计方向、技术约束、发布规范。
-- `docs/README.md` 是所有文档的导读，新增文档必须登记。
-- 架构/API/权限/邮件/搜索/上传/配置/部署分别放 `docs/01`–`docs/09`。
-- `docs/07` 是视觉唯一依据；`docs/08` 是配置唯一清单；`docs/09` 是开源部署步骤。
-- 文档改动与代码改动同一 PR；不要只改代码。
+- `README.md` keeps only the system overview, features, tech stack, repository structure, quick start, and documentation entry points.
+- This file keeps the agent workflow, design direction, technical constraints, and release guidelines.
+- `docs/README.md` is the guide to all documentation; new documents must be registered there.
+- Architecture/API/permissions/email/search/upload/configuration/deployment live in `docs/01`–`docs/09` respectively.
+- `docs/07` is the sole source of truth for visuals; `docs/08` is the sole configuration inventory; `docs/09` contains the open-source deployment steps.
+- Documentation changes go in the same PR as code changes; do not change only the code.
+- English is the default documentation language. Simplified Chinese versions live in `docs/zh-CN/` (root-level files use `*.zh-CN.md`), and every page links to its counterpart through the language switcher at the top.
+- Update both language versions in the same commit; do not let them drift.
 
-## 8. 配置与开源边界
+## 8. Configuration and Open-Source Boundaries
 
-- Upstream 的 `wrangler.jsonc` 只含占位资源；真实部署配置由 `wrangler.site.jsonc` 生成，且不进入 Git。
-- 下游只通过 GitHub Variables / Secrets / D1 settings / R2 对象提供站点差异，不修改 tracked 文件。
-- 不要提交 `.dev.vars`、`wrangler.site.jsonc`、`.env*`、备份、生产数据库或上传对象。
-- 开源发布前运行 `pnpm check:deploy-env`，并确认仓库历史没有 secret。
+- Upstream `wrangler.jsonc` contains placeholder resources only; real deployment configuration is generated by `wrangler.site.jsonc` and is not tracked in Git.
+- Downstream sites provide site differences only through GitHub Variables / Secrets / D1 settings / R2 objects, and do not modify tracked files.
+- Do not commit `.dev.vars`, `wrangler.site.jsonc`, `.env*`, backups, production databases, or uploaded objects.
+- Run `pnpm check:deploy-env` before an open-source release and confirm the repository history contains no secrets.

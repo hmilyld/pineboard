@@ -1,18 +1,20 @@
-# 09 部署与 Fork 指南
+# 09 Deployment and Fork Guide
 
-Pineboard 是单 Worker + D1 + R2 的开源论坛。上游仓库只含占位配置；真实站点配置不进入 Git。
+English | [简体中文](zh-CN/09-deployment.md)
 
-## 0. 两种使用方式
+Pineboard is an open-source forum built on a single Worker + D1 + R2. The upstream repository contains placeholder configuration only; real site configuration never enters Git.
 
-| 方式 | 适合 | 同步上游 |
+## 0. Two ways to use it
+
+| Approach | Best for | Syncing upstream |
 |---|---|---|
-| 直接 clone / 自建仓库 | 一次性部署 | 手动 fetch |
-| GitHub Fork（public） | 公开站点、希望点 “Sync fork” | GitHub Sync fork |
-| Private mirror | 站点必须私有 | `git fetch upstream && git merge --ff-only` |
+| Clone directly / own repository | One-off deployment | Manual fetch |
+| GitHub Fork (public) | Public sites, wanting to click "Sync fork" | GitHub Sync fork |
+| Private mirror | Sites that must stay private | `git fetch upstream && git merge --ff-only` |
 
-> public 仓库的 GitHub Fork 不能设为 private。需要私有站点时，用 private mirror + `upstream` remote，而不是 GitHub Fork。
+> A GitHub Fork of a public repository cannot be made private. If you need a private site, use a private mirror with an `upstream` remote instead of a GitHub Fork.
 
-## 1. 创建资源
+## 1. Create resources
 
 ```bash
 pnpm install
@@ -23,7 +25,7 @@ pnpm exec wrangler r2 bucket create pineboard-assets
 pnpm exec wrangler r2 bucket create pineboard-backups
 ```
 
-资源名可以改，但要同步 GitHub Variables：
+Resource names can be changed, but you must update the GitHub Variables to match:
 
 ```text
 D1_DATABASE_NAME
@@ -32,29 +34,29 @@ R2_BUCKET_NAME
 R2_BACKUP_BUCKET
 ```
 
-## 2. 本地配置
+## 2. Local configuration
 
 ```bash
 pnpm run setup
 ```
 
-向导会生成两个 **ignored** 文件：
+The wizard generates two **ignored** files:
 
-- `wrangler.site.jsonc`：真实 Worker/D1/R2/域名配置
-- `.dev.vars`：本地认证密钥与开发配置
+- `wrangler.site.jsonc`: real Worker/D1/R2/domain configuration
+- `.dev.vars`: local authentication secrets and development configuration
 
-不会修改任何 tracked 文件。
+It does not modify any tracked files.
 
-非交互：
+Non-interactive:
 
 ```bash
 pnpm run setup -- --worker pineboard --domain forum.example.com --cdn "" \
   --database-id <D1_ID> --admin-email you@example.com
 ```
 
-> 当前 `setup.mjs` 也支持 `--d1-name` / `--r2-name` / `--dry-run`。
+> The current `setup.mjs` also supports `--d1-name` / `--r2-name` / `--dry-run`.
 
-## 3. 必须填写的 Cloudflare 配置
+## 3. Required Cloudflare configuration
 
 ### Worker Secrets
 
@@ -62,32 +64,32 @@ pnpm run setup -- --worker pineboard --domain forum.example.com --cdn "" \
 pnpm exec wrangler secret put BETTER_AUTH_SECRET
 pnpm exec wrangler secret put PASSWORD_PEPPER
 pnpm exec wrangler secret put IP_HASH_SALT
-# 可选：首次管理员引导
+# Optional: first admin bootstrap
 pnpm exec wrangler secret put ADMIN_EMAILS
 ```
 
-生成密钥：
+Generate secrets:
 
 ```bash
 openssl rand -base64 48
 ```
 
-**`BETTER_AUTH_SECRET` 一旦用于生产，不要随意轮换**：它同时加密 D1 里的 Resend/Turnstile/R2 密钥。
+**Do not rotate `BETTER_AUTH_SECRET` casually once it is used in production**: it also encrypts the Resend/Turnstile/R2 keys stored in D1.
 
 ### Worker vars
 
-`wrangler.site.jsonc` 中的：
+In `wrangler.site.jsonc`:
 
 ```text
-SITE_URL=https://你的域名
+SITE_URL=https://your-domain
 ENVIRONMENT=production
 R2_BUCKET_NAME
-CDN_URL（可留空）
+CDN_URL (may be left empty)
 ```
 
-### GitHub Variables（部署时）
+### GitHub Variables (for deployment)
 
-在 fork/mirror 的 **Settings → Variables** 设置：
+Set these in the fork/mirror under **Settings → Variables**:
 
 ```text
 WORKER_NAME
@@ -102,88 +104,88 @@ CDN_URL
 
 ### GitHub Environment Secrets
 
-在 `production` environment 设置：
+Set these in the `production` environment:
 
 ```text
 CLOUDFLARE_API_TOKEN
 CLOUDFLARE_ACCOUNT_ID
 ```
 
-Fork 不会继承这些设置，必须重新创建。
+Forks do not inherit these settings; you must create them again.
 
-## 4. 部署
+## 4. Deployment
 
 ```bash
-# 只跑 CI
+# CI only
 git push origin main
 
-# 正式部署
+# Real deployment
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-Deploy workflow：
+The Deploy workflow:
 
-1. `render-wrangler.mjs` 从 GitHub Variables 生成 `wrangler.site.jsonc`
+1. `render-wrangler.mjs` generates `wrangler.site.jsonc` from GitHub Variables
 2. `wrangler d1 migrations apply ... --remote`
 3. typecheck + test
-4. 必需 Worker Secrets 校验
+4. Required Worker Secrets validation
 5. `pnpm build`
 6. `wrangler deploy --config wrangler.site.jsonc`
-7. `SITE_URL/api/health` smoke
+7. `SITE_URL/api/health` smoke test
 
-## 5. 首个管理员
+## 5. First administrator
 
-推荐：
+Recommended:
 
-1. 设置 `ADMIN_EMAILS=you@example.com`
-2. 注册并验证邮箱
-3. Auth hook 自动提升为 admin
+1. Set `ADMIN_EMAILS=you@example.com`
+2. Register and verify your email
+3. The Auth hook automatically promotes you to admin
 
-或注册后执行：
+Or run this after registering:
 
 ```bash
 pnpm exec wrangler d1 execute D1_DATABASE_NAME --remote \
   --command "UPDATE user SET role='admin', email_verified=1 WHERE email='you@example.com'"
 ```
 
-不要直接写密码哈希。
+Do not write the password hash directly.
 
-## 6. 后台初始化
+## 6. Admin initialization
 
-登录 `/admin`：
+Log in to `/admin`:
 
-1. 站点设置：站名、描述、URL、公告
-2. SEO：标题模板、首页 SEO、sitemap
-3. 版块 / 标签 / 导航
-4. 用户管理：角色、封禁
-5. 集成配置：Turnstile / Resend / R2
-6. 邮件设置：预算、摘要窗口
-7. 维护：重建搜索索引
+1. Site settings: site name, description, URL, announcement
+2. SEO: title template, homepage SEO, sitemap
+3. Categories / tags / navigation
+4. User management: roles, bans
+5. Integration configuration: Turnstile / Resend / R2
+6. Email settings: budget, digest window
+7. Maintenance: rebuild search index
 
-可后台维护的项不需要改代码。无法后台维护的只有：D1/R2/ASSETS 绑定、`SITE_URL`、`ENVIRONMENT`、三个认证根密钥。
+Anything that can be maintained from the admin panel does not require code changes. The only things that cannot be maintained from the admin panel are: D1/R2/ASSETS bindings, `SITE_URL`, `ENVIRONMENT`, and the three root authentication secrets.
 
 ## 7. Turnstile / Resend / R2
 
-- Turnstile：创建 widget，Site Key + Secret 填后台；`/api/health` 的 `turnstileConfigured=true`。
-- Resend：验证发信域名，API Key + from 地址填后台；Webhook Secret 用于退信。
-- R2 直传：创建 S3 API Token，填 Account ID / Bucket / Key；R2 CORS 允许站点域名、PUT、`content-type,content-length`。
-- `CDN_URL` 可选；设置为 R2 自定义域/CDN 的公开读地址，未设置则走 `/files/*`。设置后必须确认该域名返回 200，而不是 525。
+- Turnstile: create a widget, fill the Site Key + Secret into the admin panel; `/api/health` should show `turnstileConfigured=true`.
+- Resend: verify the sending domain, fill the API Key + from address into the admin panel; the Webhook Secret is used for bounces.
+- R2 direct upload: create an S3 API Token, fill in Account ID / Bucket / Key; R2 CORS must allow the site domain, PUT, and `content-type,content-length`.
+- `CDN_URL` is optional; set it to the public read address of the R2 custom domain/CDN. If unset, `/files/*` is used. After setting it, you must confirm that the domain returns 200 rather than 525.
 
-## 8. 备份 / 恢复 / 回滚
+## 8. Backup / restore / rollback
 
-- `.github/workflows/backup.yml`：按表导出，跳过 FTS 虚拟表
-- `scripts/check-backup-tables.mjs`：对账 `sqlite_master` 与备份清单
-- `scripts/order-restore.mjs`：按 FK 顺序重排
-- 恢复后必须重建 `post_search`
-- Worker 回滚：Cloudflare Dashboard 或 `wrangler rollback`
-- 迁移默认 additive；不要反向执行生产 migration
+- `.github/workflows/backup.yml`: exports table by table, skipping FTS virtual tables
+- `scripts/check-backup-tables.mjs`: reconciles `sqlite_master` with the backup manifest
+- `scripts/order-restore.mjs`: reorders by FK dependency order
+- `post_search` must be rebuilt after restoring
+- Worker rollback: Cloudflare Dashboard or `wrangler rollback`
+- Migrations are additive by default; do not run production migrations in reverse
 
-## 9. Fork / Mirror 同步
+## 9. Fork / Mirror synchronization
 
 ### Public GitHub Fork
 
-使用 “Sync fork” 或：
+Use "Sync fork" or:
 
 ```bash
 git fetch upstream
@@ -200,7 +202,7 @@ gh repo create <owner>/forum.example.com --private --source=. --remote=origin --
 git remote add upstream https://github.com/hmilyld/pineboard.git
 ```
 
-同步：
+Syncing:
 
 ```bash
 git fetch upstream
@@ -208,49 +210,49 @@ git merge --ff-only upstream/main
 git push origin main
 ```
 
-部署用 `v0.1.1-site.1` 这类站点 tag；tag 只指向提交，不制造代码差异。
+Deploy with a site tag such as `v0.1.1-site.1`; tags only point at commits and do not create code differences.
 
-### 无冲突的前提
+### Prerequisites for conflict-free syncs
 
-- 不修改任何 tracked 文件
-- 配置只在 Variables/Secrets/D1 settings
-- 本地生成文件全部 ignored
-- 不在下游提交站点文档/截图
+- Do not modify any tracked file
+- Configuration lives only in Variables/Secrets/D1 settings
+- All locally generated files are ignored
+- Do not commit site documentation/screenshots downstream
 
 ## 10. CDN_URL
 
-`CDN_URL` 只影响上传文件和站点图片的 **读取** URL：
+`CDN_URL` only affects the **read** URLs of uploaded files and site images:
 
 ```text
-有值：https://cdn.example.com/uploads/...
-空：  /files/uploads/...（Worker 代理 R2）
+Set: https://cdn.example.com/uploads/...
+Empty: /files/uploads/... (Worker proxies R2)
 ```
 
-预签名上传仍直接到 R2 S3 endpoint，不经过 CDN。没有配置 R2 自定义域时保持为空。
+Presigned uploads still go directly to the R2 S3 endpoint and do not pass through the CDN. Keep it empty when no R2 custom domain is configured.
 
-## 11. 开源清理检查
+## 11. Open-source cleanup checklist
 
-- [ ] 替换所有生产 Domain / D1 ID / R2 bucket / Worker 名
-- [ ] 轮换或生成新的认证密钥
-- [ ] 删除 `.dev.vars`、`wrangler.site.jsonc`、`.backup/`、`.wrangler/`、`.env*`
-- [ ] 检查 git 历史没有 secret（上游应为全新历史）
-- [ ] 替换/删除个人截图和真实内容
-- [ ] LICENSE 为 MIT
-- [ ] 开启 GitHub secret scanning
+- [ ] Replace all production Domain / D1 ID / R2 bucket / Worker names
+- [ ] Rotate or generate new authentication secrets
+- [ ] Delete `.dev.vars`, `wrangler.site.jsonc`, `.backup/`, `.wrangler/`, `.env*`
+- [ ] Check that git history contains no secrets (upstream should have a fresh history)
+- [ ] Replace/remove personal screenshots and real content
+- [ ] LICENSE is MIT
+- [ ] Enable GitHub secret scanning
 
-## 12. 常见问题
+## 12. FAQ
 
 **missing required Worker secrets**
-缺 `BETTER_AUTH_SECRET` / `PASSWORD_PEPPER` / `IP_HASH_SALT`。
+Missing `BETTER_AUTH_SECRET` / `PASSWORD_PEPPER` / `IP_HASH_SALT`.
 
-**wrangler.site.jsonc 不存在**
-本地运行 `pnpm run setup`；CI 由 `render-wrangler.mjs` 生成。
+**wrangler.site.jsonc does not exist**
+Run `pnpm run setup` locally; in CI it is generated by `render-wrangler.mjs`.
 
-**上传 sign 报未配置**
-R2 Account/Bucket/S3 Key 缺失。
+**Upload sign reports not configured**
+R2 Account/Bucket/S3 Key is missing.
 
-**sitemap 被 SPA 接管**
-确认 `vite.config.ts` 的 SW denylist 与 `pnpm test:p6:build` 通过。
+**sitemap is taken over by the SPA**
+Confirm the SW denylist in `vite.config.ts` and that `pnpm test:p6:build` passes.
 
-**CDN 图片 525**
-`CDN_URL` 指向了未接 R2 的域名；先清空或修好 R2 自定义域。
+**CDN images return 525**
+`CDN_URL` points to a domain that is not connected to R2; clear it first or fix the R2 custom domain.
