@@ -4,7 +4,7 @@ English | [简体中文](README.zh-CN.md)
 
 A general-purpose, lightweight forum that is not tied to any industry or topic; small teams, interest groups and communities can all use it to build their own discussion board. The front end provides topics, replies, tags and search, while the admin side handles site configuration, content maintenance, users and report management. Front end and back end are deployed from the same origin on a single Cloudflare Worker, using D1, R2, Better Auth, Turnstile and Resend.
 
-Current version: `0.2.1`
+Current version: `0.2.2`
 
 ## Screenshots
 
@@ -99,8 +99,8 @@ pnpm test:e2e:p1   # same for p1…p6
 Production deployment uses the GitHub Actions tag workflow:
 
 ```bash
-git tag v0.2.1
-git push origin v0.2.1
+git tag v0.2.2
+git push origin v0.2.2
 ```
 
 A regular `main` push only runs CI; without tagging, nothing is deployed. For the first deployment, Cloudflare resource creation, required variables/secrets, what can be maintained in the admin, backup and rollback, see:
