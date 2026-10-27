@@ -87,7 +87,7 @@ Pineboard 是一个以主题和回复为中心的轻量论坛，视觉隐喻是�
 ## 6. 测试与发布
 
 ```bash
-pnpm setup       # 仅首次：交互式配置域名/D1/站名并生成 .dev.vars
+pnpm run setup   # 仅首次：交互式配置域名/D1/站名并生成 .dev.vars
 pnpm dev
 pnpm typecheck
 pnpm test

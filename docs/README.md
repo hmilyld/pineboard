@@ -57,7 +57,7 @@
 | 我要… | 看 |
 |---|---|
 | 本地跑起来 | [README 快速开始](../README.md) + [09 部署指南](09-deployment.md) |
-| 一键替换部署配置 | `pnpm setup`，见 [09 部署指南](09-deployment.md#最快路径推荐) |
+| 一键替换部署配置 | `pnpm run setup`，见 [09 部署指南](09-deployment.md#最快路径推荐) |
 | 新建 Cloudflare 资源并部署 | [09 部署指南](09-deployment.md) |
 | 知道哪些变量必须填 | [08 配置清单](08-configuration.md) |
 | 知道哪些能在后台改 | [08 配置清单](08-configuration.md) + [09 部署指南](09-deployment.md) |

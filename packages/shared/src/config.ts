@@ -283,9 +283,9 @@ export const configGroupSchemas = {
 export const DEFAULTS: AppConfig = {
   site: {
     name: "Pineboard",
-    tagline: "工具、游戏与动手笔记",
+    tagline: "轻量、专注讨论的社区",
     url: "https://forum.example.com",
-    description: "把用过的好工具、打过的难关和折腾过程留在这里。",
+    description: "一个轻量的讨论社区，适合任何想认真交流的小圈子。",
     keywords: "",
     logoKey: null,
     faviconKey: null,

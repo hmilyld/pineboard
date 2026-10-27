@@ -35,7 +35,7 @@ R2_BACKUP_BUCKET
 ## 2. 本地配置
 
 ```bash
-pnpm setup
+pnpm run setup
 ```
 
 向导会生成两个 **ignored** 文件：
@@ -48,7 +48,7 @@ pnpm setup
 非交互：
 
 ```bash
-pnpm setup --worker pineboard --domain forum.example.com --cdn "" \
+pnpm run setup -- --worker pineboard --domain forum.example.com --cdn "" \
   --database-id <D1_ID> --admin-email you@example.com
 ```
 
@@ -244,7 +244,7 @@ git push origin main
 缺 `BETTER_AUTH_SECRET` / `PASSWORD_PEPPER` / `IP_HASH_SALT`。
 
 **wrangler.site.jsonc 不存在**
-本地运行 `pnpm setup`；CI 由 `render-wrangler.mjs` 生成。
+本地运行 `pnpm run setup`；CI 由 `render-wrangler.mjs` 生成。
 
 **上传 sign 报未配置**
 R2 Account/Bucket/S3 Key 缺失。

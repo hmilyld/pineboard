@@ -161,7 +161,7 @@ v2 通知额外返回 `postFloor`，前端据此拼 `?page=N#post-F`；首页/�
 
 | 域 | 键与默认值 |
 |---|---|
-| site | name=Pineboard；tagline=工具、游戏与动手笔记；url；description；keywords；logoKey；faviconKey；ogImageKey；timezone=Asia/Shanghai；language=zh-CN；icp；announcement={id,enabled,text,href} |
+| site | name=Pineboard；tagline=轻量、专注讨论的社区；url；description；keywords；logoKey；faviconKey；ogImageKey；timezone=Asia/Shanghai；language=zh-CN；icp；announcement={id,enabled,text,href} |
 | seo | titleTemplate=`{title} · {siteName}`；homeTitle；description；noindex=false；topicsPerPage=20（5–50）；postsPerPage=20（5–50）；sitemapEnabled=true |
 | account | registrationOpen=true；allowUnverifiedLogin=true；requireVerificationForWrite=true；passwordMinLength=8；usernameMin=3；usernameMax=20；sessionDays=30；deletionGraceDays=7 |
 | edit | windowUserMinutes=60；windowModeratorMinutes=0；allowStaffEditOthers=true；lockAfterReply=false；allowSelfDelete=true；historyVisibility=author；keepRevisions=20；requireReason=false |
