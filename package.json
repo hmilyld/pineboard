@@ -1,6 +1,6 @@
 {
   "name": "pineboard",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.5.1",

@@ -324,11 +324,12 @@
   .v2-crumb i { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--muted)); display: inline-block; }
   .v2-crumb .sep { color: var(--line); }
   .v2-topic-head { display: flex; align-items: flex-start; gap: 16px; padding: 12px 0 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-  /* Full-width title row: the title block owns the line and the action
-     cluster drops to its own line on phones. Write the three flex values
-     explicitly — `flex: <basis>` alone is a different (shorthand) meaning. */
-  .v2-topic-head > .min-w-0 { flex: 1 1 320px; width: 100%; min-width: 0; }
-  .v2-topic-head > .min-w-0.flex-1 { flex: 1 1 320px; width: 100%; }
+  /* The title block owns the row; the action cluster wraps under it on phones.
+     No `flex` shorthand here: the minifier rewrites `flex: 1 1 320px` to
+     `flex: 320px` (= `1 1 0%`), and an explicit width + basis of 0 lets short
+     titles collapse. A percentage basis survives minification unchanged. */
+  .v2-topic-head > .min-w-0 { flex: 1 1 100%; width: 100%; min-width: 0; }
+  .v2-topic-head > .min-w-0.flex-1 { flex: 1 1 100%; width: 100%; }
   .v2-topic-acts { flex: none; }
   .v2-topic-head h1 { margin: 0; font-size: 21px; line-height: 1.35; font-weight: 700; letter-spacing: -0.015em; overflow-wrap: anywhere; word-break: break-word; }
   .v2-tmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 12px; margin-top: 8px; font-size: 11.5px; color: var(--muted); }
