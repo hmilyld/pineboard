@@ -3,6 +3,7 @@ import { createApp } from "vue";
 import { registerSW } from "virtual:pwa-register";
 import App from "./App.vue";
 import { router } from "./router";
+import { useConfigStore } from "./stores/config";
 import { useUiStore } from "./stores/ui";
 import "./styles.css";
 
@@ -24,4 +25,9 @@ ui.setUpdate(
   }),
 );
 
-app.mount("#app");
+const config = useConfigStore(pinia);
+// Mount after the first `/api/site` so the very first frame already renders in
+// the site language; a failed request still mounts with the built-in default.
+void config.load().finally(() => {
+  app.mount("#app");
+});

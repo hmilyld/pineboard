@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { currentLocale, t } from "@/i18n";
 
 interface TurnstileApi {
   render(
@@ -43,7 +44,7 @@ function loadScript(): Promise<void> {
     const existing = document.querySelector<HTMLScriptElement>('script[data-turnstile="1"]');
     if (existing) {
       existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Turnstile 加载失败")), { once: true });
+      existing.addEventListener("error", () => reject(new Error(t("captcha.scriptFailed"))), { once: true });
       return;
     }
     const script = document.createElement("script");
@@ -52,7 +53,7 @@ function loadScript(): Promise<void> {
     script.defer = true;
     script.dataset.turnstile = "1";
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Turnstile 加载失败"));
+    script.onerror = () => reject(new Error(t("captcha.scriptFailed")));
     document.head.appendChild(script);
   });
   return loader;
@@ -77,7 +78,7 @@ async function render(): Promise<void> {
       sitekey: props.siteKey,
       action: props.action,
       theme: props.theme,
-      language: "zh-cn",
+      language: currentLocale() === "en" ? "en" : "zh-cn",
       appearance: needsConfirmation.value ? "always" : "interaction-only",
       size: needsConfirmation.value ? "normal" : "flexible",
       callback: (token) => emit("token", token),
@@ -89,13 +90,13 @@ async function render(): Promise<void> {
         emit("token", "");
         if (!needsConfirmation.value) {
           needsConfirmation.value = true;
-          emit("error", "人机验证需要确认，请完成下方验证");
+          emit("error", t("captcha.needsConfirm"));
           window.setTimeout(() => void render(), 0);
         }
       },
     });
   } catch (cause) {
-    emit("error", cause instanceof Error ? cause.message : "人机验证加载失败");
+    emit("error", cause instanceof Error ? cause.message : t("captcha.loadFailed"));
   }
 }
 
@@ -121,5 +122,5 @@ defineExpose({ reset, show });
 </script>
 
 <template>
-  <div ref="container" class="v2-turnstile w-full" aria-label="人机验证" />
+  <div ref="container" class="v2-turnstile w-full" :aria-label="t('captcha.label')" />
 </template>

@@ -7,8 +7,9 @@ import PageSkeleton from "@/components/PageSkeleton.vue";
 import LoadingRows from "@/components/LoadingRows.vue";
 import PaginationBar from "@/components/PaginationBar.vue";
 import TopicList from "@/components/TopicList.vue";
-import { api, ApiClientError } from "@/lib/api";
-import { categoryClass, categoryStyle } from "@/lib/category";
+import { t } from "@/i18n";
+import { api } from "@/lib/api";
+import { categoryClass, categoryStyle, sortTabLabel } from "@/lib/category";
 import { withSkeletonDelay } from "@/lib/ui";
 import { useConfigStore } from "@/stores/config";
 
@@ -28,7 +29,9 @@ const error = ref("");
 const sideOpen = ref(false);
 let loadSeq = 0;
 
-const sortLabel = computed(() => (sort.value === "latest" ? "最后回复" : sort.value === "new" ? "发布时间" : "热度"));
+const sortOptions = computed<Array<[TopicSort, string]>>(() =>
+  (["latest", "new", "hot"] as const).map((key) => [key, sortTabLabel(key)]),
+);
 const perPage = computed(() => config.config?.seo.topicsPerPage ?? 20);
 
 async function load(nextPage = page.value, nextSort: TopicSort = sort.value): Promise<void> {
@@ -64,7 +67,7 @@ async function load(nextPage = page.value, nextSort: TopicSort = sort.value): Pr
       await router.replace({ query });
     }
   } catch (cause) {
-    if (seq === loadSeq) error.value = cause instanceof ApiClientError ? cause.message : "加载失败";
+    if (seq === loadSeq) error.value = config.describeError(cause, "common.loadFailed");
   } finally {
     if (seq === loadSeq) loading.value = false;
   }
@@ -99,16 +102,16 @@ watch(
       <div class="v2-main">
         <section class="v2-panel min-w-0">
           <div class="v2-bar">
-            <div class="flex items-center gap-3" role="tablist" aria-label="主题排序">
-              <button v-for="option in ([['latest', '最新回复'], ['new', '最新发布'], ['hot', '热门']] as const)" :key="option[0]" type="button" class="v2-tab" :data-active="sort === option[0]" role="tab" :aria-selected="sort === option[0]" @click="load(1, option[0])">
+            <div class="flex items-center gap-3" role="tablist" :aria-label="t('topicSort.label')">
+              <button v-for="option in sortOptions" :key="option[0]" type="button" class="v2-tab" :data-active="sort === option[0]" role="tab" :aria-selected="sort === option[0]" @click="load(1, option[0])">
                 {{ option[1] }}
               </button>
             </div>
-            <span class="ml-auto text-[10.5px]">共 {{ total }} 个主题</span>
+            <span class="ml-auto text-[10.5px]">{{ t("stats.topicTotal", { count: total }) }}</span>
           </div>
           <ErrorState v-if="error" :message="error" retry @retry="load()" />
           <LoadingRows v-else-if="loading" :rows="8" />
-          <TopicList v-else :topics="topics" empty="还没有主题，登录后发布第一个吧。" />
+          <TopicList v-else :topics="topics" :empty="t('home.empty')" />
           <div v-if="totalPages > 1" class="border-t border-line px-3">
             <PaginationBar :page="page" :total-pages="totalPages" :total="total" @change="goPage" />
           </div>
@@ -116,29 +119,29 @@ watch(
 
         <aside class="v2-side">
           <button type="button" class="v2-side-toggle" :aria-expanded="sideOpen" @click="sideOpen = !sideOpen">
-            站点信息 <span class="ml-auto text-[11px] text-muted-foreground">{{ sideOpen ? "收起" : "展开" }}</span>
+            {{ t("stats.siteInfo") }} <span class="ml-auto text-[11px] text-muted-foreground">{{ sideOpen ? t("stats.collapse") : t("stats.expand") }}</span>
           </button>
           <div class="v2-side-body" :class="{ '!block': sideOpen }">
             <section class="v2-mod">
-              <h3>版块</h3>
+              <h3>{{ t("page.categories") }}</h3>
               <RouterLink v-for="category in categories" :key="category.id" :to="`/c/${category.slug}`" class="v2-catrow" :class="categoryClass(category.slug)" :style="categoryStyle(category.color)">
                 <span class="v2-catname"><i /><b>{{ category.name }}</b><span>{{ category.topicCount ?? 0 }}</span></span>
-                <span class="v2-catlast">{{ category.recentTopic?.title ?? "还没有主题" }}</span>
+                <span class="v2-catlast">{{ category.recentTopic?.title ?? t("stats.noTopics") }}</span>
               </RouterLink>
             </section>
 
             <section class="v2-mod">
-              <h3>站点</h3>
+              <h3>{{ t("stats.siteInfo") }}</h3>
               <div class="v2-stats">
-                <div class="v2-st"><b>{{ stats?.todayPosts ?? 0 }}</b><span>今日发帖</span></div>
-                <div class="v2-st"><b>{{ stats?.topics ?? 0 }}</b><span>主题</span></div>
-                <div class="v2-st"><b>{{ stats?.replies ?? 0 }}</b><span>回复</span></div>
-                <div class="v2-st"><b>{{ stats?.members ?? 0 }}</b><span>成员</span></div>
+                <div class="v2-st"><b>{{ stats?.todayPosts ?? 0 }}</b><span>{{ t("stats.todayPosts") }}</span></div>
+                <div class="v2-st"><b>{{ stats?.topics ?? 0 }}</b><span>{{ t("stats.topics") }}</span></div>
+                <div class="v2-st"><b>{{ stats?.replies ?? 0 }}</b><span>{{ t("stats.replies") }}</span></div>
+                <div class="v2-st"><b>{{ stats?.members ?? 0 }}</b><span>{{ t("stats.members") }}</span></div>
               </div>
             </section>
 
             <section v-if="tags.length" class="v2-mod">
-              <h3>热门标签</h3>
+              <h3>{{ t("stats.hotTags") }}</h3>
               <div class="v2-tags">
                 <RouterLink v-for="tag in tags" :key="tag.id" :to="`/tag/${tag.slug}`" class="v2-tag">#{{ tag.name }}</RouterLink>
               </div>

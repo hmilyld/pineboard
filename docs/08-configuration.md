@@ -87,13 +87,13 @@ Site, SEO, the basic account items, maintenance mode, pagination, the Turnstile 
 
 | Group | Main keys | Defaults/notes |
 |---|---|---|
-| `site` | name, tagline, url, description, keywords, logoKey, faviconKey, ogImageKey, timezone, language, icp, announcement | Default name **Pineboard**; `site.url` should match `SITE_URL` |
+| `site` | name, tagline, url, description, keywords, logoKey, faviconKey, ogImageKey, timezone, language, icp, announcement | Default name **Pineboard**; `site.url` should match `SITE_URL`; `language` (`zh-CN` or `en`) is the one UI language used by the public site and the admin console. Only interface copy, error codes, dates and server-rendered SEO phrases are translated; user content and operator copy are never translated |
 | `seo` | titleTemplate, homeTitle, description, noindex, topicsPerPage, postsPerPage, sitemapEnabled | Pagination 5–50 |
 | `account` | registrationOpen, allowUnverifiedLogin, requireVerificationForWrite, passwordMinLength, usernameMin/Max, sessionDays, deletionGraceDays | Registration/verification/account deletion policy |
 | `edit` | windowUserMinutes, windowModeratorMinutes, allowStaffEditOthers, lockAfterReply, allowSelfDelete, historyVisibility, keepRevisions, requireReason | Edit window and edit history |
 | `mail` | enabled, fromName, fromAddress, replyTo, notify*, dailyBudget, userDailyCap, digestWindowMinutes, verificationTtlMinutes, resetTtlMinutes, unsubscribeTokenDays | Digest and mail budget |
 | `feature` | turnstile, pwa, markdown, search, uploads, reports, guestRead | Feature flags |
-| `maintenance` | enabled, message, allowAdmin | Maintenance mode |
+| `maintenance` | enabled, message, allowAdmin | Maintenance mode; `message` is shown verbatim |
 | `upload` | imageMaxMb, fileMaxMb, userDailyCount, orphanTtlHours | The type whitelist is fixed in code |
 | `security` | postMinIntervalSeconds, newUserDailyPosts, mentionMaxPerPost, reportDailyLimit, signupPerHour | Rate limits |
 | `integration` | cloudflare.accountId/r2Bucket/cdnUrl/turnstileSiteKey | Falls back to CF when missing |

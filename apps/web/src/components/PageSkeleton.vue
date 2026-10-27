@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { t } from "@/i18n";
+
 withDefaults(
   defineProps<{
     variant?: "list" | "detail" | "form";
@@ -13,7 +15,7 @@ withDefaults(
 </script>
 
 <template>
-  <div aria-busy="true" aria-live="polite" aria-label="加载中">
+  <div aria-busy="true" aria-live="polite" :aria-label="t('common.loading')">
     <div :class="[bare ? '' : 'v2-container', narrow ? 'max-w-[780px]' : '', side ? 'v2-main' : '']">
       <div :class="side ? 'min-w-0' : ''">
         <div v-if="header" class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">

@@ -3,6 +3,7 @@ import type { SiteStats } from "@pineboard/shared";
 import { onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
 import BrandMark from "@/components/BrandMark.vue";
+import { t } from "@/i18n";
 import { api } from "@/lib/api";
 import { useConfigStore } from "@/stores/config";
 
@@ -28,14 +29,14 @@ onMounted(() => {
           </div>
         </div>
         <div class="my-auto py-10">
-          <p class="max-w-[15em] text-[24px] font-semibold leading-[1.5] tracking-[-0.02em]">把问题带上来，<br />把方法留下来。</p>
-          <p class="mt-4 max-w-[28em] text-[11px] leading-[1.85] text-white/65">{{ config.config?.site.description || "工具、游戏与动手经验。发帖前先读一读，回复时多说一点具体的东西。" }}</p>
+          <p class="max-w-[15em] text-[24px] font-semibold leading-[1.5] tracking-[-0.02em]">{{ t("auth.headline") }}<br />{{ t("auth.headlineBreak") }}</p>
+          <p class="mt-4 max-w-[28em] text-[11px] leading-[1.85] text-white/65">{{ config.config?.site.description || t("auth.shellDescription") }}</p>
         </div>
         <div class="flex items-end justify-between gap-4">
           <div class="v2-auth-stats">
-            <div class="v2-auth-stat"><b>{{ stats?.topics ?? "—" }}</b><span>主题</span></div>
-            <div class="v2-auth-stat"><b>{{ stats?.members ?? "—" }}</b><span>成员</span></div>
-            <div class="v2-auth-stat"><b>{{ stats?.todayPosts ?? "—" }}</b><span>今日</span></div>
+            <div class="v2-auth-stat"><b>{{ stats?.topics ?? "—" }}</b><span>{{ t("auth.shellStatsTopics") }}</span></div>
+            <div class="v2-auth-stat"><b>{{ stats?.members ?? "—" }}</b><span>{{ t("auth.shellStatsMembers") }}</span></div>
+            <div class="v2-auth-stat"><b>{{ stats?.todayPosts ?? "—" }}</b><span>{{ t("auth.shellStatsToday") }}</span></div>
           </div>
           <p class="text-[9px] text-white/45">Cloudflare Workers</p>
         </div>
@@ -43,7 +44,7 @@ onMounted(() => {
 
       <section class="v2-auth-form">
         <div class="v2-auth-form-inner">
-          <RouterLink to="/" class="ml-auto block w-fit text-[10.5px] text-muted-foreground hover:text-ink">← 返回首页</RouterLink>
+          <RouterLink to="/" class="ml-auto block w-fit text-[10.5px] text-muted-foreground hover:text-ink">← {{ t("auth.backHome") }}</RouterLink>
           <div class="mt-8 flex items-center gap-2 lg:hidden">
             <BrandMark :size="22" show-name name-class="text-[16px]" />
           </div>

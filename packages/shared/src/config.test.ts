@@ -37,8 +37,7 @@ describe("settings defaults", () => {
     expect(errors.some((error) => error.group === "account")).toBe(true);
   });
 
-  it("rejects unsafe theme tokens", () => {
-    const result = configSchema.safeParse({
+  it("rejects unsafe theme tokens", () => {    const result = configSchema.safeParse({
       ...DEFAULTS,
       theme: { ...DEFAULTS.theme, tokens: { "--x": "url(javascript:alert(1))" } },
     });
@@ -68,6 +67,28 @@ describe("settings defaults", () => {
     const publicConfig = toPublicConfig(DEFAULTS, 1, "site-key");
     expect(publicConfig.upload.imageTypes).toEqual([...UPLOAD_IMAGE_MIME]);
     expect(publicConfig.upload.attachmentTypes).toEqual([...UPLOAD_ARCHIVE_MIME]);
+  });
+
+  it("defaults to a Chinese site with no visitor language switching", () => {
+    const publicConfig = toPublicConfig(DEFAULTS, 1, "");
+    expect(publicConfig.site.language).toBe("zh-CN");
+    expect("locale" in publicConfig).toBe(false);
+  });
+
+  it("accepts Chinese or English as the single site language", () => {
+    const english = toPublicConfig(mergeDeep(DEFAULTS, { site: { language: "en" } }), 1, "");
+    expect(english.site.language).toBe("en");
+    expect(configSchema.safeParse(mergeDeep(DEFAULTS, { site: { language: "fr" } })).success).toBe(false);
+  });
+
+  it("keeps operator copy as written in the configured language", () => {
+    const config = mergeDeep(DEFAULTS, {
+      site: { language: "en", announcement: { enabled: true, text: "Welcome to Pineboard" } },
+      maintenance: { message: "Down for maintenance" },
+    });
+    const publicConfig = toPublicConfig(config, 1, "");
+    expect(publicConfig.site.announcement.text).toBe("Welcome to Pineboard");
+    expect(publicConfig.maintenance.message).toBe("Down for maintenance");
   });
 });
 

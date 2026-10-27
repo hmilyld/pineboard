@@ -10,12 +10,13 @@ import {
 import { ImagePlus, Loader2, Paperclip } from "lucide-vue-next";
 import { computed, ref } from "vue";
 import MarkdownRenderer from "@/components/MarkdownRenderer.vue";
+import { t } from "@/i18n";
 import { api, ApiClientError } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
 import { useConfigStore } from "@/stores/config";
 
 const props = withDefaults(defineProps<{ modelValue: string; placeholder?: string; rows?: number; flat?: boolean; height?: number }>(), {
-  placeholder: "编写点什么…",
+  placeholder: undefined,
   rows: 10,
   flat: false,
   height: undefined,
@@ -119,17 +120,17 @@ function insertResult(result: UploadResult, file: File, kind: UploadKind): void 
 async function upload(file: File, kind: UploadKind): Promise<void> {
   uploadError.value = "";
   if (!file.size) {
-    uploadError.value = "文件为空";
+    uploadError.value = t("composer.emptyFile");
     return;
   }
   const maxMb = kind === "image" ? imageMaxMb.value : fileMaxMb.value;
   if (file.size > maxMb * 1024 * 1024) {
-    uploadError.value = `文件不能超过 ${maxMb}MB`;
+    uploadError.value = t("composer.tooLarge", { n: maxMb });
     return;
   }
   const meta = resolveMeta(file, kind);
   if (!meta) {
-    uploadError.value = kind === "image" ? "仅支持 JPG/PNG/WebP/GIF/AVIF 图片" : "附件仅支持 ZIP/RAR/7Z 压缩包";
+    uploadError.value = kind === "image" ? t("composer.imageOnly") : t("composer.archiveOnly");
     return;
   }
   uploading.value = kind;
@@ -166,11 +167,11 @@ async function upload(file: File, kind: UploadKind): Promise<void> {
       insertResult(result, file, kind);
       return;
     }
-    if (!response.ok) throw new ApiClientError("upload_failed", `上传失败（HTTP ${response.status}）`, response.status);
+    if (!response.ok) throw new ApiClientError("upload_failed", t("composer.uploadFailed", { status: response.status }), response.status);
     const result = await api.completeUpload({ key: signed.key, kind, size: file.size, contentType: signed.contentType });
     insertResult(result, file, kind);
   } catch (cause) {
-    uploadError.value = cause instanceof ApiClientError ? cause.message : "上传失败，请稍后重试";
+    uploadError.value = config.describeError(cause, "composer.uploadFailedRetry");
   } finally {
     uploading.value = null;
   }
@@ -187,22 +188,22 @@ function onPick(kind: UploadKind, event: Event): void {
 <template>
   <div :class="flat ? '' : 'overflow-hidden rounded-[6px] border border-line bg-surface'">
     <div class="flex min-h-8 items-center gap-2 border-b border-line px-3 text-[11.5px]">
-      <button type="button" class="v2-tab" :data-active="tab === 'write'" @click="tab = 'write'">编写</button>
-      <button type="button" class="v2-tab" :data-active="tab === 'preview'" @click="tab = 'preview'">预览</button>
+      <button type="button" class="v2-tab" :data-active="tab === 'write'" @click="tab = 'write'">{{ t("composer.write") }}</button>
+      <button type="button" class="v2-tab" :data-active="tab === 'preview'" @click="tab = 'preview'">{{ t("composer.preview") }}</button>
       <span class="mx-1 h-3 w-px bg-line" />
       <div v-if="tab === 'write'" class="flex items-center gap-0.5 text-muted-foreground">
-        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] font-semibold hover:bg-hover hover:text-ink" aria-label="粗体" title="粗体" @click="wrap('**', '**')">B</button>
-        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] italic hover:bg-hover hover:text-ink" aria-label="斜体" title="斜体" @click="wrap('_', '_')">I</button>
-        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" aria-label="引用" title="引用（blockquote）" @click="wrap('> ')">›</button>
-        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" aria-label="代码" title="行内代码" @click="wrap('`', '`')">`</button>
-        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" aria-label="链接" title="插入链接" @click="wrap('[', '](https://)')">↗</button>
+        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] font-semibold hover:bg-hover hover:text-ink" :aria-label="t('composer.bold')" :title="t('composer.bold')" @click="wrap('**', '**')">B</button>
+        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] italic hover:bg-hover hover:text-ink" :aria-label="t('composer.italic')" :title="t('composer.italic')" @click="wrap('_', '_')">I</button>
+        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :aria-label="t('composer.quote')" :title="t('composer.quoteTitle')" @click="wrap('> ')">›</button>
+        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :aria-label="t('composer.code')" :title="t('composer.codeTitle')" @click="wrap('`', '`')">`</button>
+        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :aria-label="t('composer.link')" :title="t('composer.linkTitle')" @click="wrap('[', '](https://)')">↗</button>
         <template v-if="uploadsEnabled">
           <span class="mx-1 h-3 w-px bg-line" />
-          <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :disabled="uploading !== null" aria-label="上传图片" title="上传图片（JPG/PNG/WebP/GIF/AVIF）" @click="imageInput?.click()">
+          <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :disabled="uploading !== null" :aria-label="t('composer.uploadImage')" :title="t('composer.uploadImageTitle')" @click="imageInput?.click()">
             <Loader2 v-if="uploading === 'image'" :size="13" class="animate-spin" />
             <ImagePlus v-else :size="13" />
           </button>
-          <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :disabled="uploading !== null" aria-label="上传压缩附件" title="上传附件（ZIP/RAR/7Z）" @click="archiveInput?.click()">
+          <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :disabled="uploading !== null" :aria-label="t('composer.uploadArchive')" :title="t('composer.uploadArchiveTitle')" @click="archiveInput?.click()">
             <Loader2 v-if="uploading === 'attachment'" :size="13" class="animate-spin" />
             <Paperclip v-else :size="13" />
           </button>
@@ -216,21 +217,21 @@ function onPick(kind: UploadKind, event: Event): void {
       ref="textarea"
       :value="modelValue"
       :rows="rows"
-      :placeholder="placeholder"
+      :placeholder="placeholder ?? t('composer.placeholder')"
       class="block w-full resize-y border-0 bg-transparent px-3 py-2.5 text-[13.5px] leading-[1.85] text-ink outline-none placeholder:text-muted-foreground/70"
       :style="{ minHeight: height ? `${height}px` : `${Math.max(4, rows) * 1.75}rem` }"
       @input="update"
     />
     <div v-else class="min-h-28 px-4 py-3">
       <MarkdownRenderer v-if="modelValue.trim()" :source="modelValue" />
-      <p v-else class="text-[12px] text-muted-foreground">预览为空</p>
+      <p v-else class="text-[12px] text-muted-foreground">{{ t("composer.previewEmpty") }}</p>
     </div>
 
     <input ref="imageInput" type="file" class="hidden" :accept="IMAGE_ACCEPT" @change="onPick('image', $event)" />
     <input ref="archiveInput" type="file" class="hidden" :accept="ARCHIVE_ACCEPT" @change="onPick('attachment', $event)" />
 
     <div class="flex items-center border-t border-line px-3 py-1.5 text-[10.5px] text-muted-foreground">
-      <span>{{ modelValue.length }} 字符 · 支持 Markdown</span>
+      <span>{{ t("composer.chars", { count: modelValue.length }) }}</span>
       <span v-if="uploadError" class="ml-3 text-[var(--orange)]">{{ uploadError }}</span>
     </div>
   </div>

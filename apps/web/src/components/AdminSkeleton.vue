@@ -1,5 +1,9 @@
+<script setup lang="ts">
+import { t } from "@/i18n";
+</script>
+
 <template>
-  <div aria-busy="true" aria-label="加载中">
+  <div aria-busy="true" :aria-label="t('common.loading')">
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
       <div class="space-y-2">
         <div class="h-5 w-28 animate-pulse bg-muted" />

@@ -3,9 +3,12 @@ import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import AuthShell from "@/components/AuthShell.vue";
 import { Button } from "@/components/ui/button";
-import { ApiClientError, api } from "@/lib/api";
+import { t } from "@/i18n";
+import { api } from "@/lib/api";
 import { alertErrorClass, alertInfoClass, inputClass, labelClass, linkClass } from "@/lib/ui";
+import { useConfigStore } from "@/stores/config";
 
+const config = useConfigStore();
 const email = ref("");
 const error = ref("");
 const sent = ref(false);
@@ -14,7 +17,7 @@ const submitting = ref(false);
 async function submit(): Promise<void> {
   error.value = "";
   if (!email.value) {
-    error.value = "请输入邮箱";
+    error.value = t("auth.forgotEmailRequired");
     return;
   }
   submitting.value = true;
@@ -22,7 +25,7 @@ async function submit(): Promise<void> {
     await api.requestPasswordReset(email.value.trim().toLowerCase());
     sent.value = true;
   } catch (cause) {
-    error.value = cause instanceof ApiClientError ? cause.message : "发送失败，请稍后重试";
+    error.value = config.describeError(cause, "auth.forgotFailed");
   } finally {
     submitting.value = false;
   }
@@ -30,27 +33,27 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <AuthShell title="找回密码" subtitle="如果邮箱存在，我们会发送一封 30 分钟内有效的重置邮件。">
+  <AuthShell :title="t('auth.forgotTitle')" :subtitle="t('auth.forgotSubtitle')">
     <div v-if="sent" class="space-y-4">
       <p :class="alertInfoClass">
-        如果该邮箱已注册，重置邮件已经发送。请检查收件箱和垃圾箱。
+        {{ t("auth.forgotSent") }}
       </p>
-      <RouterLink to="/login" :class="linkClass">返回登录</RouterLink>
+      <RouterLink to="/login" :class="linkClass">{{ t("auth.backToLogin") }}</RouterLink>
     </div>
 
     <form v-else class="space-y-4" @submit.prevent="submit">
       <div>
-        <label :class="labelClass" for="forgot-email">邮箱</label>
-        <input id="forgot-email" v-model="email" name="email" type="email" spellcheck="false" :class="inputClass" autocomplete="email" placeholder="you@example.com" />
+        <label :class="labelClass" for="forgot-email">{{ t("auth.email") }}</label>
+        <input id="forgot-email" v-model="email" name="email" type="email" spellcheck="false" :class="inputClass" autocomplete="email" :placeholder="t('auth.emailPlaceholder')" />
       </div>
       <p v-if="error" :class="alertErrorClass">{{ error }}</p>
       <Button class="w-full" type="submit" :disabled="submitting">
-        {{ submitting ? "发送中…" : "发送重置邮件" }}
+        {{ submitting ? t("common.sending") : t("auth.sendReset") }}
       </Button>
     </form>
 
     <template #footer>
-      <RouterLink to="/login" :class="linkClass">返回登录</RouterLink>
+      <RouterLink to="/login" :class="linkClass">{{ t("auth.backToLogin") }}</RouterLink>
     </template>
   </AuthShell>
 </template>

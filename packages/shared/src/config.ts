@@ -33,6 +33,17 @@ export const UPLOAD_ARCHIVE_EXT: Record<string, string> = {
   "application/x-7z-compressed": "7z",
 };
 
+/** UI locales the frontend ships dictionaries for (docs/02, docs/08). */
+export const SUPPORTED_LOCALES = ["zh-CN", "en"] as const;
+
+export type Locale = (typeof SUPPORTED_LOCALES)[number];
+
+export const DEFAULT_LOCALE: Locale = "zh-CN";
+
+export function isSupportedLocale(value: unknown): value is Locale {
+  return typeof value === "string" && (SUPPORTED_LOCALES as readonly string[]).includes(value);
+}
+
 
 /** Error codes are part of the public API contract (docs/02). */
 export const ERROR_CODES = [
@@ -123,7 +134,12 @@ export const siteConfigSchema = z.object({
   faviconKey: nullableKey.default(null),
   ogImageKey: nullableKey.default(null),
   timezone: z.string().min(1).max(64).default("Asia/Shanghai"),
-  language: z.string().regex(/^[a-z]{2}(-[A-Z]{2})?$/).default("zh-CN"),
+  /**
+   * Site UI language: one value for the whole site. Visitors cannot switch; the
+   * operator picks Chinese or English and every screen renders that language.
+   * User content (topics, replies, category and tag names) is never translated.
+   */
+  language: z.enum(SUPPORTED_LOCALES).default(DEFAULT_LOCALE),
   icp: z.string().max(64).default(""),
   announcement: z
     .object({

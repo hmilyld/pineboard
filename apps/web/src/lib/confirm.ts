@@ -1,4 +1,5 @@
 import { reactive, readonly } from "vue";
+import { t } from "@/i18n";
 
 export type ConfirmOptions = {
   title: string;
@@ -12,8 +13,8 @@ const state = reactive({
   open: false,
   title: "",
   message: "",
-  confirmLabel: "确认",
-  cancelLabel: "取消",
+  confirmLabel: t("common.confirm"),
+  cancelLabel: t("common.cancel"),
   danger: false,
 });
 
@@ -27,8 +28,8 @@ export function confirmDialog(options: ConfirmOptions): Promise<boolean> {
     open: true,
     title: options.title,
     message: options.message,
-    confirmLabel: options.confirmLabel ?? "确认",
-    cancelLabel: options.cancelLabel ?? "取消",
+    confirmLabel: options.confirmLabel ?? t("common.confirm"),
+    cancelLabel: options.cancelLabel ?? t("common.cancel"),
     danger: options.danger ?? false,
   });
   return new Promise<boolean>((resolve) => {

@@ -6,7 +6,8 @@ import ErrorState from "@/components/ErrorState.vue";
 import PageSkeleton from "@/components/PageSkeleton.vue";
 import PaginationBar from "@/components/PaginationBar.vue";
 import RelativeTime from "@/components/RelativeTime.vue";
-import { api, ApiClientError } from "@/lib/api";
+import { api } from "@/lib/api";
+import { t } from "@/i18n";
 import { withSkeletonDelay } from "@/lib/ui";
 import { categoryClass, categoryStyle } from "@/lib/category";
 import { useConfigStore } from "@/stores/config";
@@ -58,7 +59,7 @@ async function load(nextPage = 1, nextSort = sort.value): Promise<void> {
     if (nextPage > 1) nextQuery.page = String(nextPage);
     await router.replace({ query: nextQuery });
   } catch (cause) {
-    error.value = cause instanceof ApiClientError ? cause.message : "搜索失败";
+    error.value = config.describeError(cause, "search.failed");
   } finally {
     loading.value = false;
   }
@@ -88,12 +89,12 @@ watch(() => route.query.q, (value) => {
 <template>
   <main class="v2-page">
     <div class="v2-container">
-      <nav class="v2-crumb mb-3"><RouterLink to="/">首页</RouterLink><span class="sep">/</span><span>搜索</span></nav>
+      <nav class="v2-crumb mb-3"><RouterLink to="/">{{ t("page.home") }}</RouterLink><span class="sep">/</span><span>{{ t("page.search") }}</span></nav>
       <form class="flex h-11 items-stretch border border-line bg-surface" role="search" @submit.prevent="submit">
         <span class="grid w-11 place-items-center text-[15px] text-muted-foreground" aria-hidden="true">⌕</span>
-        <input v-model="q" name="q" type="search" autocomplete="off" class="min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-muted-foreground/60" placeholder="搜索主题、标签、用户" aria-label="搜索" />
-        <button v-if="q" type="button" class="px-2 text-[14px] text-muted-foreground hover:text-ink" aria-label="清除搜索" @click="clear">×</button>
-        <button type="submit" class="w-[72px] bg-pine text-[12.5px] font-medium text-on-pine">搜索</button>
+        <input v-model="q" name="q" type="search" autocomplete="off" class="min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-muted-foreground/60" :placeholder="t('search.placeholder')" :aria-label="t('page.search')" />
+        <button v-if="q" type="button" class="px-2 text-[14px] text-muted-foreground hover:text-ink" :aria-label="t('search.clear')" @click="clear">×</button>
+        <button type="submit" class="w-[72px] bg-pine text-[12.5px] font-medium text-on-pine">{{ t("search.button") }}</button>
       </form>
 
       <div class="v2-main mt-4">
@@ -102,10 +103,10 @@ watch(() => route.query.q, (value) => {
           <PageSkeleton v-else-if="loading" :rows="4" :header="false" bare />
           <template v-else-if="result">
             <div class="flex items-center justify-between border-b border-line pb-2 text-[11.5px] text-muted-foreground">
-              <span>找到 {{ result.total }} 条结果</span>
+              <span>{{ t("search.results", { count: result.total }) }}</span>
               <span class="flex items-center gap-3">
-                <button type="button" class="v2-tab" :data-active="sort === 'relevance'" :aria-pressed="sort === 'relevance'" @click="load(1, 'relevance')">相关度</button>
-                <button type="button" class="v2-tab" :data-active="sort === 'latest'" :aria-pressed="sort === 'latest'" @click="load(1, 'latest')">最新</button>
+                <button type="button" class="v2-tab" :data-active="sort === 'relevance'" :aria-pressed="sort === 'relevance'" @click="load(1, 'relevance')">{{ t("search.relevance") }}</button>
+                <button type="button" class="v2-tab" :data-active="sort === 'latest'" :aria-pressed="sort === 'latest'" @click="load(1, 'latest')">{{ t("search.latest") }}</button>
               </span>
             </div>
             <div class="mt-3 border border-line bg-surface">
@@ -120,22 +121,22 @@ watch(() => route.query.q, (value) => {
                   <span class="mr-1 inline-block size-1.5 rounded-full" :style="{ ...categoryStyle(item.category.color), background: 'var(--c)' }" />{{ item.category.name }} · {{ item.author.name }} · #{{ item.floor }} · <RelativeTime :seconds="item.createdAt" />
                 </p>
               </RouterLink>
-              <p v-if="!result.items.length" class="v2-empty">没有找到「{{ q }}」</p>
+              <p v-if="!result.items.length" class="v2-empty">{{ t("search.noResults", { query: q }) }}</p>
             </div>
             <PaginationBar v-if="result.total > 0" class="mt-3" :page="page" :total-pages="Math.max(1, Math.ceil(result.total / result.perPage))" :total="result.total" @change="load" />
           </template>
           <div v-else class="py-10 text-center">
-            <p class="text-[15px] font-semibold">输入关键词开始搜索</p>
-            <p class="mt-1 text-[11.5px] text-muted-foreground">搜索标题和正文，中文按两字词切分。</p>
+            <p class="text-[15px] font-semibold">{{ t("search.emptyTitle") }}</p>
+            <p class="mt-1 text-[11.5px] text-muted-foreground">{{ t("search.emptyHint") }}</p>
           </div>
         </section>
         <aside class="v2-side">
           <section v-if="tags.length" class="v2-mod">
-            <h3>热门标签</h3>
+            <h3>{{ t("stats.hotTags") }}</h3>
             <div class="v2-tags"><RouterLink v-for="tag in tags" :key="tag.id" :to="`/tag/${tag.slug}`" class="v2-tag">#{{ tag.name }}</RouterLink></div>
           </section>
           <section v-if="latest.length" class="v2-mod">
-            <h3>最新主题</h3>
+            <h3>{{ t("stats.latestTopics") }}</h3>
             <RouterLink v-for="item in latest" :key="item.id" :to="`/t/${item.id}`" class="flex items-center gap-2 border-b border-line py-2 text-[11px] last:border-b-0">
               <span class="inline-block size-1.5 rounded-full" :class="categoryClass(item.category.slug)" :style="{ ...categoryStyle(item.category.color), background: 'var(--c)' }" />
               <span class="min-w-0 flex-1 truncate">{{ item.title }}</span>

@@ -7,7 +7,8 @@ import EmptyState from "@/components/EmptyState.vue";
 import ErrorState from "@/components/ErrorState.vue";
 import LoadingRows from "@/components/LoadingRows.vue";
 import PaginationBar from "@/components/PaginationBar.vue";
-import { api, ApiClientError } from "@/lib/api";
+import { intlLocale, t } from "@/i18n";
+import { api } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
 import { useConfigStore } from "@/stores/config";
 import { useNotificationStore } from "@/stores/notifications";
@@ -47,13 +48,18 @@ const profile = computed(() => ({
   createdAt: auth.user?.createdAt ?? 0,
 }));
 
+/** Locale-appropriate list separator used when merging actor names. */
+function separator(): string {
+  return intlLocale() === "en" ? ", " : "、";
+}
+
 function dayLabel(seconds: number): string {
   const timeZone = config.config?.site.timezone ?? "Asia/Shanghai";
   const fmt = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" });
   const day = fmt.format(new Date(seconds * 1000));
   const today = fmt.format(new Date());
   const yesterday = fmt.format(new Date(Date.now() - 86_400_000));
-  return day === today ? "今天" : day === yesterday ? "昨天" : "更早";
+  return day === today ? t("notifications.today") : day === yesterday ? t("notifications.yesterday") : t("notifications.earlier");
 }
 
 const groups = computed<Group[]>(() => {
@@ -69,7 +75,7 @@ const groups = computed<Group[]>(() => {
         label: day,
         items: [item],
         unread: !item.readAt,
-        actorLabel: item.actor?.name ?? "系统",
+        actorLabel: item.actor?.name ?? t("notifications.system"),
         count: 1,
         latest: item,
       });
@@ -79,14 +85,16 @@ const groups = computed<Group[]>(() => {
       existing.unread ||= !item.readAt;
       if (item.createdAt > existing.latest.createdAt) existing.latest = item;
       const names = [...new Set(existing.items.map((entry) => entry.actor?.name).filter(Boolean))] as string[];
-      existing.actorLabel = names.length > 2 ? `${names.slice(0, 2).join("、")} 等 ${names.length} 人` : names.join("、");
+      existing.actorLabel = names.length > 2
+        ? t("notifications.others", { names: names.slice(0, 2).join(separator()), count: names.length })
+        : names.join(separator());
     }
   }
   return [...map.values()].sort((a, b) => b.latest.createdAt - a.latest.createdAt);
 });
 
 const grouped = computed(() => {
-  const order = ["今天", "昨天", "更早"];
+  const order = [t("notifications.today"), t("notifications.yesterday"), t("notifications.earlier")];
   return order.map((label) => ({ label, groups: groups.value.filter((group) => group.label === label) })).filter((section) => section.groups.length);
 });
 
@@ -113,7 +121,7 @@ async function load(nextPage = page.value): Promise<void> {
     const query = page.value > 1 ? { page: String(page.value) } : {};
     if (route.query.page !== query.page) await router.replace({ query });
   } catch (cause) {
-    error.value = cause instanceof ApiClientError ? cause.message : "加载失败";
+    error.value = config.describeError(cause, "common.loadFailed");
   } finally {
     loading.value = false;
   }
@@ -141,7 +149,7 @@ async function markAll(): Promise<void> {
     summary.value.unreadCount = 0;
     await load(1);
   } catch (cause) {
-    error.value = cause instanceof ApiClientError ? cause.message : "标记已读失败";
+    error.value = config.describeError(cause, "notifications.markReadFailed");
   }
 }
 
@@ -154,7 +162,7 @@ async function openGroup(group: Group): Promise<void> {
     summary.value.unreadCount = Math.max(0, summary.value.unreadCount - unreadCount);
     store.setUnread(Math.max(0, store.unread - unreadCount));
   } catch (cause) {
-    error.value = cause instanceof ApiClientError ? cause.message : "标记已读失败";
+    error.value = config.describeError(cause, "notifications.markReadFailed");
   }
 }
 
@@ -191,17 +199,17 @@ onMounted(() => {
     is-self
   >
     <div class="v2-section-head">
-      <h2>通知</h2>
-      <span>有人回复、提到你，或处理了你的举报 · 未读 {{ totalUnread }}</span>
+      <h2>{{ t("notifications.title") }}</h2>
+      <span>{{ t("notifications.subtitle", { count: totalUnread }) }}</span>
       <div class="ml-auto flex items-center gap-2">
-        <button type="button" class="v2-btn sm" role="switch" :aria-checked="unreadOnly" @click="toggleUnread">只看未读</button>
-        <button type="button" class="text-[11.5px] text-muted-foreground hover:text-ink" @click="markAll">全部标为已读</button>
+        <button type="button" class="v2-btn sm" role="switch" :aria-checked="unreadOnly" @click="toggleUnread">{{ t("notifications.unreadOnly") }}</button>
+        <button type="button" class="text-[11.5px] text-muted-foreground hover:text-ink" @click="markAll">{{ t("notifications.markAllRead") }}</button>
       </div>
     </div>
 
     <ErrorState v-if="error" :message="error" retry @retry="load()" />
     <div v-else-if="loading" class="v2-panel"><LoadingRows :rows="5" /></div>
-    <div v-else-if="!groups.length" class="v2-panel"><EmptyState title="暂时没有通知" message="去看看最新主题。"><RouterLink to="/" class="mt-3 inline-block text-[11.5px] text-pine">回到首页</RouterLink></EmptyState></div>
+    <div v-else-if="!groups.length" class="v2-panel"><EmptyState :title="t('notifications.emptyTitle')" :message="t('notifications.emptyBody')"><RouterLink to="/" class="mt-3 inline-block text-[11.5px] text-pine">{{ t("notifications.emptyHome") }}</RouterLink></EmptyState></div>
     <template v-else>
       <section v-for="section in grouped" :key="section.label" class="mt-3 first:mt-0">
         <div class="flex items-center gap-3 px-1 pb-1.5 text-[10.5px] text-muted-foreground"><span>{{ section.label }}</span><span class="h-px flex-1 bg-line" /></div>
@@ -214,14 +222,14 @@ onMounted(() => {
             :class="group.unread ? 'border-l-[3px] border-l-pine bg-[color-mix(in_srgb,var(--pine)_4.5%,var(--surface))]' : ''"
             @click="openGroup(group)"
           >
-            <span class="grid size-8 place-items-center rounded-[3px] bg-pine text-[12px] font-semibold text-on-pine">{{ (group.latest.actor?.name ?? "工").slice(0, 1) }}</span>
+            <span class="grid size-8 place-items-center rounded-[3px] bg-pine text-[12px] font-semibold text-on-pine">{{ (group.latest.actor?.name ?? t("notifications.fallbackInitial")).slice(0, 1) }}</span>
             <div class="min-w-0">
               <p class="text-[11px] text-muted-foreground">
-                {{ group.actorLabel }} <template v-if="group.latest.type === 'mention'">在回复里提到了你</template><template v-else-if="group.latest.type === 'moderation'">处理了你的举报</template><template v-else>回复了你的主题</template>
+                {{ group.actorLabel }} <template v-if="group.latest.type === 'mention'">{{ t("notifications.mentionedYou") }}</template><template v-else-if="group.latest.type === 'moderation'">{{ t("notifications.handledReport") }}</template><template v-else>{{ t("notifications.repliedToTopic") }}</template>
               </p>
               <div class="mt-0.5 flex items-center gap-2">
                 <span class="truncate text-[14px] font-semibold" :class="group.unread ? 'text-ink' : ''">{{ group.latest.title }}</span>
-                <span v-if="group.count > 1" class="v2-tag !py-0 !text-[9px]">{{ group.count }} 条</span>
+                <span v-if="group.count > 1" class="v2-tag !py-0 !text-[9px]">{{ t("notifications.countBadge", { count: group.count }) }}</span>
               </div>
               <p class="mt-0.5 truncate text-[11px] text-muted-foreground">{{ group.latest.snippet }}</p>
             </div>
@@ -229,7 +237,7 @@ onMounted(() => {
         </div>
       </section>
       <div v-if="totalPages > 1" class="mt-4 border-t border-line">
-        <PaginationBar :page="page" :total-pages="totalPages" :total="total" unit="条通知" @change="goPage" />
+        <PaginationBar :page="page" :total-pages="totalPages" :total="total" :unit="t('notifications.unit')" @change="goPage" />
       </div>
     </template>
   </AccountShell>

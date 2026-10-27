@@ -176,6 +176,7 @@ Page horizontal padding: 16–18px desktop, 10–12px mobile. Content containers
 - Right when logged in: New topic (orange fill), notification bell (orange dot or orange number when unread), 26px round avatar. Admin/moderator may get one extra "Admin/Review" entry, but it must not squeeze the search box.
 - Mobile: site name on the left; search box in the middle (filling remaining width); notifications, avatar, menu on the right. Navigation folds into a drawer. The drawer is a full-screen right panel, background `--head`, links 15px, admin entry at the bottom. The search box and right-side buttons must stay on the same line and must not overflow horizontally.
 - Header `position: sticky; top: 0; z-index: 30`; stays opaque when scrolling, no shadow.
+- **No language switcher.** The interface language is a single site-wide setting (`site.language`), chosen by the operator in the admin panel; the header carries no locale control and the drawer has no locale section. Do not reintroduce a per-visitor switcher.
 
 ### 5.2 Homepage category entry (adjusted 2026-10-25)
 

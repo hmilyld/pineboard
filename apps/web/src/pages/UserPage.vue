@@ -10,15 +10,18 @@ import LoadingRows from "@/components/LoadingRows.vue";
 import PaginationBar from "@/components/PaginationBar.vue";
 import RelativeTime from "@/components/RelativeTime.vue";
 import TopicList from "@/components/TopicList.vue";
-import { api, ApiClientError } from "@/lib/api";
+import { t } from "@/i18n";
+import { api } from "@/lib/api";
 import { withSkeletonDelay } from "@/lib/ui";
 import { useAuthStore } from "@/stores/auth";
+import { useConfigStore } from "@/stores/config";
 
 type ReplyItem = Post & { topic: { id: string; title: string; category: { slug: string; name: string } } };
 type Profile = Awaited<ReturnType<typeof api.user>>;
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
+const config = useConfigStore();
 const profile = ref<Profile | null>(null);
 const topics = ref<TopicSummary[]>([]);
 const replies = ref<ReplyItem[]>([]);
@@ -48,7 +51,7 @@ async function load(nextPage = 1): Promise<void> {
       total.value = data.total;
     }
   } catch (cause) {
-    error.value = cause instanceof ApiClientError ? cause.message : "用户加载失败";
+    error.value = config.describeError(cause, "user.loadFailed");
   } finally {
     loading.value = false;
   }
@@ -65,19 +68,19 @@ watch(() => [route.params.username, route.query.tab], () => load(1));
 <template>
   <ErrorState v-if="error" class="v2-container mt-6" :message="error" retry @retry="load()" />
   <AccountShell v-else-if="profile" :profile="profile" :active="tab" :is-self="auth.user?.id === profile.id" :topic-count="profile.topicCount" :reply-count="profile.replyCount" :like-count="profile.likeCount" :bookmark-count="profile.bookmarkCount">
-    <div class="v2-section-head"><h2>{{ tab === "topics" ? "主题" : "回复" }}</h2><span>共 {{ total }} 个</span></div>
+    <div class="v2-section-head"><h2>{{ tab === "topics" ? t("user.title") : t("user.replies") }}</h2><span>{{ t("user.total", { count: total }) }}</span></div>
     <div v-if="loading" class="mt-3"><LoadingRows :rows="5" /></div>
     <div v-else class="v2-panel mt-3">
       <template v-if="tab === 'replies'">
         <div v-if="replies.length">
           <RouterLink v-for="reply in replies" :key="reply.id" :to="`/t/${reply.topic.id}`" class="block border-b border-line px-3 py-3 last:border-b-0 hover:bg-hover">
-            <p class="text-[10.5px] text-muted-foreground">回复了《{{ reply.topic.title }}》 · <RelativeTime :seconds="reply.createdAt" /></p>
-            <p class="mt-1 line-clamp-2 text-[12.5px] leading-6">{{ reply.contentText || "该回复已删除" }}</p>
+            <p class="text-[10.5px] text-muted-foreground">{{ t("user.repliedIn", { title: reply.topic.title }) }} · <RelativeTime :seconds="reply.createdAt" /></p>
+            <p class="mt-1 line-clamp-2 text-[12.5px] leading-6">{{ reply.contentText || t("user.deletedReply") }}</p>
           </RouterLink>
         </div>
-        <EmptyState v-else message="还没有回复。" />
+        <EmptyState v-else :message="t('user.noReplies')" />
       </template>
-      <TopicList v-else :topics="topics" empty="还没有发布主题。" />
+      <TopicList v-else :topics="topics" :empty="t('user.noTopics')" />
       <div v-if="totalPages > 1" class="border-t border-line px-3"><PaginationBar :page="page" :total-pages="totalPages" :total="total" @change="load" /></div>
     </div>
   </AccountShell>

@@ -105,7 +105,10 @@ assert("doc: first miss then cache hit", first.headers.get("x-doc-cache") === "m
 
 const missing = await fetch(BASE + "/t/does-not-exist");
 const missingHtml = await missing.text();
-assert("doc: missing 404 shell", missing.status === 404 && missingHtml.includes("主题不存在"), missing.status);
+// Server-rendered copy follows `site.language`, so assert against the configured
+// language instead of a hard-coded Chinese phrase.
+const missingTitle = (await author.request("/api/site")).body?.data?.site?.language === "en" ? "Topic not found" : "主题不存在";
+assert("doc: missing 404 shell", missing.status === 404 && missingHtml.includes(missingTitle), missing.status);
 const homeDoc = await fetch(BASE + "/");
 const homeHtml = await homeDoc.text();
 assert("doc: home SEO meta", homeHtml.includes('"@type":"WebSite"') && homeHtml.includes('property="og:type" content="website"') && homeHtml.includes('name="robots" content="index,follow"'), homeHtml.slice(0, 300));

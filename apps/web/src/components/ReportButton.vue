@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { Button } from "@/components/ui/button";
-import { api, ApiClientError } from "@/lib/api";
+import { t } from "@/i18n";
+import { api } from "@/lib/api";
 import { alertErrorClass, alertInfoClass, inputClass, labelClass, textareaClass } from "@/lib/ui";
 import { useAuthStore } from "@/stores/auth";
 import { useConfigStore } from "@/stores/config";
@@ -53,13 +54,8 @@ watch(open, async (value) => {
 
 onBeforeUnmount(() => previousFocus?.focus?.());
 
-const reasons = [
-  ["spam", "垃圾广告"],
-  ["abuse", "辱骂/攻击"],
-  ["illegal", "违法内容"],
-  ["off_topic", "与主题无关"],
-  ["other", "其他"],
-] as const;
+const REASONS = ["spam", "abuse", "illegal", "off_topic", "other"] as const;
+const reasons = computed(() => REASONS.map((value) => [value, t(`report.${value}`)] as const));
 
 function show(): void {
   done.value = false;
@@ -74,7 +70,7 @@ async function submit(): Promise<void> {
     await api.report({ targetType: props.targetType, targetId: props.targetId, reasonCode: reason.value, detail: detail.value });
     done.value = true;
   } catch (cause) {
-    error.value = cause instanceof ApiClientError ? cause.message : "举报失败";
+    error.value = config.describeError(cause, "report.failed");
   } finally {
     submitting.value = false;
   }
@@ -83,31 +79,31 @@ async function submit(): Promise<void> {
 
 <template>
   <template v-if="auth.user && config.config?.feature.reports !== false">
-    <button type="button" class="hover:text-foreground" @click="show">举报</button>
+    <button type="button" class="hover:text-foreground" @click="show">{{ t("report.button") }}</button>
     <Teleport to="body">
       <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center overscroll-contain bg-black/40 p-4" @click.self="open = false" @keydown="onKeydown">
         <div ref="dialog" role="dialog" aria-modal="true" aria-labelledby="report-title" class="w-full max-w-md border border-border bg-card p-6 shadow-xl">
           <div class="flex items-center justify-between">
-            <h2 id="report-title" class="text-lg font-semibold">举报内容</h2>
-            <button type="button" class="text-sm text-muted-foreground hover:text-foreground" data-report-default @click="open = false">关闭</button>
+            <h2 id="report-title" class="text-lg font-semibold">{{ t("report.title") }}</h2>
+            <button type="button" class="text-sm text-muted-foreground hover:text-foreground" data-report-default @click="open = false">{{ t("common.close") }}</button>
           </div>
           <template v-if="done">
-            <p :class="[alertInfoClass, 'mt-4']" role="status">举报已提交，版主会尽快处理。</p>
-            <Button class="mt-4 w-full" @click="open = false">完成</Button>
+            <p :class="[alertInfoClass, 'mt-4']" role="status">{{ t("report.done") }}</p>
+            <Button class="mt-4 w-full" @click="open = false">{{ t("report.finish") }}</Button>
           </template>
           <form v-else class="mt-4 space-y-4" @submit.prevent="submit">
             <div>
-              <label :class="labelClass" for="report-reason">原因</label>
+              <label :class="labelClass" for="report-reason">{{ t("report.reason") }}</label>
               <select id="report-reason" v-model="reason" name="reason" :class="inputClass">
                 <option v-for="[value, label] in reasons" :key="value" :value="value">{{ label }}</option>
               </select>
             </div>
             <div>
-              <label :class="labelClass" for="report-detail">补充说明（可选）</label>
+              <label :class="labelClass" for="report-detail">{{ t("report.detail") }}</label>
               <textarea id="report-detail" v-model="detail" name="detail" :class="textareaClass" maxlength="1000" />
             </div>
             <p v-if="error" :class="alertErrorClass" role="alert">{{ error }}</p>
-            <Button class="w-full" type="submit" :disabled="submitting">{{ submitting ? "提交中…" : "提交举报" }}</Button>
+            <Button class="w-full" type="submit" :disabled="submitting">{{ submitting ? t("report.submitting") : t("report.submit") }}</Button>
           </form>
         </div>
       </div>

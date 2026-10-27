@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { t } from "@/i18n";
+
 defineProps<{ message: string; retry?: boolean }>();
 const emit = defineEmits<{ retry: [] }>();
 </script>
@@ -6,6 +8,6 @@ const emit = defineEmits<{ retry: [] }>();
 <template>
   <div class="v2-alert flex items-start gap-3" role="alert">
     <span class="min-w-0 flex-1">{{ message }}</span>
-    <button v-if="retry" type="button" class="shrink-0 underline underline-offset-2" @click="emit('retry')">重试</button>
+    <button v-if="retry" type="button" class="shrink-0 underline underline-offset-2" @click="emit('retry')">{{ t("common.retry") }}</button>
   </div>
 </template>

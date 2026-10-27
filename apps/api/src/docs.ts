@@ -1,5 +1,6 @@
 import { getConfig } from "./config";
 import { getEffectiveIntegrations } from "./integrations";
+import { copy, docLocale } from "./i18n";
 import type { AppEnv } from "./env";
 import type { Context, Hono } from "hono";
 
@@ -78,7 +79,8 @@ async function serveDoc(
   const loaded = await getConfig(c.env);
   const config = loaded.config;
   const cache = caches.default;
-  const version = `${loaded.version}-${c.env.CF_VERSION_METADATA?.id ?? "dev"}`;
+  // The language is part of the key so switching it drops cached SSR shells.
+  const version = `${loaded.version}-${c.env.CF_VERSION_METADATA?.id ?? "dev"}-${config.site.language}`;
   const key = new Request(
     `https://docs.internal${meta.canonicalPath}?v=${encodeURIComponent(version)}&tag=${encodeURIComponent(meta.cacheTag ?? "")}`,
   );
@@ -155,22 +157,23 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
          FROM topics t JOIN posts p ON p.topic_id = t.id AND p.is_first = 1
          JOIN user u ON u.id = t.author_id WHERE t.id = ?`,
     ).bind(id).first<{ id: string; status: string; reply_count: number; like_count: number; view_count: number; title: string; content_text: string; created_at: number; updated_at: number; author_name: string }>();
+    const config = (await getConfig(c.env)).config;
+    const locale = docLocale(config);
     if (!row) {
-      return serveDoc(c, { title: "主题不存在", description: "该主题不存在或已被删除", canonicalPath: `/t/${id}`, status: 404, noindex: true });
+      return serveDoc(c, { title: copy("topicMissing", locale), description: copy("topicMissingOrDeleted", locale), canonicalPath: `/t/${id}`, status: 404, noindex: true });
     }
     if (row.status === "deleted") {
-      return serveDoc(c, { title: "主题已删除", description: "该主题已被删除", canonicalPath: `/t/${id}`, status: 410, noindex: true });
+      return serveDoc(c, { title: copy("topicDeleted", locale), description: copy("topicDeletedBody", locale), canonicalPath: `/t/${id}`, status: 410, noindex: true });
     }
     if (row.status !== "published") {
-      return serveDoc(c, { title: "主题不存在", description: "该主题不存在或已被隐藏", canonicalPath: `/t/${id}`, status: 404, noindex: true });
+      return serveDoc(c, { title: copy("topicMissing", locale), description: copy("topicMissingOrHidden", locale), canonicalPath: `/t/${id}`, status: 404, noindex: true });
     }
-    const config = (await getConfig(c.env)).config;
     const site = config.site.url.replace(/\/$/, "");
     const published = new Date(row.created_at * 1000).toISOString();
     const modified = new Date(row.updated_at * 1000).toISOString();
     return serveDoc(c, {
       title: row.title,
-      description: row.content_text.slice(0, 160) || `关于「${row.title}」的讨论`,
+      description: row.content_text.slice(0, 160) || copy("topicDiscussion", locale, { title: row.title }),
       canonicalPath: `/t/${id}`,
       status: 200,
       ogType: "article",
@@ -203,11 +206,13 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
     const slug = c.req.param("slug");
     const row = await c.env.DB.prepare("SELECT slug, name, description FROM categories WHERE slug = ? AND is_visible = 1")
       .bind(slug).first<{ slug: string; name: string; description: string }>();
-    if (!row) return serveDoc(c, { title: "版块不存在", description: "该版块不存在", canonicalPath: `/c/${slug}`, status: 404, noindex: true });
     const config = (await getConfig(c.env)).config;
+    const locale = docLocale(config);
+    const fallbackDescription = row ? copy("categoryBrowse", locale, { name: row.name }) : "";
+    if (!row) return serveDoc(c, { title: copy("categoryMissing", locale), description: copy("categoryMissingBody", locale), canonicalPath: `/c/${slug}`, status: 404, noindex: true });
     return serveDoc(c, {
       title: row.name,
-      description: row.description || `浏览 ${row.name} 版块的主题`,
+      description: row.description || fallbackDescription,
       canonicalPath: `/c/${slug}`,
       status: 200,
       ogType: "website",
@@ -215,7 +220,7 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
         name: row.name,
-        description: row.description || `浏览 ${row.name} 版块的主题`,
+        description: row.description || fallbackDescription,
         url: `${config.site.url.replace(/\/$/, "")}/c/${row.slug}`,
         isPartOf: { "@type": "WebSite", name: config.site.name, url: config.site.url.replace(/\/$/, "") },
       },
@@ -226,11 +231,13 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
     const slug = c.req.param("slug");
     const row = await c.env.DB.prepare("SELECT slug, name, description FROM tags WHERE slug = ? AND status = 'active'")
       .bind(slug).first<{ slug: string; name: string; description: string }>();
-    if (!row) return serveDoc(c, { title: "标签不存在", description: "该标签不存在", canonicalPath: `/tag/${slug}`, status: 404, noindex: true });
     const config = (await getConfig(c.env)).config;
+    const locale = docLocale(config);
+    const fallbackDescription = row ? copy("tagTopics", locale, { name: row.name }) : "";
+    if (!row) return serveDoc(c, { title: copy("tagMissing", locale), description: copy("tagMissingBody", locale), canonicalPath: `/tag/${slug}`, status: 404, noindex: true });
     return serveDoc(c, {
       title: `#${row.name}`,
-      description: row.description || `使用「${row.name}」标签的主题`,
+      description: row.description || fallbackDescription,
       canonicalPath: `/tag/${slug}`,
       status: 200,
       ogType: "website",
@@ -238,7 +245,7 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
         name: `#${row.name}`,
-        description: row.description || `使用「${row.name}」标签的主题`,
+        description: row.description || fallbackDescription,
         url: `${config.site.url.replace(/\/$/, "")}/tag/${row.slug}`,
         isPartOf: { "@type": "WebSite", name: config.site.name, url: config.site.url.replace(/\/$/, "") },
       },
@@ -249,11 +256,12 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
     const username = c.req.param("username").toLowerCase();
     const row = await c.env.DB.prepare("SELECT username, name, bio FROM user WHERE username = ? AND status = 'active'")
       .bind(username).first<{ username: string; name: string; bio: string | null }>();
-    if (!row) return serveDoc(c, { title: "用户不存在", description: "该用户不存在", canonicalPath: `/u/${username}`, status: 404, noindex: true });
     const config = (await getConfig(c.env)).config;
+    const locale = docLocale(config);
+    if (!row) return serveDoc(c, { title: copy("userMissing", locale), description: copy("userMissingBody", locale), canonicalPath: `/u/${username}`, status: 404, noindex: true });
     return serveDoc(c, {
       title: row.name,
-      description: row.bio || `@${row.username} 的主页`,
+      description: row.bio || copy("userHome", locale, { username: row.username }),
       canonicalPath: `/u/${row.username}`,
       status: 200,
       ogType: "website",

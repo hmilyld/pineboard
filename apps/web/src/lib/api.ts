@@ -35,6 +35,7 @@ import {
   type UploadSignInput,
   type ApiEnvelope,
 } from "@pineboard/shared";
+import { t } from "@/i18n";
 
 export class ApiClientError extends Error {
   constructor(
@@ -83,7 +84,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const body = await parseBody(response);
   if (!response.ok) throwApiError(response, body);
   if (!body || typeof body !== "object" || !("ok" in body) || (body as { ok: boolean }).ok !== true) {
-    throw new ApiClientError("invalid_response", "服务器返回格式错误", response.status);
+    throw new ApiClientError("invalid_response", t("common.invalidResponse"), response.status);
   }
   return (body as unknown as { data: T }).data;
 }
@@ -93,7 +94,7 @@ async function requestRaw<T>(path: string, init: RequestInit): Promise<T> {
   const body = await parseBody(response);
   if (!response.ok) throwApiError(response, body);
   if (!body || typeof body !== "object" || !("ok" in body) || (body as { ok: boolean }).ok !== true) {
-    throw new ApiClientError("invalid_response", "服务器返回格式错误", response.status);
+    throw new ApiClientError("invalid_response", t("common.invalidResponse"), response.status);
   }
   return (body as unknown as { data: T }).data;
 }
@@ -120,7 +121,7 @@ export const api = {
     const body = await parseBody(response);
     if (!response.ok) throwApiError(response, body);
     if (!body || typeof body !== "object" || !("ok" in body) || (body as { ok: boolean }).ok !== true) {
-      throw new ApiClientError("invalid_response", "服务器返回格式错误", response.status);
+      throw new ApiClientError("invalid_response", t("common.invalidResponse"), response.status);
     }
     return meSchema.parse((body as unknown as { data: unknown }).data);
   },
@@ -133,7 +134,7 @@ export const api = {
     const body = await parseBody(response);
     if (!response.ok) throwApiError(response, body);
     if (!body || typeof body !== "object" || !("ok" in body) || (body as { ok: boolean }).ok !== true) {
-      throw new ApiClientError("invalid_response", "服务器返回格式错误", response.status);
+      throw new ApiClientError("invalid_response", t("common.invalidResponse"), response.status);
     }
     const data = (body as unknown as { data: { user: unknown } }).data;
     return data.user ? meSchema.parse(data) : null;

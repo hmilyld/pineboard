@@ -1,5 +1,9 @@
+<script setup lang="ts">
+import { t } from "@/i18n";
+</script>
+
 <template>
-  <div class="v2-account" aria-busy="true" aria-label="加载中">
+  <div class="v2-account" aria-busy="true" :aria-label="t('common.loading')">
     <aside class="v2-account-nav">
       <div class="v2-account-group">
         <div class="mb-2 h-2.5 w-10 animate-pulse bg-muted" />

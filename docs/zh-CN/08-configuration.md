@@ -87,13 +87,13 @@ node scripts/check-worker-secrets.mjs /tmp/worker-secrets.json
 
 | 分组 | 主要键 | 默认/说明 |
 |---|---|---|
-| `site` | name, tagline, url, description, keywords, logoKey, faviconKey, ogImageKey, timezone, language, icp, announcement | 默认名称 **Pineboard**；`site.url` 应与 `SITE_URL` 一致 |
+| `site` | name, tagline, url, description, keywords, logoKey, faviconKey, ogImageKey, timezone, language, icp, announcement | 默认名称 **Pineboard**；`site.url` 应与 `SITE_URL` 一致；`language`（`zh-CN` 或 `en`）是前台与后台共用的唯一界面语言。只翻译界面文案、错误码、日期与服务端 SEO 固定文案；用户内容与运营文案不翻译 |
 | `seo` | titleTemplate, homeTitle, description, noindex, topicsPerPage, postsPerPage, sitemapEnabled | 分页 5–50 |
 | `account` | registrationOpen, allowUnverifiedLogin, requireVerificationForWrite, passwordMinLength, usernameMin/Max, sessionDays, deletionGraceDays | 注册/验证/注销策略 |
 | `edit` | windowUserMinutes, windowModeratorMinutes, allowStaffEditOthers, lockAfterReply, allowSelfDelete, historyVisibility, keepRevisions, requireReason | 编辑窗口与留痕 |
 | `mail` | enabled, fromName, fromAddress, replyTo, notify*, dailyBudget, userDailyCap, digestWindowMinutes, verificationTtlMinutes, resetTtlMinutes, unsubscribeTokenDays | 摘要与邮件预算 |
 | `feature` | turnstile, pwa, markdown, search, uploads, reports, guestRead | 功能开关 |
-| `maintenance` | enabled, message, allowAdmin | 维护模式 |
+| `maintenance` | enabled, message, allowAdmin | 维护模式；`message` 原样显示 |
 | `upload` | imageMaxMb, fileMaxMb, userDailyCount, orphanTtlHours | 类型白名单在代码中固定 |
 | `security` | postMinIntervalSeconds, newUserDailyPosts, mentionMaxPerPost, reportDailyLimit, signupPerHour | 频率限制 |
 | `integration` | cloudflare.accountId/r2Bucket/cdnUrl/turnstileSiteKey | 缺失回退 CF |

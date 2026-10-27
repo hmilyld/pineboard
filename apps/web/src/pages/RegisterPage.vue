@@ -3,9 +3,9 @@ import { computed, reactive, ref } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import AuthShell from "@/components/AuthShell.vue";
 import TurnstileWidget from "@/components/TurnstileWidget.vue";
-import { Button } from "@/components/ui/button";
+import { t } from "@/i18n";
 import { ApiClientError } from "@/lib/api";
-import { alertErrorClass, alertInfoClass, inputClass, labelClass, linkClass, mutedLinkClass } from "@/lib/ui";
+import { alertErrorClass, alertInfoClass, linkClass, mutedLinkClass } from "@/lib/ui";
 import { useAuthStore } from "@/stores/auth";
 import { useConfigStore } from "@/stores/config";
 
@@ -33,14 +33,14 @@ function suggestUsername(): void {
 
 function failMessage(cause: unknown): void {
   if (cause instanceof ApiClientError) {
-    error.value = cause.message;
+    error.value = config.describeError(cause, "auth.registerFailed");
     fields.value = cause.fields ?? {};
     if (cause.code === "captcha_failed" || cause.code === "captcha_unavailable") {
       widget.value?.reset();
       turnstileToken.value = "";
     }
   } else {
-    error.value = "注册失败，请稍后重试";
+    error.value = t("auth.registerFailed");
   }
 }
 
@@ -48,24 +48,24 @@ async function submit(): Promise<void> {
   error.value = "";
   fields.value = {};
   if (!form.name.trim()) {
-    fields.value = { name: ["请输入昵称"] };
+    fields.value = { name: [t("auth.errorName")] };
     return;
   }
   if (!form.email.trim()) {
-    fields.value = { email: ["请输入邮箱"] };
+    fields.value = { email: [t("auth.errorEmail")] };
     return;
   }
   if (form.password.length < passwordMin.value) {
-    fields.value = { password: [`密码至少 ${passwordMin.value} 位`] };
+    fields.value = { password: [t("auth.errorPassword", { n: passwordMin.value })] };
     return;
   }
   if (form.password !== form.confirm) {
-    fields.value = { confirm: ["两次输入的密码不一致"] };
+    fields.value = { confirm: [t("auth.errorPasswordMismatch")] };
     return;
   }
   if (turnstileEnabled.value && !turnstileToken.value) {
     widget.value?.show();
-    error.value = "请先完成人机验证";
+    error.value = t("auth.captchaRequired");
     return;
   }
   submitting.value = true;
@@ -87,20 +87,20 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <AuthShell title="创建账户" subtitle="注册后即可登录；写操作需要先验证邮箱。">
+  <AuthShell :title="t('auth.registerTitle')" :subtitle="t('auth.registerSubtitle')">
     <div v-if="!registrationOpen" :class="alertInfoClass">
-      当前未开放注册。已有账户请
-      <RouterLink to="/login" :class="linkClass">登录</RouterLink>。
+      {{ t("auth.registrationClosed") }}
+      <RouterLink to="/login" :class="linkClass">{{ t("auth.loginLink") }}</RouterLink>.
     </div>
 
     <form v-else class="space-y-4" @submit.prevent="submit">
       <div>
-        <label class="v2-auth-label" for="register-name">昵称</label>
-        <input id="register-name" v-model="form.name" name="name" class="v2-input" autocomplete="nickname" placeholder="显示名称" />
+        <label class="v2-auth-label" for="register-name">{{ t("auth.nickname") }}</label>
+        <input id="register-name" v-model="form.name" name="name" class="v2-input" autocomplete="nickname" :placeholder="t('auth.nicknamePlaceholder')" />
         <p v-if="fields.name" class="mt-1 text-xs text-destructive">{{ fields.name[0] }}</p>
       </div>
       <div>
-        <label class="v2-auth-label" for="register-username">用户名</label>
+        <label class="v2-auth-label" for="register-username">{{ t("auth.username") }}</label>
         <input
           id="register-username"
           v-model="form.username"
@@ -108,14 +108,14 @@ async function submit(): Promise<void> {
           spellcheck="false"
           class="v2-input"
           autocomplete="username"
-          placeholder="3–20 位小写字母、数字、_ 或 -"
+          :placeholder="t('auth.usernamePlaceholder')"
           @blur="suggestUsername"
         />
-        <p class="mt-1 text-xs text-muted-foreground">用户名用于 @ 提及，注册后不可修改。</p>
+        <p class="mt-1 text-xs text-muted-foreground">{{ t("auth.usernameHint") }}</p>
         <p v-if="fields.username" class="mt-1 text-xs text-destructive">{{ fields.username[0] }}</p>
       </div>
       <div>
-        <label class="v2-auth-label" for="register-email">邮箱</label>
+        <label class="v2-auth-label" for="register-email">{{ t("auth.email") }}</label>
         <input
           id="register-email"
           v-model="form.email"
@@ -124,14 +124,14 @@ async function submit(): Promise<void> {
           type="email"
           class="v2-input"
           autocomplete="email"
-          placeholder="you@example.com"
+          :placeholder="t('auth.emailPlaceholder')"
           @blur="suggestUsername"
         />
         <p v-if="fields.email" class="mt-1 text-xs text-destructive">{{ fields.email[0] }}</p>
       </div>
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
-          <label class="v2-auth-label" for="register-password">密码</label>
+          <label class="v2-auth-label" for="register-password">{{ t("auth.password") }}</label>
           <input
             id="register-password"
             v-model="form.password"
@@ -139,12 +139,12 @@ async function submit(): Promise<void> {
             type="password"
             class="v2-input"
             autocomplete="new-password"
-            :placeholder="`至少 ${passwordMin} 位`"
+            :placeholder="t('auth.passwordMinPlaceholder', { n: passwordMin })"
           />
           <p v-if="fields.password" class="mt-1 text-xs text-destructive">{{ fields.password[0] }}</p>
         </div>
         <div>
-          <label class="v2-auth-label" for="register-confirm">确认密码</label>
+          <label class="v2-auth-label" for="register-confirm">{{ t("auth.passwordConfirm") }}</label>
           <input
             id="register-confirm"
             v-model="form.confirm"
@@ -170,15 +170,15 @@ async function submit(): Promise<void> {
 
       <p v-if="error" :class="alertErrorClass">{{ error }}</p>
       <button type="submit" class="v2-auth-submit" :disabled="submitting">
-        {{ submitting ? "创建中…" : "创建账户" }}
+        {{ submitting ? t("auth.registering") : t("auth.registerButton") }}
       </button>
     </form>
 
     <template #footer>
-      已有账户？
-      <RouterLink to="/login" :class="linkClass">登录</RouterLink>
+      {{ t("auth.haveAccount") }}
+      <RouterLink to="/login" :class="linkClass">{{ t("auth.loginButton") }}</RouterLink>
       <span class="mx-2 text-line">·</span>
-      <RouterLink to="/" :class="mutedLinkClass">返回首页</RouterLink>
+      <RouterLink to="/" :class="mutedLinkClass">{{ t("auth.backHome") }}</RouterLink>
     </template>
   </AuthShell>
 </template>

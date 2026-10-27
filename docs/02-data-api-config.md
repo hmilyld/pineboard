@@ -163,13 +163,13 @@ The report list filters on `reports.category_id` on the SQL side and paginates d
 
 | Domain | Keys and defaults |
 |---|---|
-| site | name=Pineboard; tagline=轻量、专注讨论的社区 (a lightweight, discussion-focused community); url; description; keywords; logoKey; faviconKey; ogImageKey; timezone=Asia/Shanghai; language=zh-CN; icp; announcement={id,enabled,text,href} |
+| site | name=Pineboard; tagline=轻量、专注讨论的社区 (a lightweight, discussion-focused community); url; description; keywords; logoKey; faviconKey; ogImageKey; timezone=Asia/Shanghai; language=`zh-CN` \| `en` (the single UI language of the whole site, public pages and the admin console alike; visitors cannot switch); icp; announcement={id,enabled,text,href} |
 | seo | titleTemplate=`{title} · {siteName}`; homeTitle; description; noindex=false; topicsPerPage=20 (5–50); postsPerPage=20 (5–50); sitemapEnabled=true |
 | account | registrationOpen=true; allowUnverifiedLogin=true; requireVerificationForWrite=true; passwordMinLength=8; usernameMin=3; usernameMax=20; sessionDays=30; deletionGraceDays=7 |
 | edit | windowUserMinutes=60; windowModeratorMinutes=0; allowStaffEditOthers=true; lockAfterReply=false; allowSelfDelete=true; historyVisibility=author; keepRevisions=20; requireReason=false |
 | mail | enabled=true; fromName; fromAddress=no-reply@mail.example.com; replyTo; notifyTopicReply=true; notifyPostReply=true; notifyMention=true; notifyModeration=true; includeUnsubscribe=true; dailyBudget=80; userDailyCap=10; digestWindowMinutes=10; verificationTtlMinutes=60; resetTtlMinutes=30; unsubscribeTokenDays=180 |
 | feature | turnstile=true; pwa=true; markdown=true; search=true; uploads=true; reports=true; guestRead=true |
-| maintenance | enabled=false; message; allowAdmin=true |
+| maintenance | enabled=false; message (operator copy, shown verbatim); allowAdmin=true |
 | upload | imageMaxMb=5; fileMaxMb=10; userDailyCount=20; orphanTtlHours=24 (file types are validated by the route whitelist: images JPG/PNG/WebP/GIF/AVIF, attachments ZIP/RAR/7Z) |
 | security | postMinIntervalSeconds=30; newUserDailyPosts=10; mentionMaxPerPost=5; reportDailyLimit=10; signupPerHour=5 (fixed IP window before Turnstile) |
 | integration | cloudflare.accountId=""; cloudflare.r2Bucket=""; cloudflare.cdnUrl=""; cloudflare.turnstileSiteKey="" (empty values fall back to Worker variables) |

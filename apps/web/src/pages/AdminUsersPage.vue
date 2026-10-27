@@ -2,11 +2,13 @@
 import { computed, onMounted, ref } from "vue";
 import AdminSkeleton from "@/components/AdminSkeleton.vue";
 import PaginationBar from "@/components/PaginationBar.vue";
-import { api, ApiClientError } from "@/lib/api";
+import { t } from "@/i18n";
+import { api } from "@/lib/api";
 import { confirmDialog } from "@/lib/confirm";
 import { alertErrorClass, alertInfoClass, inputClass } from "@/lib/ui";
 import { formatDate } from "@/lib/time";
 import { useAuthStore } from "@/stores/auth";
+import { useConfigStore } from "@/stores/config";
 
 type UserRow = {
   id: string; name: string; email: string; username: string | null; role: "user" | "moderator" | "admin";
@@ -15,6 +17,7 @@ type UserRow = {
 };
 
 const auth = useAuthStore();
+const config = useConfigStore();
 const users = ref<UserRow[]>([]);
 const q = ref("");
 const status = ref("all");
@@ -26,9 +29,16 @@ const loading = ref(true);
 const busy = ref("");
 const error = ref("");
 const message = ref("");
-const statusTabs = [
-  ["all", "全部"], ["active", "正常"], ["suspended", "封禁"], ["deleting", "注销中"],
-] as const;
+const statusTabs = computed(() => [
+  ["all", t("admin.users.statusAll")], ["active", t("admin.users.statusActive")],
+  ["suspended", t("admin.users.statusSuspended")], ["deleting", t("admin.users.statusDeleting")],
+] as const);
+const roleLabel = (value: string): string =>
+  value === "admin" ? t("account.roleAdmin") : value === "moderator" ? t("account.roleModerator") : t("admin.users.roleUser");
+const statusLabel = (value: string): string => {
+  const match = statusTabs.value.find(([key]) => key === value);
+  return match ? match[1] : value;
+};
 const roles = ["user", "moderator", "admin"] as const;
 
 const selfId = computed(() => auth.user?.id ?? "");
@@ -43,7 +53,7 @@ async function load(nextPage = 1): Promise<void> {
     total.value = data.total;
     totalPages.value = data.totalPages;
   } catch (cause) {
-    error.value = cause instanceof ApiClientError ? cause.message : "加载用户失败";
+    error.value = config.describeError(cause, "admin.users.loadFailed");
   } finally {
     loading.value = false;
   }
@@ -64,9 +74,9 @@ async function changeRole(user: UserRow, next: string, select?: HTMLSelectElemen
     return;
   }
   const ok = await confirmDialog({
-    title: "修改用户角色",
-    message: `将「${user.name}」从 ${user.role} 改为 ${next}？`,
-    confirmLabel: "修改",
+    title: t("admin.users.changeRoleTitle"),
+    message: t("admin.users.changeRoleBody", { name: user.name, from: roleLabel(user.role), to: roleLabel(next) }),
+    confirmLabel: t("admin.users.changeRoleConfirm"),
     danger: next === "admin",
   });
   if (!ok) {
@@ -77,11 +87,11 @@ async function changeRole(user: UserRow, next: string, select?: HTMLSelectElemen
   error.value = "";
   try {
     await api.updateAdminUserRole(user.id, next as UserRow["role"]);
-    message.value = "角色已更新。";
+    message.value = t("admin.users.roleUpdated");
     await load(page.value);
   } catch (cause) {
     if (select) select.value = user.role;
-    error.value = cause instanceof ApiClientError ? cause.message : "修改失败";
+    error.value = config.describeError(cause, "admin.users.changeRoleFailed");
   } finally {
     busy.value = "";
   }
@@ -91,9 +101,9 @@ async function toggleSuspend(user: UserRow): Promise<void> {
   if (busy.value) return;
   const suspend = user.status !== "suspended";
   const ok = await confirmDialog({
-    title: suspend ? "封禁用户" : "解除封禁",
-    message: suspend ? `封禁「${user.name}」？其现有登录会话会立即失效。` : `解除「${user.name}」的封禁？`,
-    confirmLabel: suspend ? "封禁" : "解封",
+    title: suspend ? t("admin.users.suspendTitle") : t("admin.users.unsuspendTitle"),
+    message: suspend ? t("admin.users.suspendBody", { name: user.name }) : t("admin.users.unsuspendBody", { name: user.name }),
+    confirmLabel: suspend ? t("admin.users.suspend") : t("admin.users.unsuspend"),
     danger: suspend,
   });
   if (!ok) return;
@@ -102,10 +112,10 @@ async function toggleSuspend(user: UserRow): Promise<void> {
   try {
     if (suspend) await api.suspendAdminUser(user.id);
     else await api.unsuspendAdminUser(user.id);
-    message.value = suspend ? "用户已封禁。" : "用户已解封。";
+    message.value = suspend ? t("admin.users.suspended") : t("admin.users.unsuspended");
     await load(page.value);
   } catch (cause) {
-    error.value = cause instanceof ApiClientError ? cause.message : "操作失败";
+    error.value = config.describeError(cause, "topic.failed");
   } finally {
     busy.value = "";
   }
@@ -117,10 +127,10 @@ onMounted(() => load());
 <template>
   <div>
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
-      <div><h1 class="text-[19px] font-bold leading-[1.3]">用户管理</h1><p class="mt-1 text-[10.5px] text-muted-foreground">搜索、角色调整与封禁；最后一名管理员受保护。</p></div>
+      <div><h1 class="text-[19px] font-bold leading-[1.3]">{{ t("admin.nav.users") }}</h1><p class="mt-1 text-[10.5px] text-muted-foreground">{{ t("admin.users.subtitle") }}</p></div>
       <form class="flex gap-2" @submit.prevent="search">
-        <input v-model="q" :class="inputClass" class="h-8 w-[240px]" type="search" placeholder="邮箱 / 昵称 / @用户名" aria-label="搜索用户" />
-        <button type="submit" class="v2-btn sm">搜索</button>
+        <input v-model="q" :class="inputClass" class="h-8 w-[240px]" type="search" :placeholder="t('admin.users.searchPlaceholder')" :aria-label="t('admin.users.searchLabel')" />
+        <button type="submit" class="v2-btn sm">{{ t("admin.common.search") }}</button>
       </form>
     </div>
 
@@ -128,13 +138,13 @@ onMounted(() => load());
       <div class="flex items-center gap-3 text-[11.5px]">
         <button v-for="[value, label] in statusTabs" :key="value" type="button" class="v2-tab" :data-active="status === value" @click="setStatus(value)">{{ label }}</button>
       </div>
-      <select v-model="role" class="v2-input h-8 w-28 px-2 text-[11.5px]" aria-label="角色筛选" @change="load(1)">
-        <option value="all">全部角色</option>
-        <option value="user">普通用户</option>
-        <option value="moderator">版主</option>
-        <option value="admin">管理员</option>
+      <select v-model="role" class="v2-input h-8 w-28 px-2 text-[11.5px]" :aria-label="t('admin.users.roleFilter')" @change="load(1)">
+        <option value="all">{{ t("admin.users.allRoles") }}</option>
+        <option value="user">{{ t("admin.users.roleUser") }}</option>
+        <option value="moderator">{{ roleLabel("moderator") }}</option>
+        <option value="admin">{{ roleLabel("admin") }}</option>
       </select>
-      <span class="ml-auto text-[10.5px] text-muted-foreground">共 {{ total }} 位用户</span>
+      <span class="ml-auto text-[10.5px] text-muted-foreground">{{ t("admin.users.totalUsers", { count: total }) }}</span>
     </div>
 
     <p v-if="message" :class="[alertInfoClass, 'mt-3']">{{ message }}</p>
@@ -142,7 +152,7 @@ onMounted(() => load());
     <AdminSkeleton v-if="loading" class="mt-4" />
     <div v-else class="v2-admin-panel mt-4 overflow-x-auto">
       <table class="v2-admin-table min-w-[760px]">
-        <thead><tr><th>用户</th><th>角色</th><th>状态</th><th>主题 / 回复</th><th>注册时间</th><th></th></tr></thead>
+        <thead><tr><th>{{ t("admin.users.colUser") }}</th><th>{{ t("admin.users.colRole") }}</th><th>{{ t("admin.users.colStatus") }}</th><th>{{ t("admin.users.colCounts") }}</th><th>{{ t("admin.users.colJoined") }}</th><th></th></tr></thead>
         <tbody>
           <tr v-for="user in users" :key="user.id">
             <td class="p-3">
@@ -151,22 +161,22 @@ onMounted(() => load());
             </td>
             <td class="p-3">
               <select class="v2-input h-7 w-24 px-1.5 text-[11px]" :value="user.role" :disabled="busy === user.id || user.id === selfId" @change="changeRole(user, ($event.target as HTMLSelectElement).value, $event.target as HTMLSelectElement)">
-                <option v-for="value in roles" :key="value" :value="value">{{ value }}</option>
+                <option v-for="value in roles" :key="value" :value="value">{{ roleLabel(value) }}</option>
               </select>
             </td>
-            <td class="p-3"><span class="v2-status-pill" :class="{ active: user.status === 'active' }">{{ user.status }}</span></td>
+            <td class="p-3"><span class="v2-status-pill" :class="{ active: user.status === 'active' }">{{ statusLabel(user.status) }}</span></td>
             <td class="p-3 text-[11px] text-muted-foreground">{{ user.topicCount }} / {{ user.replyCount }}</td>
             <td class="p-3 text-[10.5px] text-muted-foreground">{{ formatDate(user.createdAt) }}</td>
             <td class="p-3 text-right">
               <button type="button" class="v2-btn sm" :class="{ danger: user.status === 'active' }" :disabled="busy === user.id || user.id === selfId || user.status === 'deleted' || user.status === 'deleting'" @click="toggleSuspend(user)">
-                {{ user.status === "suspended" ? "解封" : "封禁" }}
+                {{ user.status === "suspended" ? t("admin.users.unsuspend") : t("admin.users.suspend") }}
               </button>
             </td>
           </tr>
-          <tr v-if="!users.length"><td colspan="6" class="p-6 text-center text-muted-foreground">没有匹配的用户。</td></tr>
+          <tr v-if="!users.length"><td colspan="6" class="p-6 text-center text-muted-foreground">{{ t("admin.users.empty") }}</td></tr>
         </tbody>
       </table>
-      <PaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" unit="位用户" @change="load" />
+      <PaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" :unit="t('admin.users.unit')" @change="load" />
     </div>
   </div>
 </template>

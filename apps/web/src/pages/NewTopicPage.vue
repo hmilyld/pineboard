@@ -5,7 +5,8 @@ import { RouterLink, useRoute, useRouter } from "vue-router";
 import MarkdownEditor from "@/components/MarkdownEditor.vue";
 import PageSkeleton from "@/components/PageSkeleton.vue";
 import TurnstileWidget from "@/components/TurnstileWidget.vue";
-import { api, ApiClientError } from "@/lib/api";
+import { api } from "@/lib/api";
+import { intlLocale, t } from "@/i18n";
 import { withSkeletonDelay } from "@/lib/ui";
 import { categoryClass, categoryStyle } from "@/lib/category";
 import { useAuthStore } from "@/stores/auth";
@@ -36,7 +37,7 @@ let completed = false;
 const turnstileEnabled = computed(() => Boolean(config.config?.feature.turnstile && config.turnstileSiteKey));
 const canPublish = computed(() => Boolean(auth.user && auth.permissions?.canWrite));
 const selectedTags = computed(() => tags.value.filter((tag) => form.tagIds.includes(tag.id)));
-const draftLabel = computed(() => (draftAt.value ? new Intl.DateTimeFormat("zh-CN", { hour: "2-digit", minute: "2-digit" }).format(new Date(draftAt.value)) : ""));
+const draftLabel = computed(() => (draftAt.value ? new Intl.DateTimeFormat(intlLocale(), { hour: "2-digit", minute: "2-digit" }).format(new Date(draftAt.value)) : ""));
 
 function toggleTag(id: string): void {
   if (form.tagIds.includes(id)) form.tagIds = form.tagIds.filter((tag) => tag !== id);
@@ -82,13 +83,13 @@ watch(form, scheduleDraft, { deep: true });
 async function submit(): Promise<void> {
   error.value = "";
   fields.value = {};
-  if (!form.categoryId) fields.value.categoryId = ["请选择版块"];
-  if (!form.title.trim()) fields.value.title = ["请输入标题"];
-  if (!form.contentMd.trim()) fields.value.contentMd = ["请输入正文"];
+  if (!form.categoryId) fields.value.categoryId = [t("newTopic.categoryRequired")];
+  if (!form.title.trim()) fields.value.title = [t("newTopic.titleRequired")];
+  if (!form.contentMd.trim()) fields.value.contentMd = [t("newTopic.contentRequired")];
   if (Object.keys(fields.value).length) return;
   if (turnstileEnabled.value && !token.value) {
     widget.value?.show();
-    error.value = "请先完成人机验证";
+    error.value = t("auth.captchaRequired");
     return;
   }
   submitting.value = true;
@@ -101,14 +102,15 @@ async function submit(): Promise<void> {
     clearDraft();
     await router.push(`/t/${result.id}`);
   } catch (cause) {
-    if (cause instanceof ApiClientError) {
-      error.value = cause.message;
-      fields.value = cause.fields ?? {};
-      if (cause.code === "captcha_failed" || cause.code === "captcha_unavailable") {
-        widget.value?.reset();
-        token.value = "";
-      }
-    } else error.value = "发布失败，请稍后重试";
+    error.value = config.describeError(cause, "newTopic.publishFailed");
+    if (cause && typeof cause === "object" && "fields" in cause) {
+      fields.value = (cause as { fields?: Record<string, string[]> }).fields ?? {};
+    }
+    const code = cause && typeof cause === "object" && "code" in cause ? String((cause as { code: unknown }).code) : "";
+    if (code === "captcha_failed" || code === "captcha_unavailable") {
+      widget.value?.reset();
+      token.value = "";
+    }
   } finally {
     submitting.value = false;
   }
@@ -121,7 +123,7 @@ async function resend(): Promise<void> {
     await api.resendVerification();
     sent.value = true;
   } catch (cause) {
-    error.value = cause instanceof ApiClientError ? cause.message : "发送失败";
+    error.value = config.describeError(cause, "topic.failed");
   } finally {
     resending.value = false;
   }
@@ -143,7 +145,7 @@ onMounted(async () => {
       } catch { /* ignore corrupt draft */ }
     }
   } catch (cause) {
-    error.value = cause instanceof ApiClientError ? cause.message : "加载版块和标签失败";
+    error.value = config.describeError(cause, "newTopic.loadFailed");
   } finally {
     loading.value = false;
   }
@@ -160,28 +162,28 @@ onBeforeUnmount(() => {
     <PageSkeleton v-if="loading" variant="form" narrow />
     <div v-else class="v2-container">
       <div class="flex items-end justify-between gap-4">
-        <h1 class="text-[20px] font-bold leading-[1.3]">发布主题</h1>
-        <span class="text-[10.5px] text-muted-foreground">{{ draftAt ? `草稿已自动保存 · ${draftLabel}` : "草稿会保存在本机" }}</span>
+        <h1 class="text-[20px] font-bold leading-[1.3]">{{ t("newTopic.title") }}</h1>
+        <span class="text-[10.5px] text-muted-foreground">{{ draftAt ? t("newTopic.draftSaved", { time: draftLabel }) : t("newTopic.draftLocal") }}</span>
       </div>
 
       <section v-if="!canPublish" class="mt-4 border border-line bg-surface p-5">
         <div class="border-l-[3px] border-l-[var(--amber)] bg-[var(--amber-soft)] px-3 py-2 text-[11px] leading-6">
-          发帖前需要验证邮箱。完成验证后才能发布主题和回复。
+          {{ t("newTopic.verifyBanner") }}
         </div>
-        <h2 class="mt-4 text-[15px] font-semibold">先验证你的邮箱</h2>
-        <p class="mt-1 text-[11.5px] leading-6 text-muted-foreground">验证邮件会发送到 {{ auth.user?.email }}。如果没有收到，可以重新发送。</p>
-        <p v-if="sent" class="mt-2 text-[11px] text-[var(--amber)]">验证邮件已发送，请检查收件箱。</p>
-        <div class="mt-3 flex gap-2"><button type="button" class="v2-btn solid" :disabled="resending" @click="resend">{{ resending ? "发送中…" : "重新发送验证邮件" }}</button><RouterLink to="/" class="v2-btn">返回首页</RouterLink></div>
+        <h2 class="mt-4 text-[15px] font-semibold">{{ t("newTopic.verifyHeading") }}</h2>
+        <p class="mt-1 text-[11.5px] leading-6 text-muted-foreground">{{ t("newTopic.verifyBody", { email: auth.user?.email ?? "" }) }}</p>
+        <p v-if="sent" class="mt-2 text-[11px] text-[var(--amber)]">{{ t("newTopic.verifySent") }}</p>
+        <div class="mt-3 flex gap-2"><button type="button" class="v2-btn solid" :disabled="resending" @click="resend">{{ resending ? t("common.sending") : t("newTopic.resend") }}</button><RouterLink to="/" class="v2-btn">{{ t("newTopic.backHome") }}</RouterLink></div>
       </section>
 
       <template v-else>
         <div v-if="draftAvailable" class="mt-3 flex items-center gap-3 border border-line bg-surface px-3 py-2 text-[11px] text-muted-foreground">
-          检测到上次未发布的草稿。<button type="button" class="text-pine underline underline-offset-2" @click="restoreDraft">恢复草稿</button><button type="button" class="ml-auto hover:text-ink" @click="clearDraft">清除</button>
+          {{ t("newTopic.draftFound") }}<button type="button" class="text-pine underline underline-offset-2" @click="restoreDraft">{{ t("newTopic.restoreDraft") }}</button><button type="button" class="ml-auto hover:text-ink" @click="clearDraft">{{ t("newTopic.clearDraft") }}</button>
         </div>
 
         <form class="mt-4" @submit.prevent="submit" @keydown.ctrl.enter.prevent="submit" @keydown.meta.enter.prevent="submit">
           <div class="flex flex-wrap items-center gap-2 text-[10.5px] text-muted-foreground">
-            <span>发到</span>
+            <span>{{ t("newTopic.postTo") }}</span>
             <button v-for="category in categories" :key="category.id" type="button" class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[11.5px]" :class="form.categoryId === category.id ? 'border-pine bg-pine-soft text-ink' : 'border-line text-muted-foreground'" @click="form.categoryId = category.id">
               <i class="size-1.5 rounded-full" :class="categoryClass(category.slug)" :style="{ ...categoryStyle(category.color), background: 'var(--c)' }" />{{ category.name }}
             </button>
@@ -190,12 +192,12 @@ onBeforeUnmount(() => {
 
           <div class="mt-3 overflow-hidden rounded-[6px] border border-line bg-surface">
             <div class="flex h-[58px] items-center border-b border-line px-3">
-              <input v-model="form.title" name="title" class="min-w-0 flex-1 border-0 bg-transparent text-[19px] font-semibold outline-none placeholder:text-muted-foreground/60" maxlength="120" placeholder="标题" aria-label="标题" />
+              <input v-model="form.title" name="title" class="min-w-0 flex-1 border-0 bg-transparent text-[19px] font-semibold outline-none placeholder:text-muted-foreground/60" maxlength="120" :placeholder="t('newTopic.titlePlaceholder')" :aria-label="t('newTopic.titleLabel')" />
               <span class="num text-[10.5px] text-muted-foreground">{{ form.title.length }}/120</span>
             </div>
-            <MarkdownEditor v-model="form.contentMd" flat :rows="12" :height="252" placeholder="正文支持 Markdown；请写清环境、步骤和你已经尝试过的办法。" />
+            <MarkdownEditor v-model="form.contentMd" flat :rows="12" :height="252" :placeholder="t('newTopic.contentPlaceholder')" />
             <div class="border-t border-line px-3 py-2">
-              <div class="flex items-center gap-2 text-[10.5px] text-muted-foreground"><span>标签 最多 5 个</span><span class="ml-auto num">{{ form.tagIds.length }} / 5</span></div>
+              <div class="flex items-center gap-2 text-[10.5px] text-muted-foreground"><span>{{ t("newTopic.tags") }} {{ t("newTopic.tagsMax") }}</span><span class="ml-auto num">{{ form.tagIds.length }} / 5</span></div>
               <div class="mt-1.5 flex flex-wrap gap-1.5">
                 <button v-for="tag in tags" :key="tag.id" type="button" class="h-[26px] rounded-full border px-2.5 text-[11px]" :class="form.tagIds.includes(tag.id) ? 'border-pine bg-pine-soft text-ink' : 'border-line text-muted-foreground'" :disabled="!form.tagIds.includes(tag.id) && form.tagIds.length >= 5" @click="toggleTag(tag.id)">#{{ tag.name }}</button>
               </div>
@@ -210,10 +212,10 @@ onBeforeUnmount(() => {
 
           <p v-if="error" class="v2-alert mt-3" role="alert">{{ error }}</p>
           <div class="mt-4 flex items-center gap-3">
-            <span class="text-[10px] leading-5 text-muted-foreground">发布后仍可编辑；有回复后是否可编辑取决于站点规则。</span>
+            <span class="text-[10px] leading-5 text-muted-foreground">{{ t("newTopic.footerHint") }}</span>
             <span class="ml-auto" />
-            <RouterLink to="/" class="v2-btn">取消</RouterLink>
-            <button type="submit" class="v2-btn solid" :disabled="submitting">{{ submitting ? "发布中…" : "发布主题" }}</button>
+            <RouterLink to="/" class="v2-btn">{{ t("newTopic.cancel") }}</RouterLink>
+            <button type="submit" class="v2-btn solid" :disabled="submitting">{{ submitting ? t("newTopic.publishing") : t("newTopic.publish") }}</button>
           </div>
         </form>
       </template>
