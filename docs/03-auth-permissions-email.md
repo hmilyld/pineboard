@@ -131,7 +131,7 @@ P4 implementation: in-site notifications/preferences/unsubscribe/digests are in 
 
 Digest job: take 20 users with pending mail → take at most 50 rows per user with an atomic claim (`email_batch_key=claim:<ts>:<id>`, ≤ 100 parameters) → filter by global switch/user preference/unsubscribe/verified/account status → fetch the daily budget in one query → merge into one email (max 10 rows) → write `email_logs(queued)` first, then call Resend (8s timeout, retry 5xx once) → update statuses in bulk with one UPDATE. Each user has its own try/catch; when the budget is insufficient, release and defer instead of marking skipped; unprocessed claims are reclaimed by the 5-minute job.
 
-User default preferences: all in-site notifications on; email `mention=on`, `topicReply=on`, `postReply=on`, `moderation=on` and cannot be turned off.
+User default preferences: all in-site notifications on; all email categories are off by default and can be enabled individually in Email preferences (including moderation notices).
 
 Unsubscribe: one 32-byte random token per category, stored as SHA-256, 180-day expiry, and incrementing `version` invalidates old links. The `GET /unsubscribe?token=` link at the bottom of emails only shows a confirmation page; it only takes effect via `POST /api/unsubscribe`. Both `List-Unsubscribe` and `List-Unsubscribe-Post: One-Click` are supported.
 

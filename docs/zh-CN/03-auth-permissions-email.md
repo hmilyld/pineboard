@@ -131,7 +131,7 @@ P4 实现：站内通知/偏好/退订/摘要已落地；无 Resend key 时写 d
 
 摘要任务：取 20 个待发用户 → 每用户最多取 50 条并原子 claim（`email_batch_key=claim:<ts>:<id>`，参数数 ≤ 100）→ 过滤全局开关/用户偏好/退订/已验证/账户状态 → 一次查询当日预算 → 合并为一封（最多 10 条）→ 先写 `email_logs(queued)`，再调 Resend（8s 超时、5xx 重试 1 次）→ 一条 UPDATE 批量更新状态。每个用户独立 try/catch；预算不足时 release 顺延而非 skipped；未处理 claim 由 5 分钟任务回收。
 
-用户默认偏好：站内全开；邮件 `mention=on`、`topicReply=on`、`postReply=on`、`moderation=on 且不可关闭`。
+用户默认偏好：站内全开；邮件默认全部关闭，用户可在「邮件偏好」中逐项开启（含管理通知）。
 
 退订：每类一个 32 字节随机令牌，库存 SHA-256，180 天过期，`version` 递增即旧链接失效。邮件底部 `GET /unsubscribe?token=` 只展示确认页，`POST /api/unsubscribe` 才生效；同时支持 `List-Unsubscribe` 与 `List-Unsubscribe-Post: One-Click`。
 

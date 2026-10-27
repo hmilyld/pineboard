@@ -46,7 +46,7 @@ v1.1 预留：`drafts`、`sensitive_words`；`status` 枚举已预留 `pending/r
 
 > 上传当前不落 `upload_intents`/`attachments` 表：`sign` 校验后直接返回预签名 URL，`complete` 通过 R2 `HEAD` 复核并返回 CDN URL；Worker 直传回退校验 magic bytes。若后续需要配额核销、附件楼层绑定或孤儿清理，再补这两张表。
 
-初始迁移会幂等插入一个「综合讨论」版块和「攻略/求助/资讯」标签，便于新站直接使用；用户内容不随迁移写入。迁移 `0009` 增加 `categories.color` 与 `nav_items`，并幂等写入「首页 / 版块 / 标签」默认导航；`0010` 增加举报快照与索引，`0011` 增加配置版本行，`0012` 增加 `email_logs.to_email` 索引，`0013` 重建 `nav_items` 增加 `parent_id` 与 `dropdown` 类型（SQLite CHECK 无法 ALTER，这是 additive 原则的显式例外）。手写迁移 `0003` 不在 drizzle journal 中，`wrangler d1 migrations apply` 仍会执行。
+初始迁移会幂等插入一个「综合讨论」版块和「攻略/求助/资讯」标签，便于新站直接使用；用户内容不随迁移写入。迁移 `0009` 增加 `categories.color` 与 `nav_items`，并幂等写入「首页 / 版块 / 标签」默认导航；`0010` 增加举报快照与索引，`0011` 增加配置版本行，`0012` 增加 `email_logs.to_email` 索引，`0013` 重建 `nav_items` 增加 `parent_id` 与 `dropdown` 类型（SQLite CHECK 无法 ALTER，这是 additive 原则的显式例外）；`0014` 清除此前被强制开启的管理通知邮件偏好，使所有邮件类型默认关闭（一次性数据归一，不涉及用户内容）。手写迁移 `0003` 不在 drizzle journal 中，`wrangler d1 migrations apply` 仍会执行。
 
 ## 检索表
 

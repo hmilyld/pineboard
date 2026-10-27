@@ -57,14 +57,14 @@ onMounted(load);
   <AccountSkeleton v-if="!auth.user || loading" />
   <AccountShell v-else-if="auth.user" :profile="profile" active="preferences" :topic-count="summary.topicCount" :reply-count="summary.replyCount" :like-count="summary.likeCount" :bookmark-count="summary.bookmarkCount" :notification-count="summary.unreadCount" is-self>
     <div class="v2-section-head"><h2>邮件偏好</h2><span>站内通知始终保留</span></div>
-    <p class="mb-3 text-[11.5px] text-muted-foreground">这里只控制是否发送邮件摘要。管理通知不可关闭。</p>
+    <p class="mb-3 text-[11.5px] text-muted-foreground">这里只控制是否发送邮件摘要。默认全部关闭，只有勾选的类型才会发送。</p>
     <p v-if="error" :class="[alertErrorClass, 'mb-3']">{{ error }}</p>
     <p v-if="saved" :class="[alertInfoClass, 'mb-3']">{{ saved }}</p>
     <section class="v2-panel p-4">
       <div class="space-y-3">
         <label v-for="(label, key) in labels" :key="key" class="flex items-start gap-3 text-[12px]">
-          <input v-model="email[key]" :name="`email-${key}`" type="checkbox" class="mt-0.5 size-4 accent-brand" :disabled="key === 'moderation'" />
-          <span><span class="font-medium">{{ label }}</span><span v-if="key === 'moderation'" class="block text-[10.5px] text-muted-foreground">管理通知不可关闭。</span></span>
+          <input v-model="email[key]" :name="`email-${key}`" type="checkbox" class="mt-0.5 size-4 accent-brand" />
+          <span class="font-medium">{{ label }}</span>
         </label>
       </div>
       <div class="mt-5"><Button :disabled="saving" @click="save">{{ saving ? "保存中…" : "保存偏好" }}</Button></div>

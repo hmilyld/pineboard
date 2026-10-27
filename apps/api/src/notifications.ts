@@ -8,10 +8,10 @@ export const NOTIFICATION_CATEGORIES = ["topic_reply", "post_reply", "mention", 
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 
 export const DEFAULT_EMAIL_PREFS: Record<NotificationCategory, boolean> = {
-  topic_reply: true,
-  post_reply: true,
-  mention: true,
-  moderation: true,
+  topic_reply: false,
+  post_reply: false,
+  mention: false,
+  moderation: false,
 };
 
 export type NotificationInsert = {
@@ -36,7 +36,6 @@ export async function getEmailPreferences(
   for (const row of rows.results) {
     if (NOTIFICATION_CATEGORIES.includes(row.category)) result[row.category] = Number(row.email_enabled) === 1;
   }
-  result.moderation = true;
   return result;
 }
 
@@ -47,7 +46,7 @@ export async function setEmailPreferences(
 ): Promise<Record<NotificationCategory, boolean>> {
   const now = Math.floor(Date.now() / 1000);
   const current = await getEmailPreferences(db, userId);
-  const next = { ...current, ...patch, moderation: true };
+  const next = { ...current, ...patch };
   const statements = NOTIFICATION_CATEGORIES.map((category) =>
     db
       .prepare(
@@ -337,9 +336,6 @@ notificationRoutes.post("/api/unsubscribe", async (c) => {
   if (!token) return c.json(fail("validation_error", "缺少退订令牌"), 400);
   const resolved = await resolveUnsubscribeToken(c.env, token);
   if (!resolved) return c.json(fail("not_found", "退订链接无效或已过期"), 404);
-  if (resolved.category === "moderation") {
-    return c.json(fail("forbidden", "管理通知不可退订"), 403);
-  }
   const now = Math.floor(Date.now() / 1000);
   await c.env.DB.batch([
     c.env.DB.prepare("UPDATE email_unsubscribe_tokens SET used_at = ? WHERE id = ?").bind(now, resolved.id),

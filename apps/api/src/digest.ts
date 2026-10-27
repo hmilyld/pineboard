@@ -144,7 +144,7 @@ export async function runEmailDigest(
             : config.mail.notifyModeration;
     const eligible = notifications.filter((n) => {
       const category = categoryFor(n.type);
-      return category !== null && globalEnabled(category) && (category === "moderation" || prefs[category]);
+      return category !== null && globalEnabled(category) && prefs[category];
     });
     if (!eligible.length) {
       await mark("skipped", notifications.map((n) => n.id), null);
@@ -163,7 +163,7 @@ export async function runEmailDigest(
     const categories = [...new Set(batch.map((n) => categoryFor(n.type)!).filter(Boolean))];
     const unsubscribeLinks: { category: NotificationCategory; url: string }[] = [];
     if (config.mail.includeUnsubscribe) {
-      for (const category of categories.filter((item) => item !== "moderation")) {
+      for (const category of categories) {
         const token = await createUnsubscribeToken(env, config, userId, category);
         unsubscribeLinks.push({ category, url: token.url });
       }
