@@ -135,7 +135,11 @@
     -webkit-font-smoothing: antialiased;
     font-feature-settings: "palt" 1;
   }
+  /* `balance` makes the browser force every line to the same length, which on a
+     long, narrow topic title leaves the right side of the row empty. Short
+     headings still balance fine; topic titles fill the row instead. */
   h1, h2, h3 { font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+  .v2-topic-head h1 { text-wrap: pretty; }
   a, button, summary, [role="button"] { touch-action: manipulation; }
   summary { list-style: none; }
   summary::-webkit-details-marker { display: none; }
