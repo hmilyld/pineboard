@@ -134,6 +134,7 @@ export const zhCN = {
   topic: {
     viewsHead: "查看",
     op: "楼主",
+    pendingReview: "回复已提交，命中关键词，正在等待版主审核。通过后会公开显示。",
     edited: "已编辑",
     deletedFloor: "该楼层已删除",
     quote: "引用",
@@ -454,6 +455,7 @@ export const zhCN = {
 
   newTopic: {
     title: "发布主题",
+    pendingReview: "内容已提交，命中关键词，正在等待版主审核。通过后会公开显示。",
     draftSaved: "草稿已自动保存 · {time}",
     draftLocal: "草稿会保存在本机",
     verifyBanner: "发帖前需要验证邮箱。完成验证后才能发布主题和回复。",
@@ -582,6 +584,7 @@ export const zhCN = {
     nav: {
       overview: "概览",
       reports: "举报处理",
+      reviews: "待审核",
       categories: "版块维护",
       tags: "标签维护",
       users: "用户管理",
@@ -712,6 +715,26 @@ export const zhCN = {
       markDismissed: "驳回",
       viewContent: "查看内容",
       unit: "条举报",
+    },
+    reviews: {
+      subtitle: "命中敏感词而被拦截的内容。若命中词为空，说明词库尚未配置。",
+      empty: "暂无待审核内容。",
+      keywordHint: "命中：{words}",
+      approved: "已发布。",
+      rejected: "已驳回。",
+      failed: "处理失败",
+      approve: "通过发布",
+      reject: "驳回",
+      wordsTitle: "敏感词库",
+      wordsSubtitle: "命中后内容转入本队列等待人工审核，而非直接拒绝。",
+      wordsEnabled: "启用关键词检测",
+      wordsPlaceholder: "每行一个词，例如：\n代开发票\n网络赌博",
+      wordsLabel: "敏感词列表",
+      wordsCount: "共 {n} 个词",
+      wordsSaved: "敏感词库已保存。",
+      seedDefaults: "载入推荐默认词库",
+      seedConfirm: "用推荐默认词库替换当前列表？",
+      rejectReason: "驳回原因（可选，仅内部记录）",
     },
     users: {
       subtitle: "搜索、角色调整与封禁；最后一名管理员受保护。",

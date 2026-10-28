@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { TopicDetail } from "@pineboard/shared";
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import MarkdownEditor from "@/components/MarkdownEditor.vue";
 import PageSkeleton from "@/components/PageSkeleton.vue";
+import TurnstileWidget from "@/components/TurnstileWidget.vue";
 import { Button } from "@/components/ui/button";
 import { t } from "@/i18n";
 import { api } from "@/lib/api";
@@ -18,6 +19,9 @@ const form = reactive({ title: "", contentMd: "", reason: "" });
 const error = ref("");
 const loading = ref(true);
 const saving = ref(false);
+const token = ref("");
+const widget = ref<InstanceType<typeof TurnstileWidget> | null>(null);
+const turnstileEnabled = computed(() => Boolean(config.config?.feature.turnstile && config.turnstileSiteKey));
 
 async function load(): Promise<void> {
   loading.value = true;
@@ -39,18 +43,32 @@ async function save(): Promise<void> {
     error.value = t("editTopic.titleRequired");
     return;
   }
+  if (turnstileEnabled.value && !token.value) {
+    widget.value?.show();
+    error.value = t("auth.captchaRequired");
+    return;
+  }
   saving.value = true;
   error.value = "";
   try {
-    await api.editTopic(String(route.params.id), {
-      version: detail.value.firstPost.version,
-      title: form.title.trim(),
-      contentMd: form.contentMd,
-      reason: form.reason.trim() || undefined,
-    });
+    await api.editTopic(
+      String(route.params.id),
+      {
+        version: detail.value.firstPost.version,
+        title: form.title.trim(),
+        contentMd: form.contentMd,
+        reason: form.reason.trim() || undefined,
+      },
+      token.value,
+    );
     await router.push(`/t/${route.params.id}`);
   } catch (cause) {
     error.value = config.describeError(cause, "common.saveFailed");
+    const code = cause && typeof cause === "object" && "code" in cause ? String((cause as { code: unknown }).code) : "";
+    if (code === "captcha_failed" || code === "captcha_unavailable") {
+      widget.value?.reset();
+      token.value = "";
+    }
   } finally {
     saving.value = false;
   }
@@ -75,6 +93,15 @@ onMounted(load);
           <MarkdownEditor v-model="form.contentMd" flat :rows="14" :height="360" />
         </div>
         <div class="mt-3"><label class="v2-label" for="edit-reason">{{ t("editTopic.reasonLabel") }}</label><input id="edit-reason" v-model="form.reason" name="reason" class="v2-input" maxlength="200" :placeholder="t('editTopic.reasonPlaceholder')" /></div>
+        <TurnstileWidget
+          v-if="config.turnstileSiteKey"
+          ref="widget"
+          :site-key="config.turnstileSiteKey"
+          action="post_edit"
+          @token="token = $event"
+          @expired="token = ''"
+          @error="error = $event"
+        />
         <p v-if="error" class="v2-alert mt-3">{{ error }}</p>
         <div class="mt-3 flex items-center gap-3"><button type="submit" class="v2-btn solid" :disabled="saving">{{ saving ? t("common.saving") : t("editTopic.save") }}</button><RouterLink :to="`/t/${route.params.id}/history`" class="text-[11.5px] text-muted-foreground hover:text-ink">{{ t("editTopic.viewHistory") }}</RouterLink><span class="ml-auto text-[10.5px] text-muted-foreground">{{ t("editTopic.currentVersion", { version: detail.firstPost.version }) }}</span></div>
       </form>

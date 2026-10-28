@@ -171,7 +171,7 @@ The report list filters on `reports.category_id` on the SQL side and paginates d
 | feature | turnstile=true; pwa=true; markdown=true; search=true; uploads=true; reports=true; guestRead=true |
 | maintenance | enabled=false; message (operator copy, shown verbatim); allowAdmin=true |
 | upload | imageMaxMb=5; fileMaxMb=10; userDailyCount=20; orphanTtlHours=24 (file types are validated by the route whitelist: images JPG/PNG/WebP/GIF/AVIF, attachments ZIP/RAR/7Z) |
-| security | postMinIntervalSeconds=30; newUserDailyPosts=10; mentionMaxPerPost=5; reportDailyLimit=10; signupPerHour=5 (fixed IP window before Turnstile) |
+| security | postMinIntervalSeconds=30; newUserDailyPosts=10; mentionMaxPerPost=5; reportDailyLimit=10; signupPerHour=5 (fixed IP window before Turnstile); sensitiveWords=[] (max 2000, 1–32 chars each); sensitiveWordsEnabled=true |
 | integration | cloudflare.accountId=""; cloudflare.r2Bucket=""; cloudflare.cdnUrl=""; cloudflare.turnstileSiteKey="" (empty values fall back to Worker variables) |
 | theme | layout=classic; tokens={}; darkMode=system |
 

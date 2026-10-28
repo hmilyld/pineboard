@@ -21,6 +21,7 @@ import HomePage from "@/pages/HomePage.vue";
 import LoginPage from "@/pages/LoginPage.vue";
 import MePage from "@/pages/MePage.vue";
 import ModReportsPage from "@/pages/ModReportsPage.vue";
+import ModReviewsPage from "@/pages/ModReviewsPage.vue";
 import MyCollectionPage from "@/pages/MyCollectionPage.vue";
 import NotificationsPage from "@/pages/NotificationsPage.vue";
 import PreferencesPage from "@/pages/PreferencesPage.vue";
@@ -70,6 +71,7 @@ export const router = createRouter({
       children: [
         { path: "", name: "admin-overview", component: AdminOverviewPage, meta: { requiresAdmin: true } },
         { path: "reports", name: "mod-reports", component: ModReportsPage, meta: { requiresModerator: true } },
+        { path: "reviews", name: "mod-reviews", component: ModReviewsPage, meta: { requiresModerator: true } },
         { path: "categories", name: "admin-categories", component: AdminCategoriesPage, meta: { requiresAdmin: true } },
         { path: "tags", name: "admin-tags", component: AdminTagsPage, meta: { requiresAdmin: true } },
         { path: "users", name: "admin-users", component: AdminUsersPage, meta: { requiresAdmin: true } },

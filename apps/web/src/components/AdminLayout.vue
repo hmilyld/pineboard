@@ -17,12 +17,16 @@ const overview = ref<AdminOverview | null>(null);
 const navOpen = ref(false);
 const isAdmin = computed(() => auth.isAdmin);
 const pending = computed(() => overview.value?.pendingReports ?? 0);
+const pendingReviews = ref(0);
 
 async function loadOverview(): Promise<void> {
-  if (!isAdmin.value) return;
+  if (!isAdmin.value && !auth.user) return;
   try {
     overview.value = await api.adminOverview();
   } catch { /* header badge is optional */ }
+  try {
+    pendingReviews.value = (await api.pendingReviews()).items.length;
+  } catch { /* the queue badge is optional too */ }
 }
 
 async function signOut(): Promise<void> {
@@ -66,6 +70,7 @@ onMounted(loadOverview);
             <p class="px-2 pb-1 text-[10px] text-white/40">{{ t("admin.shell.groupSite") }}</p>
             <RouterLink v-if="isAdmin" to="/admin" class="v2-admin-link" :class="{ on: route.name === 'admin-overview' }">{{ t("admin.nav.overview") }}</RouterLink>
             <RouterLink to="/admin/reports" class="v2-admin-link" :class="{ on: route.name === 'mod-reports' }">{{ t("admin.nav.reports") }} <span v-if="pending">{{ pending }}</span></RouterLink>
+            <RouterLink to="/admin/reviews" class="v2-admin-link" :class="{ on: route.name === 'mod-reviews' }">{{ t("admin.nav.reviews") }} <span v-if="pendingReviews">{{ pendingReviews }}</span></RouterLink>
             <RouterLink v-if="isAdmin" to="/admin/categories" class="v2-admin-link" :class="{ on: route.name === 'admin-categories' }">{{ t("admin.nav.categories") }}</RouterLink>
             <RouterLink v-if="isAdmin" to="/admin/tags" class="v2-admin-link" :class="{ on: route.name === 'admin-tags' }">{{ t("admin.nav.tags") }}</RouterLink>
             <RouterLink v-if="isAdmin" to="/admin/users" class="v2-admin-link" :class="{ on: route.name === 'admin-users' }">{{ t("admin.nav.users") }}</RouterLink>

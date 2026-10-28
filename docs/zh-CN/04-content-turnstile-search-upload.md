@@ -4,7 +4,7 @@
 
 ## Turnstile
 
-- Managed 模式；前端 Vue 组件固定 `action`：`signup` / `topic_create` / `post_create`。
+- Managed 模式；前端 Vue 组件固定 `action`：`signup` / `topic_create` / `post_create` / `post_edit`。
 - 默认 `appearance: "interaction-only"`：没有挑战时组件不占高度、不打扰用户；Cloudflare 需要确认时才原地出现。
 - `error-callback` 触发或提交时仍无 token 时，切换到 `appearance: "always"` 重新渲染，让用户手动完成验证；成功后 token 通过 `callback` 回传。
 - 提交时若已有 token 直接使用；任何失败后必须 `reset()`，否则重试可能 `timeout-or-duplicate`。
@@ -13,6 +13,22 @@
 - 错误映射：`invalid-input-response` / `timeout-or-duplicate` → 400 `captcha_failed`；`internal-error` / 网络超时 → 503 `captcha_unavailable`，保留编辑器内容。
 - 总开关 `feature.turnstile`；关闭时跳过校验。**没有 Site Key 时前后端一致按“未启用”处理**：`/api/site` 下发 `feature.turnstile=false`，后端跳过 siteverify；`/api/health.turnstileConfigured` 用于监控。Site Key 存在但 Secret 缺失时返回 `captcha_unavailable`。注册入口也走同一套。
 - E2E 用官方测试 key（always-pass / always-fail），不要拿生产 key 跑自动化。
+
+## 敏感词与审核队列
+
+编辑已发布内容同样是写入路径：`PATCH /api/topics/:id` 与 `PATCH /api/posts/:id` 携带 `action: "post_edit"`，走与新发内容相同的频率限制和 siteverify 顺序。缺了这一步，攻击者可以先发干净内容、事后再编辑成垃圾。
+
+关键词检测**只转人工审核，不直接拒绝**：
+
+- 匹配引擎：`packages/shared/src/sensitive.ts`，一个精简的 trie。运营词表预期只有几百条，构建耗时远低于 1ms；Aho-Corasick 方案需要约 200ms，会击穿 Workers 免费版 10ms 的 CPU 预算。
+- 绕过处理只做成本最低、收益最高的一件事：匹配时跳过词间的空白与标点（`代 开 发 票` 可命中），但每个匹配最多容忍 `n + 2` 个填充字符，避免短词在长句里被误命中。全角/全套 Unicode 归一化刻意不做。
+- 命中后主题和回复以 `status='pending'` 写入，而不是 `published`。所有公开读取都过滤 `status = 'published'`，因此待审内容对访客不可见，也不进搜索。
+- 待审回复不增加 `reply_count` / `last_post_at`，也不发提及与回复通知；通过审核时才补一次计数。
+- 首帖被改成命中词时，整个主题转为 `pending`，审核前不可见。
+- 队列 API：`GET /api/mod/pending`、`POST /api/mod/topics/:id/review`、`POST /api/mod/posts/:id/review`（`{ action: "approve" | "reject", reason? }`）。版主只看自己管理的版块，管理员看全部。
+- 为压误报，预置词库不收两字泛词：`DEFAULT_SENSITIVE_WORDS` 只保留高置信度的诈骗/违法交易类词，且词表默认留空，由运营在 `/admin/reviews` 自行载入。
+- 配置项：`security.sensitiveWords`（最多 2000 条，每条 1–32 字）与 `security.sensitiveWordsEnabled`，都在 `/admin/reviews` 编辑；关掉开关即恢复直接发布。
+- 审计：命中时 `topic.create` / `post.create` / `post.edit` 记录 `{ keywords: [...] }` 供队列回读；`review.approve` / `review.reject` 记录处理人与原因。
 
 ## 中文搜索
 

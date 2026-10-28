@@ -231,6 +231,15 @@ export const securityConfigSchema = z.object({
   reportDailyLimit: z.number().int().min(0).max(100).default(10),
   /** Per-IP fixed window used before Turnstile siteverify (P1). */
   signupPerHour: z.number().int().min(1).max(1000).default(5),
+  /**
+   * Operator-curated sensitive words. Matches divert a write to `pending` (the
+   * review queue) instead of rejecting it, so a false positive costs a
+   * moderator click rather than a lost post. Empty disables keyword matching;
+   * the shipped defaults are seeded through the admin UI, not hardcoded here.
+   */
+  sensitiveWords: z.array(z.string().trim().min(1).max(32)).max(2000).default([]),
+  /** Master switch for keyword matching; the word list stays editable. */
+  sensitiveWordsEnabled: z.boolean().default(true),
 });
 
 /**
@@ -383,6 +392,8 @@ export const DEFAULTS: AppConfig = {
     mentionMaxPerPost: 5,
     reportDailyLimit: 10,
     signupPerHour: 5,
+    sensitiveWords: [],
+    sensitiveWordsEnabled: true,
   },
   integration: {
     cloudflare: { accountId: "", r2Bucket: "", cdnUrl: "", turnstileSiteKey: "" },

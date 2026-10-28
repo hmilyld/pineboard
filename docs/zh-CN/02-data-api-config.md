@@ -171,7 +171,7 @@ v2 通知额外返回 `postFloor`，前端据此拼 `?page=N#post-F`；首页/�
 | feature | turnstile=true；pwa=true；markdown=true；search=true；uploads=true；reports=true；guestRead=true |
 | maintenance | enabled=false；message（运营文案，原样显示）；allowAdmin=true |
 | upload | imageMaxMb=5；fileMaxMb=10；userDailyCount=20；orphanTtlHours=24（文件类型由路由白名单校验：图片 JPG/PNG/WebP/GIF/AVIF，附件 ZIP/RAR/7Z） |
-| security | postMinIntervalSeconds=30；newUserDailyPosts=10；mentionMaxPerPost=5；reportDailyLimit=10；signupPerHour=5（Turnstile 前的按 IP 固定窗口） |
+| security | postMinIntervalSeconds=30；newUserDailyPosts=10；mentionMaxPerPost=5；reportDailyLimit=10；signupPerHour=5（Turnstile 前的按 IP 固定窗口）；sensitiveWords=[]（最多 2000 条，每条 1–32 字）；sensitiveWordsEnabled=true |
 | integration | cloudflare.accountId=""；cloudflare.r2Bucket=""；cloudflare.cdnUrl=""；cloudflare.turnstileSiteKey=""（空值回退 Worker 变量） |
 | theme | layout=classic；tokens={}；darkMode=system |
 

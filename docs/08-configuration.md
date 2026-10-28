@@ -95,7 +95,7 @@ Site, SEO, the basic account items, maintenance mode, pagination, the Turnstile 
 | `feature` | turnstile, pwa, markdown, search, uploads, reports, guestRead | Feature flags |
 | `maintenance` | enabled, message, allowAdmin | Maintenance mode; `message` is shown verbatim |
 | `upload` | imageMaxMb, fileMaxMb, userDailyCount, orphanTtlHours | The type whitelist is fixed in code |
-| `security` | postMinIntervalSeconds, newUserDailyPosts, mentionMaxPerPost, reportDailyLimit, signupPerHour | Rate limits |
+| `security` | postMinIntervalSeconds, newUserDailyPosts, mentionMaxPerPost, reportDailyLimit, signupPerHour, sensitiveWords, sensitiveWordsEnabled | Rate limits and keyword screening |
 | `integration` | cloudflare.accountId/r2Bucket/cdnUrl/turnstileSiteKey | Falls back to CF when missing |
 | `theme` | layout, tokens, darkMode | Theme tokens |
 | `secrets` | resendApiKey, resendWebhookSecret, turnstileSecret, r2AccessKeyId, r2SecretAccessKey | AES-GCM ciphertext, never echoed back |

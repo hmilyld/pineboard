@@ -50,6 +50,8 @@ const editingReply = ref<Post | null>(null);
 const editContent = ref("");
 const editReason = ref("");
 const editError = ref("");
+const editToken = ref("");
+const editWidget = ref<{ reset(): void; show(): void } | null>(null);
 const savingEdit = ref(false);
 const pinLevel = ref<0 | 1 | 2>(0);
 const moveCategory = ref("");
@@ -96,6 +98,8 @@ function cancelEdit(): void {
   editingReply.value = null;
   editContent.value = "";
   editError.value = "";
+  editToken.value = "";
+  editWidget.value?.reset();
 }
 
 async function saveReplyEdit(): Promise<void> {
@@ -104,18 +108,32 @@ async function saveReplyEdit(): Promise<void> {
     editError.value = t("topic.contentRequired");
     return;
   }
+  if (turnstileEnabled.value && !editToken.value) {
+    editWidget.value?.show();
+    editError.value = t("topic.captchaRequired");
+    return;
+  }
   savingEdit.value = true;
   editError.value = "";
   try {
-    await api.editPost(editingReply.value.id, {
-      version: editingReply.value.version,
-      contentMd: editContent.value,
-      reason: editReason.value.trim() || undefined,
-    });
+    await api.editPost(
+      editingReply.value.id,
+      {
+        version: editingReply.value.version,
+        contentMd: editContent.value,
+        reason: editReason.value.trim() || undefined,
+      },
+      editToken.value,
+    );
     cancelEdit();
     await load();
   } catch (cause) {
     editError.value = config.describeError(cause, "common.saveFailed");
+    const code = cause && typeof cause === "object" && "code" in cause ? String((cause as { code: unknown }).code) : "";
+    if (code === "captcha_failed" || code === "captcha_unavailable") {
+      editWidget.value?.reset();
+      editToken.value = "";
+    }
   } finally {
     savingEdit.value = false;
   }
@@ -213,11 +231,15 @@ async function submitReply(): Promise<void> {
   }
   submitting.value = true;
   try {
-    await api.createReply(topicId.value, { contentMd: replyContent.value, parentPostId: replyTo.value?.id }, token.value);
+    const created = await api.createReply(topicId.value, { contentMd: replyContent.value, parentPostId: replyTo.value?.id }, token.value);
     replyContent.value = "";
     replyTo.value = null;
     widget.value?.reset();
     token.value = "";
+    if (created.pending) {
+      actionError.value = t("topic.pendingReview");
+      return;
+    }
     detail.value = await api.topic(topicId.value);
     const lastPage = Math.max(1, Math.ceil((total.value + 1) / (config.config?.seo.postsPerPage ?? 20)));
     if (lastPage !== page.value) {
@@ -455,6 +477,9 @@ watch([() => route.query.page, () => route.query.onlyOp], () => {
               <div class="p-3">
                 <MarkdownEditor v-model="editContent" :rows="6" />
                 <input v-model="editReason" class="v2-input mt-2" maxlength="200" :placeholder="t('topic.editReasonPlaceholder')" />
+                <div v-if="turnstileEnabled" class="mt-2">
+                  <TurnstileWidget ref="editWidget" :site-key="config.turnstileSiteKey" action="post_edit" @token="editToken = $event" @expired="editToken = ''" @error="editError = $event" />
+                </div>
                 <ErrorState v-if="editError" class="mt-2" :message="editError" />
                 <div class="mt-2 flex gap-2"><button type="button" class="v2-btn solid sm" :disabled="savingEdit" @click="saveReplyEdit">{{ savingEdit ? t("common.saving") : t("topic.saveReplyEdit") }}</button><button type="button" class="v2-btn sm" @click="cancelEdit">{{ t("common.cancel") }}</button></div>
               </div>

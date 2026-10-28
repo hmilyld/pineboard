@@ -28,6 +28,7 @@ import { bigramTokens } from "@pineboard/shared";
 import { ftsDeleteStatement, ftsDeleteTopicStatement, ftsInsertStatement } from "./search-index";
 import { consumeRateLimit, hashIp, verifyTurnstile } from "./security";
 import { getEffectiveIntegrations } from "./integrations";
+import { screenContent } from "./keywords";
 import { startOfDaySeconds } from "./stats";
 
 type JoinRow = Record<string, unknown>;
@@ -503,6 +504,9 @@ forumRoutes.post("/api/topics", requireVerified, async (c) => {
   const captcha = await writeTurnstile(c, security.config, "topic_create");
   if (!captcha.ok) return c.json({ ok: false, error: { code: captcha.code, message: captcha.message } }, captcha.code === "captcha_unavailable" ? 503 : 400);
 
+  const verdict = screenContent(security.config.security, parsed.data.title, parsed.data.contentMd);
+  const topicStatus = verdict.flagged ? "pending" : "published";
+
   const now = Math.floor(Date.now() / 1000);
   const topicId = ulid();
   const postId = ulid();
@@ -511,13 +515,13 @@ forumRoutes.post("/api/topics", requireVerified, async (c) => {
     c.env.DB.prepare(
       `INSERT INTO topics (id, category_id, author_id, first_post_id, status, pin_level, pin_order, is_locked,
          reply_count, like_count, view_count, last_post_at, last_post_user_id, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'published', 0, 0, 0, 0, 0, 0, ?, ?, ?, ?)`,
-    ).bind(topicId, parsed.data.categoryId, user.id, postId, now, user.id, now, now),
+       VALUES (?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0, ?, ?, ?, ?)`,
+    ).bind(topicId, parsed.data.categoryId, user.id, postId, topicStatus, now, user.id, now, now),
     c.env.DB.prepare(
       `INSERT INTO posts (id, topic_id, author_id, floor, is_first, title, content_md, content_text, status,
          like_count, version, edit_count, created_at, updated_at)
-       VALUES (?, ?, ?, 1, 1, ?, ?, ?, 'published', 0, 1, 0, ?, ?)`,
-    ).bind(postId, topicId, user.id, parsed.data.title, parsed.data.contentMd, contentText, now, now),
+       VALUES (?, ?, ?, 1, 1, ?, ?, ?, ?, 0, 1, 0, ?, ?)`,
+    ).bind(postId, topicId, user.id, parsed.data.title, parsed.data.contentMd, contentText, topicStatus, now, now),
     ftsInsertStatement(c.env.DB, { postId, topicId, title: parsed.data.title, content: parsed.data.contentMd }),
   ];
   for (const tagId of tagIds) {
@@ -529,8 +533,11 @@ forumRoutes.post("/api/topics", requireVerified, async (c) => {
   statements.push(c.env.DB.prepare(
     `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
      VALUES (?, ?, 'topic.create', 'topic', ?, ?, ?, ?)`,
-  ).bind(ulid(), user.id, topicId, JSON.stringify({ categoryId: parsed.data.categoryId }), await hashIp(c.env, c.req.header("cf-connecting-ip") ?? "unknown"), now));
+  ).bind(ulid(), user.id, topicId, JSON.stringify({ categoryId: parsed.data.categoryId, ...(verdict.flagged ? { keywords: verdict.words } : {}) }), await hashIp(c.env, c.req.header("cf-connecting-ip") ?? "unknown"), now));
   await c.env.DB.batch(statements);
+  if (verdict.flagged) {
+    return c.json({ ok: true, data: { id: topicId, postId, pending: true } }, 201);
+  }
   return c.json({ ok: true, data: { id: topicId, postId } }, 201);
 });
 
@@ -562,6 +569,9 @@ forumRoutes.post("/api/topics/:id/posts", requireVerified, async (c) => {
   const captcha = await writeTurnstile(c, security.config, "post_create");
   if (!captcha.ok) return c.json({ ok: false, error: { code: captcha.code, message: captcha.message } }, captcha.code === "captcha_unavailable" ? 503 : 400);
 
+  const verdict = screenContent(security.config.security, parsed.data.contentMd);
+  const postStatus = verdict.flagged ? "pending" : "published";
+
   const now = Math.floor(Date.now() / 1000);
   const postId = ulid();
   const contentText = markdownToPlainText(parsed.data.contentMd).slice(0, 100_000);
@@ -582,28 +592,30 @@ forumRoutes.post("/api/topics/:id/posts", requireVerified, async (c) => {
       c.env.DB.prepare(
         `INSERT INTO posts (id, topic_id, author_id, parent_post_id, floor, is_first, title, content_md, content_text,
            status, like_count, version, edit_count, created_at, updated_at)
-         VALUES (?, ?, ?, ?, (SELECT COALESCE(MAX(floor), 0) + 1 FROM posts WHERE topic_id = ?), 0, NULL, ?, ?, 'published', 0, 1, 0, ?, ?)
+         VALUES (?, ?, ?, ?, (SELECT COALESCE(MAX(floor), 0) + 1 FROM posts WHERE topic_id = ?), 0, NULL, ?, ?, ?, 0, 1, 0, ?, ?)
          RETURNING floor`,
-      ).bind(postId, topicId, user.id, parsed.data.parentPostId ?? null, topicId, parsed.data.contentMd, contentText, now, now),
+      ).bind(postId, topicId, user.id, parsed.data.parentPostId ?? null, topicId, parsed.data.contentMd, contentText, postStatus, now, now),
+      // A pending reply must not bump counters or surface the topic as active.
       c.env.DB.prepare(
-        "UPDATE topics SET reply_count = reply_count + 1, last_post_at = ?, last_post_user_id = ?, updated_at = ? WHERE id = ? AND status = 'published'",
-      ).bind(now, user.id, now, topicId),
+        `UPDATE topics SET reply_count = reply_count + 1, last_post_at = ?, last_post_user_id = ?, updated_at = ?
+          WHERE id = ? AND status = 'published' AND ? = 'published'`,
+      ).bind(now, user.id, now, topicId, postStatus),
       c.env.DB.prepare(
         `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
-         VALUES (?, ?, 'post.create', 'topic', ?, NULL, ?, ?)`,
-      ).bind(ulid(), user.id, topicId, await hashIp(c.env, c.req.header("cf-connecting-ip") ?? "unknown"), now),
+         VALUES (?, ?, 'post.create', 'topic', ?, ?, ?, ?)`,
+      ).bind(ulid(), user.id, topicId, verdict.flagged ? JSON.stringify({ keywords: verdict.words }) : null, await hashIp(c.env, c.req.header("cf-connecting-ip") ?? "unknown"), now),
       ftsInsertStatement(c.env.DB, { postId, topicId, title: "", content: parsed.data.contentMd }),
-      ...notificationStatements(c.env.DB, notifications),
+      ...(verdict.flagged ? [] : notificationStatements(c.env.DB, notifications)),
     ]);
     insertResult = results[0]!;
   } catch (error) {
     return c.json({ ok: false, error: { code: "conflict", message: error instanceof Error && /UNIQUE/.test(error.message) ? "楼层冲突，请重试" : "回复失败" } }, 409);
   }
   const floor = Number((insertResult.results[0] as { floor?: number } | undefined)?.floor ?? 0);
-  if (notifications.some((item) => item.type === "mention")) {
+  if (!verdict.flagged && notifications.some((item) => item.type === "mention")) {
     c.executionCtx.waitUntil(sendMentionEmails(c.env, c.get("config"), notifications));
   }
-  return c.json({ ok: true, data: { id: postId, floor } }, 201);
+  return c.json({ ok: true, data: { id: postId, floor, ...(verdict.flagged ? { pending: true } : {}) } }, 201);
 });
 
 async function applyPostEdit(
@@ -641,6 +653,28 @@ async function applyPostEdit(
   });
   if (!decision.allowed) return c.json({ ok: false, error: { code: decision.code, message: decision.message } }, 403);
 
+  // Edits are user-generated content writes: gate them exactly like creates so a
+  // clean post cannot be turned into spam after the fact.
+  const security = await getSecurityConfig(c.env);
+  if (security.config.security.postMinIntervalSeconds > 0) {
+    const limit = await consumeRateLimit(
+      c.env,
+      `post:${user.id}:post_edit`,
+      security.config.security.postMinIntervalSeconds,
+      1,
+    );
+    if (!limit.allowed) {
+      c.header("retry-after", String(limit.retryAfter));
+      return c.json({ ok: false, error: { code: "rate_limited", message: "编辑过于频繁" } }, 429);
+    }
+  }
+  const captcha = await writeTurnstile(c, security.config, "post_edit");
+  if (!captcha.ok) {
+    return c.json({ ok: false, error: { code: captcha.code, message: captcha.message } }, captcha.code === "captcha_unavailable" ? 503 : 400);
+  }
+
+  const verdict = screenContent(security.config.security, parsed.data.title ?? null, parsed.data.contentMd ?? null);
+
   const now = Math.floor(Date.now() / 1000);
   const contentText = parsed.data.contentMd !== undefined ? markdownToPlainText(parsed.data.contentMd).slice(0, 100_000) : null;
   let updateResult: D1Result;
@@ -655,12 +689,14 @@ async function applyPostEdit(
         `UPDATE posts SET title = CASE WHEN ? IS NULL THEN title ELSE ? END,
                 content_md = CASE WHEN ? IS NULL THEN content_md ELSE ? END,
                 content_text = CASE WHEN ? IS NULL THEN content_text ELSE ? END,
+                status = CASE WHEN ? = 1 AND status = 'published' THEN 'pending' ELSE status END,
                 version = version + 1, edit_count = edit_count + 1, edited_at = ?, updated_at = ?
           WHERE id = ? AND version = ?`,
       ).bind(
         parsed.data.title ?? null, parsed.data.title ?? null,
         parsed.data.contentMd ?? null, parsed.data.contentMd ?? null,
         contentText, contentText,
+        verdict.flagged ? 1 : 0,
         now, now, input.postId, parsed.data.version,
       ),
       // Every following statement is guarded by the *new* version. A stale CAS
@@ -668,6 +704,13 @@ async function applyPostEdit(
       c.env.DB.prepare(
         "UPDATE topics SET updated_at = ? WHERE id = ? AND EXISTS (SELECT 1 FROM posts WHERE id = ? AND version = ?)",
       ).bind(now, input.topicId, input.postId, parsed.data.version + 1),
+      // Editing the opening post into flagged text hides the whole topic until a
+      // moderator approves it, mirroring how a flagged create is handled.
+      c.env.DB.prepare(
+        `UPDATE topics SET status = 'pending'
+          WHERE id = ? AND ? = 1 AND status = 'published'
+            AND EXISTS (SELECT 1 FROM posts WHERE id = ? AND version = ?)`,
+      ).bind(input.topicId, isFirst && verdict.flagged ? 1 : 0, input.postId, parsed.data.version + 1),
       c.env.DB.prepare(
         "DELETE FROM post_search WHERE post_uid = ? AND EXISTS (SELECT 1 FROM posts WHERE id = ? AND version = ?)",
       ).bind(input.postId, input.postId, parsed.data.version + 1),
@@ -685,7 +728,7 @@ async function applyPostEdit(
         `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
          SELECT ?, ?, 'post.edit', 'post', ?, ?, NULL, ?
           WHERE EXISTS (SELECT 1 FROM posts WHERE id = ? AND version = ?)`,
-      ).bind(ulid(), user.id, input.postId, JSON.stringify({ version: parsed.data.version, reason: parsed.data.reason ?? null }), now, input.postId, parsed.data.version + 1),
+      ).bind(ulid(), user.id, input.postId, JSON.stringify({ version: parsed.data.version, reason: parsed.data.reason ?? null, ...(verdict.flagged ? { keywords: verdict.words } : {}) }), now, input.postId, parsed.data.version + 1),
       c.env.DB.prepare(
         `DELETE FROM post_revisions WHERE post_id = ? AND EXISTS (SELECT 1 FROM posts WHERE id = ? AND version = ?)
            AND id NOT IN (SELECT id FROM post_revisions WHERE post_id = ? ORDER BY version DESC LIMIT ?)`,
@@ -704,7 +747,7 @@ async function applyPostEdit(
   if (Number(updateResult.meta.changes) === 0) {
     return c.json({ ok: false, error: { code: "version_conflict", message: "内容已被修改，请刷新后重试" } }, 409);
   }
-  return c.json({ ok: true, data: { version: parsed.data.version + 1 } });
+  return c.json({ ok: true, data: { version: parsed.data.version + 1, ...(verdict.flagged ? { pending: true } : {}) } });
 }
 
 forumRoutes.patch("/api/topics/:id", requireVerified, async (c) => {

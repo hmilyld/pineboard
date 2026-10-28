@@ -16,8 +16,10 @@ import {
   type Me,
   type NavItem,
   type NavItemInput,
+  type PendingReviewItem,
   type PostPage,
   type PublicConfig,
+  type ReviewDecisionInput,
   type Revision,
   type AdminOverview,
   type SearchResponse,
@@ -281,7 +283,7 @@ export const api = {
     return request(`/api/topics/${encodeURIComponent(topicId)}/posts?${query.toString()}`);
   },
 
-  createTopic(input: CreateTopicInput, turnstileToken: string): Promise<{ id: string; postId: string }> {
+  createTopic(input: CreateTopicInput, turnstileToken: string): Promise<{ id: string; postId: string; pending?: boolean }> {
     return request("/api/topics", {
       method: "POST",
       body: JSON.stringify(input),
@@ -289,7 +291,7 @@ export const api = {
     });
   },
 
-  createReply(topicId: string, input: CreatePostInput, turnstileToken: string): Promise<{ id: string; floor: number }> {
+  createReply(topicId: string, input: CreatePostInput, turnstileToken: string): Promise<{ id: string; floor: number; pending?: boolean }> {
     return request(`/api/topics/${encodeURIComponent(topicId)}/posts`, {
       method: "POST",
       body: JSON.stringify(input),
@@ -342,12 +344,20 @@ export const api = {
   },
 
 
-  editTopic(id: string, input: EditPostInput): Promise<{ version: number }> {
-    return request(`/api/topics/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(input) });
+  editTopic(id: string, input: EditPostInput, turnstileToken: string): Promise<{ version: number }> {
+    return request(`/api/topics/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+      headers: { "x-turnstile-token": turnstileToken },
+    });
   },
 
-  editPost(id: string, input: EditPostInput): Promise<{ version: number }> {
-    return request(`/api/posts/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(input) });
+  editPost(id: string, input: EditPostInput, turnstileToken: string): Promise<{ version: number }> {
+    return request(`/api/posts/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+      headers: { "x-turnstile-token": turnstileToken },
+    });
   },
 
   revisions(topicId: string, postId?: string): Promise<Revision[]> {
@@ -501,6 +511,17 @@ export const api = {
 
   async updateAdminSettings(patch: DeepPartial<AppConfig>, version: string): Promise<{ config: AppConfig; version: string }> {
     return request("/api/admin/settings", { method: "PATCH", body: JSON.stringify({ patch, version }) });
+  },
+
+  pendingReviews(): Promise<{ items: PendingReviewItem[] }> {
+    return request("/api/mod/pending");
+  },
+
+  decideReview(kind: "topic" | "post", id: string, input: ReviewDecisionInput): Promise<{ id: string; status: string }> {
+    return request(`/api/mod/${kind === "topic" ? "topics" : "posts"}/${encodeURIComponent(id)}/review`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
   },
 
   signUpload(input: UploadSignInput): Promise<{

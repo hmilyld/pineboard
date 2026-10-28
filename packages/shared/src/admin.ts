@@ -143,6 +143,32 @@ export const reorderSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Moderation: sensitive-word review queue
+// ---------------------------------------------------------------------------
+
+export const reviewDecisionSchema = z.object({
+  action: z.enum(["approve", "reject"]),
+  reason: z.string().trim().max(200).optional(),
+});
+
+export type ReviewDecisionInput = z.infer<typeof reviewDecisionSchema>;
+
+export const pendingReviewItemSchema = z.object({
+  kind: z.enum(["topic", "post"]),
+  id: z.string(),
+  topicId: z.string(),
+  categoryId: z.string(),
+  authorId: z.string(),
+  authorName: z.string(),
+  title: z.string().nullable(),
+  contentMd: z.string(),
+  createdAt: z.number().int(),
+  keywords: z.array(z.string()),
+});
+
+export type PendingReviewItem = z.infer<typeof pendingReviewItemSchema>;
+
+// ---------------------------------------------------------------------------
 // Admin: integrations (non-secret config + secret status only)
 // ---------------------------------------------------------------------------
 

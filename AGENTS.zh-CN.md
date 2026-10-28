@@ -49,7 +49,7 @@ Pineboard 是一个以主题和回复为中心的轻量论坛，视觉隐喻是�
 3. **Cookie**：host-only，不设 `Domain`，`SameSite=Lax`，`Secure`，`HttpOnly`。不要开 `crossSubDomainCookies`。
 4. **R2 上传**：预签名 PUT；禁 SVG/HTML；`complete` 必须 HEAD 复核大小与 MIME；直传需 magic bytes 校验。
 5. **FTS5**：`post_search` 用 `post_uid UNINDEXED`，不要把 TEXT 主键当 rowid；`MATCH` 查询必须服务端转义。
-6. **Turnstile 顺序**：参数校验 → 权限/邮箱验证 → 频率限制 → siteverify → 写库。校验失败必须让前端 `reset()`；无 Site Key 时前后端一致按未启用处理。
+6. **Turnstile 顺序**：参数校验 → 权限/邮箱验证 → 频率限制 → siteverify → 写库。编辑同样属于写入路径（`post_edit`）。校验失败必须让前端 `reset()`；无 Site Key 时前后端一致按未启用处理。
 7. **邮件**：请求路径禁止 await Resend。验证/重置/提及用 `c.executionCtx.waitUntil()`；回复通知只写 `notifications`，由 Cron 摘要发送。发送函数内部 try/catch 并写 `email_logs`。
 8. **编辑留痕**：一个 `db.batch()` 内完成快照 + 失效旧 FTS + 写新 FTS + CAS 更新主表，靠 `meta.changes` 判断 409。
 9. **时间**：库内一律 `INTEGER` unix 秒（UTC），展示层用 `Intl` 按站点时区或浏览器时区。

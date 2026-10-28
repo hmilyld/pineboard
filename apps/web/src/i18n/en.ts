@@ -142,6 +142,7 @@ export const en: Widened<typeof zhCN> = {
   topic: {
     viewsHead: "Views",
     op: "OP",
+    pendingReview: "Reply submitted. It matched a sensitive keyword and is waiting for a moderator.",
     edited: "edited",
     deletedFloor: "This post was deleted",
     quote: "Quote",
@@ -462,6 +463,7 @@ export const en: Widened<typeof zhCN> = {
 
   newTopic: {
     title: "New topic",
+    pendingReview: "Submitted. It matched a sensitive keyword and is waiting for a moderator; it will appear once approved.",
     draftSaved: "Draft autosaved · {time}",
     draftLocal: "Drafts are stored on this device",
     verifyBanner: "Verify your email before posting. Verification is required to publish topics and replies.",
@@ -588,6 +590,7 @@ export const en: Widened<typeof zhCN> = {
     nav: {
       overview: "Overview",
       reports: "Reports",
+      reviews: "Review queue",
       categories: "Categories",
       tags: "Tags",
       users: "Users",
@@ -718,6 +721,26 @@ export const en: Widened<typeof zhCN> = {
       markDismissed: "Dismiss",
       viewContent: "View content",
       unit: "reports",
+    },
+    reviews: {
+      subtitle: "Content withheld by the sensitive-word screen. Empty keywords means the dictionary is empty.",
+      empty: "Nothing waiting for review.",
+      keywordHint: "Matched: {words}",
+      approved: "Published.",
+      rejected: "Rejected.",
+      failed: "Could not process this item",
+      approve: "Publish",
+      reject: "Reject",
+      wordsTitle: "Sensitive words",
+      wordsSubtitle: "Curated terms; a match sends the post to this queue instead of rejecting it.",
+      wordsEnabled: "Keyword screening enabled",
+      wordsPlaceholder: "One word per line, e.g.\n代开发票\n网络赌博",
+      wordsLabel: "Sensitive word list",
+      wordsCount: "{n} words",
+      wordsSaved: "Sensitive word list saved.",
+      seedDefaults: "Load recommended defaults",
+      seedConfirm: "Replace the current list with the recommended defaults?",
+      rejectReason: "Reason for the author (optional)",
     },
     users: {
       subtitle: "Search, change roles and suspend accounts; the last administrator is protected.",

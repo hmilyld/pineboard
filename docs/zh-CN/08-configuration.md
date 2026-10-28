@@ -95,7 +95,7 @@ node scripts/check-worker-secrets.mjs /tmp/worker-secrets.json
 | `feature` | turnstile, pwa, markdown, search, uploads, reports, guestRead | 功能开关 |
 | `maintenance` | enabled, message, allowAdmin | 维护模式；`message` 原样显示 |
 | `upload` | imageMaxMb, fileMaxMb, userDailyCount, orphanTtlHours | 类型白名单在代码中固定 |
-| `security` | postMinIntervalSeconds, newUserDailyPosts, mentionMaxPerPost, reportDailyLimit, signupPerHour | 频率限制 |
+| `security` | postMinIntervalSeconds, newUserDailyPosts, mentionMaxPerPost, reportDailyLimit, signupPerHour, sensitiveWords, sensitiveWordsEnabled | 频率限制与关键词检测 |
 | `integration` | cloudflare.accountId/r2Bucket/cdnUrl/turnstileSiteKey | 缺失回退 CF |
 | `theme` | layout, tokens, darkMode | 主题 token |
 | `secrets` | resendApiKey, resendWebhookSecret, turnstileSecret, r2AccessKeyId, r2SecretAccessKey | AES-GCM 密文，不回显 |

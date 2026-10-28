@@ -24,6 +24,8 @@ function makeClient() {
     headers.set("x-dev-reset-token", process.env.DEV_RESET_TOKEN ?? "local-dev-reset");
     if (cookie) headers.set("cookie", cookie);
     if (options.json !== undefined) headers.set("content-type", "application/json");
+    // Editing is a write path guarded by Turnstile, exactly like creating.
+    if (options.method === "PATCH") headers.set("x-turnstile-token", TURNSTILE);
     const response = await fetch(BASE + path, {
       method: options.method ?? (options.json !== undefined ? "POST" : "GET"),
       headers,

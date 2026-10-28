@@ -4,7 +4,7 @@ English | [简体中文](zh-CN/04-content-turnstile-search-upload.md)
 
 ## Turnstile
 
-- Managed mode; the frontend Vue component fixes `action`: `signup` / `topic_create` / `post_create`.
+- Managed mode; the frontend Vue component fixes `action`: `signup` / `topic_create` / `post_create` / `post_edit`.
 - Default `appearance: "interaction-only"`: when there is no challenge the widget takes no height and does not bother the user; it only appears in place when Cloudflare needs confirmation.
 - When `error-callback` fires, or there is still no token on submit, switch to `appearance: "always"` and re-render so the user can complete the verification manually; on success the token comes back through `callback`.
 - On submit, use an existing token directly if present; after any failure you must `reset()`, otherwise the retry may hit `timeout-or-duplicate`.
@@ -13,6 +13,23 @@ English | [简体中文](zh-CN/04-content-turnstile-search-upload.md)
 - Error mapping: `invalid-input-response` / `timeout-or-duplicate` → 400 `captcha_failed`; `internal-error` / network timeout → 503 `captcha_unavailable`, keeping the editor content.
 - Global switch `feature.turnstile`; when off, verification is skipped. **Without a Site Key, both frontend and backend consistently treat it as "not enabled"**: `/api/site` sends `feature.turnstile=false` and the backend skips siteverify; `/api/health.turnstileConfigured` is used for monitoring. When a Site Key exists but the Secret is missing, return `captcha_unavailable`. The signup entry uses the same setup.
 - E2E uses the official test keys (always-pass / always-fail); never run automation against production keys.
+
+## Sensitive words and the review queue
+
+Editing published content is a write path: `PATCH /api/topics/:id` and `PATCH /api/posts/:id` carry `action: "post_edit"`, the same create-path rate limit, and the same siteverify order. Without this, a clean post could be edited into spam after the fact.
+
+Keyword screening **diverts content to review, it does not reject it**:
+
+- Match engine: `packages/shared/src/sensitive.ts`, a small trie. The operator list is expected to hold a few hundred terms, so building it costs well under 1 ms — the Aho-Corasick alternative needs ~200 ms and would break the Workers free-plan 10 ms CPU budget.
+- Evasion handling is limited to the cheap, high-value case: whitespace and punctuation inside a match are skipped (`代 开 发 票` matches), capped at `n + 2` filler characters per match so short words are not found inside long sentences. Full-width/full Unicode normalisation is deliberately out of scope.
+- On a hit, topics and posts are written with `status='pending'` instead of `published`. Every public read filters `status = 'published'`, so pending content is invisible to visitors and absent from search.
+- A pending reply does not bump `reply_count` / `last_post_at`, and does not send mention or reply notifications. Approving it applies those counters once.
+- Editing the opening post into flagged text moves the whole topic to `pending`, so the thread disappears until reviewed.
+- Queue API: `GET /api/mod/pending`, `POST /api/mod/topics/:id/review`, `POST /api/mod/posts/:id/review` (`{ action: "approve" | "reject", reason? }`). Moderators only see their own categories; admins see everything.
+- To limit false positives, ship no short generic words: the default list in `DEFAULT_SENSITIVE_WORDS` only holds high-confidence fraud/illegal terms, and the list itself defaults to empty until an operator seeds it in `/admin/reviews`.
+- Config: `security.sensitiveWords` (max 2000 entries, 1–32 characters) and `security.sensitiveWordsEnabled`. Both are edited in `/admin/reviews`; turning the switch off publishes directly again.
+- Audit: `topic.create` / `post.create` / `post.edit` log `{ keywords: [...] }` on a hit, and the queue reads it back for the moderator; `review.approve` / `review.reject` record who decided.
+
 
 ## Chinese search
 

@@ -100,6 +100,11 @@ async function submit(): Promise<void> {
     );
     completed = true;
     clearDraft();
+    if (result.pending) {
+      // Flagged content is not live yet, so there is nothing to navigate to.
+      error.value = t("newTopic.pendingReview");
+      return;
+    }
     await router.push(`/t/${result.id}`);
   } catch (cause) {
     error.value = config.describeError(cause, "newTopic.publishFailed");

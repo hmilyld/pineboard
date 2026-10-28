@@ -49,7 +49,7 @@ Do not reintroduce the `760/780/1024/1040` page-width tiers.
 3. **Cookie**: host-only, no `Domain`, `SameSite=Lax`, `Secure`, `HttpOnly`. Do not enable `crossSubDomainCookies`.
 4. **R2 upload**: presigned PUT; SVG/HTML forbidden; `complete` must HEAD-verify size and MIME; direct upload requires magic bytes validation.
 5. **FTS5**: `post_search` uses `post_uid UNINDEXED`; do not treat the TEXT primary key as rowid; `MATCH` queries must be escaped server-side.
-6. **Turnstile order**: parameter validation → permissions/email verification → rate limiting → siteverify → database write. A failed verification must make the frontend call `reset()`; with no Site Key, frontend and backend consistently treat it as disabled.
+6. **Turnstile order**: parameter validation → permissions/email verification → rate limiting → siteverify → database write. Edits count as writes (`post_edit`). A failed verification must make the frontend call `reset()`; with no Site Key, frontend and backend consistently treat it as disabled.
 7. **Email**: no awaiting Resend on the request path. Use `c.executionCtx.waitUntil()` for verification/reset/mention; reply notifications only write to `notifications` and are sent as a Cron digest. Sending functions must try/catch internally and write `email_logs`.
 8. **Edit history**: complete the snapshot + invalidate old FTS + write new FTS + CAS update of the main table within one `db.batch()`, and use `meta.changes` to determine 409.
 9. **Time**: always `INTEGER` unix seconds (UTC) in the database; the presentation layer uses `Intl` according to the site timezone or the browser timezone.
