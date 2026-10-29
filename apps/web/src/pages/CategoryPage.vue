@@ -84,13 +84,13 @@ watch(() => route.params.slug, () => load(1));
     <PageSkeleton v-if="loading && !category" :rows="8" />
     <div v-else class="v2-container">
       <nav class="v2-crumb mb-3"><RouterLink to="/">{{ t("page.home") }}</RouterLink><span class="sep">/</span><span>{{ category?.name ?? t("category.notFound") }}</span></nav>
-      <header v-if="category" class="mb-3 border-b border-line pb-3" :class="categoryClass(category.slug)" :style="categoryStyle(category.color)">
+      <header v-if="category" class="v2-cat-head mb-3 border-b border-line pb-3" :class="categoryClass(category.slug)" :style="categoryStyle(category.color)">
         <div class="flex flex-wrap items-end gap-x-5 gap-y-3">
-          <div class="min-w-0 flex-1">
+          <div class="v2-cat-head-main min-w-0 flex-1">
             <h1 class="flex items-center gap-2 text-[20px] font-bold leading-[1.3] tracking-[-0.02em]"><i class="size-2.5 rounded-full" :style="{ background: 'var(--c)' }" />{{ category.name }}</h1>
             <p class="mt-1 text-[11.5px] text-muted-foreground">{{ category.description }}</p>
           </div>
-          <div class="flex items-center gap-5">
+          <div class="v2-cat-head-stats flex items-center gap-5">
             <div class="text-right"><b class="num block text-[15px] font-semibold">{{ category.stats?.topics ?? 0 }}</b><span class="text-[10px] text-muted-foreground">{{ t("stats.topics") }}</span></div>
             <div class="text-right"><b class="num block text-[15px] font-semibold">{{ category.stats?.todayTopics ?? 0 }}</b><span class="text-[10px] text-muted-foreground">{{ t("stats.today") }}</span></div>
             <div class="text-right"><b class="num block text-[15px] font-semibold">{{ category.stats?.replies ?? 0 }}</b><span class="text-[10px] text-muted-foreground">{{ t("stats.replies") }}</span></div>

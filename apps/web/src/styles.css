@@ -327,6 +327,11 @@
   .v2-crumb { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
   .v2-crumb i { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--muted)); display: inline-block; }
   .v2-crumb .sep { color: var(--line); }
+  /* Board header: on desktop the name/description block takes the space left
+     by the stats; on phones it takes the whole row so the description is not
+     squeezed into a narrow column that breaks every line at the same length. */
+  .v2-cat-head .v2-cat-head-main { flex: 1 1 auto; min-width: 0; }
+  .v2-cat-head .v2-cat-head-stats { flex: none; }
   .v2-topic-head { display: flex; align-items: flex-start; gap: 16px; padding: 12px 0 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
   /* The title block owns the row; the action cluster wraps under it on phones.
      No `flex` shorthand here: the minifier rewrites `flex: 1 1 320px` to
@@ -556,6 +561,10 @@
   .v2-post.child .v2-rail { padding: 7px 12px; border-bottom: 0; }
   .v2-post.child .v2-post-body { padding: 0 12px 11px; }
   .v2-post.child .v2-avatar { width: 22px; height: 22px; font-size: 10px; }
+  /* The name/description block gets the full row; stats and the post button
+     drop beneath and spread across the available width. */
+  .v2-cat-head .v2-cat-head-main { flex: 1 1 100%; width: 100%; }
+  .v2-cat-head .v2-cat-head-stats { flex: 1 1 100%; width: 100%; justify-content: space-between; }
   .v2-topic-head { padding-left: 10px; padding-right: 10px; gap: 10px; }
   .v2-topic-head > .min-w-0 { flex: 1 1 100%; width: 100%; max-width: 100%; }
   .v2-topic-head > .min-w-0.flex-1 { flex: 1 1 100%; width: 100%; }
