@@ -120,8 +120,8 @@ Fork 不会继承这些设置，必须重新创建。
 git push origin main
 
 # 正式部署
-git tag v0.2.4
-git push origin v0.2.4
+git tag v0.2.7
+git push origin v0.2.7
 ```
 
 Deploy workflow：

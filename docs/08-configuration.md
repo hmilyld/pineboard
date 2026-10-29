@@ -115,8 +115,8 @@ Only triggers **CI** (typecheck, unit tests, build, deploy environment check) an
 Production deployment is triggered only after an explicit tag:
 
 ```bash
-git tag v0.2.4
-git push origin v0.2.4
+git tag v0.2.7
+git push origin v0.2.7
 ```
 
 The `Deploy` workflow runs only for `v*` tags (or a manual `workflow_dispatch`):
@@ -142,7 +142,7 @@ pnpm exec wrangler secret put IP_HASH_SALT
 pnpm exec wrangler secret put ADMIN_EMAILS
 
 # Release
-git tag v0.2.4 && git push origin v0.2.4
+git tag v0.2.7 && git push origin v0.2.7
 ```
 
 See the [09 Deployment Guide](09-deployment.md) for the full steps. After deploying, configure Resend/Turnstile/R2 at `/admin/integrations` or provide them as CF variables; confirm:

@@ -66,8 +66,10 @@
   --pine: #6fbfa3;
   --on-pine: #08120d;
   --orange: #f0703f;
-  --orange-cta: #f0703f;
-  --on-orange: #1a0e0a;
+  /* Filled orange CTAs keep white text in both themes. Darken the CTA fill so
+     white still clears AA contrast (4.59:1) on the dark surface. */
+  --orange-cta: #c94724;
+  --on-orange: #fffaf6;
   --amber: #e0b25a;
   --head: #0b2b22;
   --head-muted: rgba(234, 241, 234, 0.7);

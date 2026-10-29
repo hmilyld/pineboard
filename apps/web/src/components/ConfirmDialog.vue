@@ -58,7 +58,7 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKeydown));
         <p class="mt-2 text-[12px] leading-6 text-muted-foreground">{{ confirmState.message }}</p>
         <div class="mt-5 flex justify-end gap-2">
           <button type="button" class="v2-btn" @click="resolveConfirm(false)">{{ confirmState.cancelLabel }}</button>
-          <button type="button" class="v2-btn" :class="confirmState.danger ? 'border-orange bg-orange text-[var(--on-orange)]' : 'solid'" data-confirm-default @click="resolveConfirm(true)">{{ confirmState.confirmLabel }}</button>
+          <button type="button" class="v2-btn" :class="confirmState.danger ? 'border-[var(--orange-cta)] bg-[var(--orange-cta)] text-[var(--on-orange)]' : 'solid'" data-confirm-default @click="resolveConfirm(true)">{{ confirmState.confirmLabel }}</button>
         </div>
       </div>
     </div>

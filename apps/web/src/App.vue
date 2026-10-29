@@ -308,7 +308,7 @@ async function signOut(): Promise<void> {
 
     <div v-if="ui.needRefresh || ui.offlineReady" class="fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-md items-center gap-3 rounded-lg border border-border bg-card p-3 text-sm shadow-[0_12px_32px_rgba(0,0,0,.18)]">
       <span class="flex-1">{{ ui.needRefresh ? t("pwa.needRefresh") : t("pwa.offlineReady") }}</span>
-      <button v-if="ui.needRefresh" type="button" class="bg-brand px-3 py-1.5 text-xs text-[var(--on-orange)]" @click="ui.applyUpdate()">{{ t("pwa.refresh") }}</button>
+      <button v-if="ui.needRefresh" type="button" class="bg-[var(--orange-cta)] px-3 py-1.5 text-xs text-[var(--on-orange)]" @click="ui.applyUpdate()">{{ t("pwa.refresh") }}</button>
       <button type="button" class="text-xs text-muted-foreground hover:text-foreground" @click="ui.dismiss()">{{ t("pwa.dismiss") }}</button>
     </div>
 
