@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Category, NavItem } from "@pineboard/shared";
 import { Bell, ChevronDown, Menu, Search, Settings, X } from "lucide-vue-next";
-import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, watchEffect } from "vue";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
 import { t } from "@/i18n";
@@ -112,6 +112,29 @@ function closeDrawer(): void {
   openNavId.value = null;
 }
 
+// The drawer panel is the overlay; everything else on the page is background
+// and gets inert while it is open, so keyboard and assistive technology
+// cannot reach dimmed content. Focus moves in on open and back to the
+// trigger on close.
+const drawerCloseBtn = ref<HTMLButtonElement | null>(null);
+let drawerPreviousFocus: HTMLElement | null = null;
+watch(drawerOpen, async (open) => {
+  if (open) {
+    drawerPreviousFocus = document.activeElement as HTMLElement | null;
+    await nextTick();
+    drawerCloseBtn.value?.focus();
+  } else {
+    drawerPreviousFocus?.focus?.();
+    drawerPreviousFocus = null;
+  }
+});
+
+function onDropdownEscape(event: KeyboardEvent, id: string): void {
+  if (openNavId.value !== id) return;
+  openNavId.value = null;
+  (event.currentTarget as HTMLElement | null)?.querySelector<HTMLElement>("button")?.focus();
+}
+
 let unreadTimer: number | undefined;
 function refreshUnread(): void {
   if (auth.user && document.visibilityState === "visible") void notifications.loadUnread();
@@ -219,7 +242,7 @@ async function signOut(): Promise<void> {
     </div>
 
     <template v-if="!isBare">
-      <header class="v2-header">
+      <header class="v2-header" :inert="drawerOpen">
         <div class="v2-header-inner" :class="{ 'no-search': isSearch }">
           <RouterLink to="/" class="v2-brand">
             <img src="/icon.svg" alt="" aria-hidden="true" class="v2-mark v2-mark-icon" width="24" height="24" draggable="false" />
@@ -242,11 +265,11 @@ async function signOut(): Promise<void> {
                   :class="{ on: navActive(item) }"
                   :aria-expanded="openNavId === item.id"
                   aria-haspopup="true"
-                  @click.stop="openNavId = item.id"
+                  @click.stop="openNavId = openNavId === item.id ? null : item.id"
                 >
                   {{ item.label }}<ChevronDown :size="11" class="v2-nav-arrow" :class="{ open: openNavId === item.id }" />
                 </button>
-                <div v-show="openNavId === item.id" class="v2-dropdown">
+                <div v-show="openNavId === item.id" class="v2-dropdown" @keydown.esc.prevent="onDropdownEscape($event, item.id)">
                   <template v-if="item.kind === 'categories'">
                     <RouterLink v-for="category in categories" :key="category.id" :to="`/c/${category.slug}`" @click="openNavId = null">
                       <i :class="categoryClass(category.slug)" :style="categoryStyle(category.color)" />{{ category.name }}
@@ -294,7 +317,7 @@ async function signOut(): Promise<void> {
         </div>
       </header>
 
-      <div v-if="isHome && showAnnouncement && announcement" class="v2-notice">
+      <div v-if="isHome && showAnnouncement && announcement" class="v2-notice" :inert="drawerOpen">
         <span class="v2-notice-bar" />
         <b>{{ t("announcement.label") }}</b>
         <RouterLink v-if="announcement.href" :to="announcement.href" class="min-w-0 truncate hover:text-foreground">{{ announcement.text }}</RouterLink>
@@ -302,9 +325,9 @@ async function signOut(): Promise<void> {
         <button type="button" :aria-label="t('announcement.dismiss')" @click="dismissAnnouncement">×</button>
       </div>
 
-      <div id="main-content" tabindex="-1" class="flex-1"><RouterView /></div>
+      <div id="main-content" tabindex="-1" class="flex-1" :inert="drawerOpen"><RouterView /></div>
 
-      <footer class="v2-footer">
+      <footer class="v2-footer" :inert="drawerOpen">
         <div class="v2-container v2-footer-inner">
           <div class="v2-footer-brand"><span class="fb"><img src="/icon.svg" alt="" aria-hidden="true" width="16" height="16" draggable="false" />{{ config.siteName }}</span><span class="v2-footer-tagline">{{ config.tagline }}</span></div>
           <nav class="v2-footer-links" :aria-label="t('nav.footer')">
@@ -330,7 +353,7 @@ async function signOut(): Promise<void> {
       <aside class="v2-drawer-panel" :aria-label="t('nav.mobile')">
         <div class="flex items-center justify-between">
           <RouterLink to="/" class="flex items-center gap-2.5" @click="closeDrawer"><img src="/icon.svg" alt="" aria-hidden="true" class="v2-mark v2-mark-icon" width="24" height="24" draggable="false" /><span class="v2-brand-name">{{ config.siteName }}</span></RouterLink>
-          <button type="button" :aria-label="t('nav.closeDrawer')" @click="closeDrawer"><X :size="20" /></button>
+          <button type="button" ref="drawerCloseBtn" :aria-label="t('nav.closeDrawer')" @click="closeDrawer"><X :size="20" /></button>
         </div>
         <div class="mt-5">
           <template v-for="item in navItems" :key="`drawer-${item.id}`">

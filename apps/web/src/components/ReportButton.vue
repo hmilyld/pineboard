@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { Button } from "@/components/ui/button";
 import { t } from "@/i18n";
 import { api } from "@/lib/api";
@@ -16,43 +16,25 @@ const detail = ref("");
 const error = ref("");
 const done = ref(false);
 const submitting = ref(false);
-const dialog = ref<HTMLElement | null>(null);
-let previousFocus: HTMLElement | null = null;
-
-function onKeydown(event: KeyboardEvent): void {
-  if (!open.value) return;
-  if (event.key === "Escape") {
-    event.preventDefault();
-    open.value = false;
-    return;
-  }
-  if (event.key !== "Tab") return;
-  const list = [...(dialog.value?.querySelectorAll<HTMLElement>('button, [href], select, textarea, input, [tabindex]:not([tabindex="-1"])') ?? [])]
-    .filter((el) => !el.hasAttribute("disabled"));
-  if (!list.length) return;
-  const first = list[0]!;
-  const last = list[list.length - 1]!;
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
-}
+// Native <dialog>: the browser traps focus, renders the page behind it inert,
+// closes on Esc, and restores focus on close — no hand-rolled trap needed.
+// Padding lives on the inner wrapper so clicks on the dialog element itself
+// can only be clicks on the ::backdrop.
+const dialog = ref<HTMLDialogElement | null>(null);
 
 watch(open, async (value) => {
-  if (value) {
-    previousFocus = document.activeElement as HTMLElement | null;
-    await nextTick();
-    dialog.value?.querySelector<HTMLElement>("[data-report-default]")?.focus();
-  } else {
-    previousFocus?.focus?.();
-    previousFocus = null;
-  }
+  await nextTick();
+  if (value) dialog.value?.showModal();
+  else dialog.value?.close();
 });
 
-onBeforeUnmount(() => previousFocus?.focus?.());
+function onClose(): void {
+  if (open.value) open.value = false;
+}
+
+function onClick(event: MouseEvent): void {
+  if (event.target === dialog.value && open.value) open.value = false;
+}
 
 const REASONS = ["spam", "abuse", "illegal", "off_topic", "other"] as const;
 const reasons = computed(() => REASONS.map((value) => [value, t(`report.${value}`)] as const));
@@ -81,11 +63,17 @@ async function submit(): Promise<void> {
   <template v-if="auth.user && config.config?.feature.reports !== false">
     <button type="button" class="hover:text-foreground" @click="show">{{ t("report.button") }}</button>
     <Teleport to="body">
-      <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center overscroll-contain bg-black/40 p-4" @click.self="open = false" @keydown="onKeydown">
-        <div ref="dialog" role="dialog" aria-modal="true" aria-labelledby="report-title" class="w-full max-w-md border border-border bg-card p-6 shadow-xl">
+      <dialog
+        ref="dialog"
+        aria-labelledby="report-title"
+        class="w-[min(28rem,calc(100%-2rem))] border border-border bg-card shadow-xl backdrop:bg-black/40"
+        @close="onClose"
+        @click="onClick"
+      >
+        <div class="p-6">
           <div class="flex items-center justify-between">
             <h2 id="report-title" class="text-lg font-semibold">{{ t("report.title") }}</h2>
-            <button type="button" class="text-sm text-muted-foreground hover:text-foreground" data-report-default @click="open = false">{{ t("common.close") }}</button>
+            <button type="button" autofocus class="text-sm text-muted-foreground hover:text-foreground" @click="open = false">{{ t("common.close") }}</button>
           </div>
           <template v-if="done">
             <p :class="[alertInfoClass, 'mt-4']" role="status">{{ t("report.done") }}</p>
@@ -106,7 +94,7 @@ async function submit(): Promise<void> {
             <Button class="w-full" type="submit" :disabled="submitting">{{ submitting ? t("report.submitting") : t("report.submit") }}</Button>
           </form>
         </div>
-      </div>
+      </dialog>
     </Teleport>
   </template>
 </template>
