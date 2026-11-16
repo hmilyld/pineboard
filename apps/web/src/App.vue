@@ -118,6 +118,7 @@ function refreshUnread(): void {
 }
 
 onMounted(() => {
+  darkMedia?.addEventListener("change", applySystemDark);
   void config.load();
   if (!auth.loaded) void auth.refresh();
   void loadCategories();
@@ -129,6 +130,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  darkMedia?.removeEventListener("change", applySystemDark);
   if (unreadTimer) window.clearInterval(unreadTimer);
   window.removeEventListener("focus", refreshUnread);
   document.removeEventListener("pointerdown", onDocumentPointerDown);
@@ -148,6 +150,8 @@ watch(
 );
 
 const appliedTokens = new Set<string>();
+const darkMedia = window.matchMedia?.("(prefers-color-scheme: dark)");
+
 watchEffect(() => {
   const theme = config.config?.theme;
   if (!theme) return;
@@ -160,10 +164,18 @@ watchEffect(() => {
     root.style.setProperty(key, value);
     appliedTokens.add(key);
   }
-  const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
+  const prefersDark = darkMedia?.matches ?? false;
   root.classList.toggle("dark", theme.darkMode === "dark" || (theme.darkMode === "system" && prefersDark));
   root.dataset.layout = theme.layout;
 });
+
+// A site in "system" mode must keep following the OS preference; the
+// watchEffect above only re-runs when site config changes. (dark-mode guide:
+// JS reading matchMedia MUST also handle its change event.)
+function applySystemDark(): void {
+  if (config.config?.theme.darkMode !== "system") return;
+  document.documentElement.classList.toggle("dark", darkMedia?.matches ?? false);
+}
 
 watch(
   () => config.config?.feature.pwa,
