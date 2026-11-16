@@ -438,6 +438,7 @@ export const zhCN = {
     quoteTitle: "引用（blockquote）",
     code: "代码",
     codeTitle: "行内代码",
+    codeBlock: "代码块",
     link: "链接",
     linkTitle: "插入链接",
     uploadImage: "上传图片",
