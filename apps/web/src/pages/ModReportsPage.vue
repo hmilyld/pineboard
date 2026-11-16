@@ -76,7 +76,7 @@ onMounted(() => load(1));
     </div>
 
     <p v-if="message" :class="[alertInfoClass, 'mt-6']">{{ message }}</p>
-    <p v-if="error" :class="[alertErrorClass, 'mt-6']">{{ error }}</p>
+    <p v-if="error" :class="[alertErrorClass, 'mt-6']" role="alert">{{ error }}</p>
     <AdminSkeleton v-if="loading" class="mt-4" />
     <div v-else-if="!reports.length" class="empty-state mt-6">
       {{ t("admin.reports.empty") }}

@@ -102,7 +102,7 @@ onMounted(load);
           @expired="token = ''"
           @error="error = $event"
         />
-        <p v-if="error" class="v2-alert mt-3">{{ error }}</p>
+        <p v-if="error" class="v2-alert mt-3" role="alert">{{ error }}</p>
         <div class="mt-3 flex items-center gap-3"><button type="submit" class="v2-btn solid" :disabled="saving">{{ saving ? t("common.saving") : t("editTopic.save") }}</button><RouterLink :to="`/t/${route.params.id}/history`" class="text-[11.5px] text-muted-foreground hover:text-ink">{{ t("editTopic.viewHistory") }}</RouterLink><span class="ml-auto text-[10.5px] text-muted-foreground">{{ t("editTopic.currentVersion", { version: detail.firstPost.version }) }}</span></div>
       </form>
     </div>

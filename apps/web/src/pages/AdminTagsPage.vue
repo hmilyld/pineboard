@@ -159,7 +159,7 @@ onMounted(load);
       </div>
     </div>
 
-    <p v-if="error" :class="[alertErrorClass, 'mt-4']">{{ error }}</p>
+    <p v-if="error" :class="[alertErrorClass, 'mt-4']" role="alert">{{ error }}</p>
     <p v-if="saved" :class="[alertInfoClass, 'mt-4']">{{ saved }}</p>
 
     <section v-if="formOpen" class="v2-admin-panel mt-4">

@@ -50,7 +50,7 @@ async function verify(): Promise<void> {
       <p class="text-sm leading-6 text-muted-foreground">
         {{ t("auth.verifyIntro") }}
       </p>
-      <p v-if="error" :class="alertErrorClass">{{ error }}</p>
+      <p v-if="error" :class="alertErrorClass" role="alert">{{ error }}</p>
       <Button class="w-full" :disabled="submitting || !token" @click="verify">
         {{ submitting ? t("auth.verifying") : t("auth.verifyButton") }}
       </Button>

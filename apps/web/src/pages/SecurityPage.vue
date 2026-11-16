@@ -152,7 +152,7 @@ async function deleteAccount(): Promise<void> {
       <button type="button" class="v2-btn solid sm" :disabled="cancelling" @click="cancelDeletion">{{ cancelling ? t("security.cancelling") : t("security.cancelDeletion") }}</button>
     </section>
     <p v-if="message" :class="[alertInfoClass, 'mb-3']">{{ message }}</p>
-    <p v-if="error" :class="[alertErrorClass, 'mb-3']">{{ error }}</p>
+    <p v-if="error" :class="[alertErrorClass, 'mb-3']" role="alert">{{ error }}</p>
 
     <section v-if="!isDeleting" class="v2-panel p-4">
       <h2 class="text-[12px] font-semibold">{{ t("security.changePassword") }}</h2>

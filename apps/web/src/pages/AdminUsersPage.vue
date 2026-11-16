@@ -148,11 +148,12 @@ onMounted(() => load());
     </div>
 
     <p v-if="message" :class="[alertInfoClass, 'mt-3']">{{ message }}</p>
-    <p v-if="error" :class="[alertErrorClass, 'mt-3']">{{ error }}</p>
+    <p v-if="error" :class="[alertErrorClass, 'mt-3']" role="alert">{{ error }}</p>
     <AdminSkeleton v-if="loading" class="mt-4" />
     <div v-else class="v2-admin-panel mt-4 overflow-x-auto">
       <table class="v2-admin-table min-w-[760px]">
-        <thead><tr><th>{{ t("admin.users.colUser") }}</th><th>{{ t("admin.users.colRole") }}</th><th>{{ t("admin.users.colStatus") }}</th><th>{{ t("admin.users.colCounts") }}</th><th>{{ t("admin.users.colJoined") }}</th><th></th></tr></thead>
+        <caption class="sr-only">{{ t("admin.nav.users") }}</caption>
+        <thead><tr><th scope="col">{{ t("admin.users.colUser") }}</th><th scope="col">{{ t("admin.users.colRole") }}</th><th scope="col">{{ t("admin.users.colStatus") }}</th><th scope="col">{{ t("admin.users.colCounts") }}</th><th scope="col">{{ t("admin.users.colJoined") }}</th><th></th></tr></thead>
         <tbody>
           <tr v-for="user in users" :key="user.id">
             <td class="p-3">

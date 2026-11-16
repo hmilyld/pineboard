@@ -71,12 +71,13 @@ onMounted(load);
     </div>
 
     <p v-if="message" :class="[alertInfoClass, 'mt-6']">{{ message }}</p>
-    <p v-if="error" :class="[alertErrorClass, 'mt-6']">{{ error }}</p>
+    <p v-if="error" :class="[alertErrorClass, 'mt-6']" role="alert">{{ error }}</p>
     <AdminSkeleton v-if="loading" class="mt-4" />
     <div v-else class="mt-3 overflow-x-auto border border-line">
       <table class="v2-admin-table min-w-[720px]">
+        <caption class="sr-only">{{ t("admin.nav.emails") }}</caption>
         <thead >
-          <tr><th class="p-3">{{ t("admin.emails.colTime") }}</th><th class="p-3">{{ t("admin.emails.colTo") }}</th><th class="p-3">{{ t("admin.emails.colCategory") }}</th><th class="p-3">{{ t("admin.emails.colStatus") }}</th><th class="p-3">{{ t("admin.emails.colError") }}</th></tr>
+          <tr><th scope="col" class="p-3">{{ t("admin.emails.colTime") }}</th><th scope="col" class="p-3">{{ t("admin.emails.colTo") }}</th><th scope="col" class="p-3">{{ t("admin.emails.colCategory") }}</th><th scope="col" class="p-3">{{ t("admin.emails.colStatus") }}</th><th scope="col" class="p-3">{{ t("admin.emails.colError") }}</th></tr>
         </thead>
         <tbody>
           <tr v-for="log in filtered" :key="log.id" >

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, nextTick, reactive, ref, watch } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import AuthShell from "@/components/AuthShell.vue";
 import TurnstileWidget from "@/components/TurnstileWidget.vue";
@@ -17,6 +17,15 @@ const form = reactive({ name: "", username: "", email: "", password: "", confirm
 const turnstileToken = ref("");
 const widget = ref<{ reset(): void; show(): void } | null>(null);
 const error = ref("");
+const errorEl = ref<HTMLElement | null>(null);
+// On failure, route keyboard and screen-reader focus to the error message so
+// the failure is not silent for non-visual users.
+watch(error, async (value) => {
+  if (value) {
+    await nextTick();
+    errorEl.value?.focus();
+  }
+});
 const fields = ref<Record<string, string[]>>({});
 const submitting = ref(false);
 
@@ -121,6 +130,8 @@ async function submit(): Promise<void> {
           v-model="form.email"
           name="email"
           spellcheck="false"
+          autocapitalize="none"
+          enterkeyhint="next"
           type="email"
           class="v2-input"
           autocomplete="email"
@@ -168,7 +179,7 @@ async function submit(): Promise<void> {
         />
       </div>
 
-      <p v-if="error" :class="alertErrorClass">{{ error }}</p>
+      <p v-if="error" ref="errorEl" tabindex="-1" :class="alertErrorClass" role="alert">{{ error }}</p>
       <button type="submit" class="v2-auth-submit" :disabled="submitting">
         {{ submitting ? t("auth.registering") : t("auth.registerButton") }}
       </button>

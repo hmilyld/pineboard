@@ -61,7 +61,7 @@ onMounted(load);
   <AccountShell v-else-if="auth.user" :profile="profile" active="preferences" :topic-count="summary.topicCount" :reply-count="summary.replyCount" :like-count="summary.likeCount" :bookmark-count="summary.bookmarkCount" :notification-count="summary.unreadCount" is-self>
     <div class="v2-section-head"><h2>{{ t("preferences.title") }}</h2><span>{{ t("preferences.subtitle") }}</span></div>
     <p class="mb-3 text-[11.5px] text-muted-foreground">{{ t("preferences.intro") }}</p>
-    <p v-if="error" :class="[alertErrorClass, 'mb-3']">{{ error }}</p>
+    <p v-if="error" :class="[alertErrorClass, 'mb-3']" role="alert">{{ error }}</p>
     <p v-if="saved" :class="[alertInfoClass, 'mb-3']">{{ saved }}</p>
     <section class="v2-panel p-4">
       <div class="space-y-3">

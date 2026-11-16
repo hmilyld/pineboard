@@ -59,7 +59,7 @@ async function confirm(): Promise<void> {
       </template>
       <template v-else-if="preview">
         <p class="mt-2 text-[11.5px] leading-6 text-muted-foreground">{{ t("unsubscribe.confirmPrefix") }}<strong class="text-ink">{{ preview.email }}</strong>{{ t("unsubscribe.confirmMiddle") }}{{ categoryLabel(preview.category) }}{{ t("unsubscribe.confirmSuffix") }}</p>
-        <p v-if="error" :class="[alertErrorClass, 'mt-3']">{{ error }}</p>
+        <p v-if="error" :class="[alertErrorClass, 'mt-3']" role="alert">{{ error }}</p>
         <div class="mt-5 flex gap-2"><button type="button" class="v2-btn solid flex-1" :disabled="submitting" @click="confirm">{{ submitting ? t("common.working") : t("unsubscribe.confirm") }}</button><RouterLink to="/" class="v2-btn">{{ t("common.cancel") }}</RouterLink></div>
       </template>
       <p v-else-if="error" :class="[alertErrorClass, 'mt-4']">{{ error }}</p>
