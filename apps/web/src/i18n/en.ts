@@ -446,6 +446,7 @@ export const en: Widened<typeof zhCN> = {
     quoteTitle: "Blockquote",
     code: "Code",
     codeTitle: "Inline code",
+    codeBlock: "Code block",
     link: "Link",
     linkTitle: "Insert link",
     uploadImage: "Upload image",
