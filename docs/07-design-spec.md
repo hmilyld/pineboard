@@ -134,12 +134,14 @@ Derived colors always use `color-mix(in srgb, ...)`; do not add scattered hex va
 | Form input | 13 / 1.4 | 14 on mobile |
 | Meta | 11.5 | Author, time, category |
 | Small text | 10.5 | Last reply time, stat labels |
-| Micro text | 9.5 | Badges, roles, notices |
+| Micro text | 10 | Badges, roles, notices |
 | Sidebar numbers | 19 / 600 | Home site numbers |
 | Admin numbers | 21 / 600 | Overview four-cell grid |
 | Error code | 56 / 1 / 700, `-0.045em` | 404 |
 
 No more than 4 font-size jumps; do not use 4rem headings.
+
+**Unit rule**: every font size is authored in `rem` relative to the root (the table above lists pixel values at the 16px default root). `index.html` opts into OS text scaling with `<meta name="text-scale" content="scale">`, so OS-level font-size settings scale the whole UI. Never set `font-size` on `html`/`:root`, and never author text below 10px.
 
 ---
 
@@ -216,7 +218,7 @@ All topic lists share one row (except home, category, tag, profile center, publi
 - Row height **52px**, 1px `--line` top and bottom; the last row also has a bottom line; 3px category color bar on the left.
 - Desktop columns: `minmax(0,1fr) 32px 46px 68px`, gap 6, numbers right-aligned.
 - Title single line with ellipsis; on hover turns pine green + underline (1px, offset 3px).
-- Badges: pinned orange stroke/8% fill; digest amber stroke/8% fill; 9.5px, radius 2, line height 1.6. Badge text is mandatory; color alone is not enough.
+- Badges: pinned orange stroke/8% fill; digest amber stroke/8% fill; 10px, radius 2, line height 1.6. Badge text is mandatory; color alone is not enough.
 - Reply count 12.5/600 ink; view count 11.5 `--muted`; last reply 68px right-aligned, first line 11/500 name, second line 10.5 relative time; when nobody has replied show "—" + time.
 - Mobile (<600): hide the table header and the replies/views/last-reply columns; row height becomes adaptive (about 60), title at most two lines, with 10.5px "category · time · N replies" below.
 - No excerpt; no avatars in the list (category dot + title take priority).
@@ -224,7 +226,7 @@ All topic lists share one row (except home, category, tag, profile center, publi
 ### 6.2 Pagination
 
 - Traditional page numbers, no "load more"; on list pages at the bottom only, on topic pages both top and bottom.
-- Page number: minimum 24×22, 11px, tabular-nums; current page solid pine with `--on-pine`; hover shows a 1px border; disabled arrows 35% opacity.
+- Page number: minimum 24×24, 11px, tabular-nums; current page solid pine with `--on-pine`; hover shows a 1px border; disabled arrows 35% opacity.
 - More than 7 pages: `1 … 4 5 [6] 7 8 … 20`; first and last + 2 on each side of the current page.
 - Topic page top bar height 36, background 3% pine tint, left "Page x of y · N posts", right page numbers; bottom bar height 40, centered page numbers + "N posts total".
 - List page bottom bar height 46, centered page numbers; the right side may show "N topics total".

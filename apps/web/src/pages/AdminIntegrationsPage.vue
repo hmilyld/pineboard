@@ -174,15 +174,15 @@ onMounted(load);
   <div>
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
       <div>
-        <h1 class="text-[19px] font-bold leading-[1.3]">{{ t("admin.nav.integrations") }}</h1>
-        <p class="mt-1 text-[10.5px] text-muted-foreground">{{ t("admin.integrations.subtitle") }}</p>
+        <h1 class="text[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.integrations") }}</h1>
+        <p class="mt-1 text[0.65625rem] text-muted-foreground">{{ t("admin.integrations.subtitle") }}</p>
       </div>
-      <span class="flex items-center gap-2 text-[10.5px] text-muted-foreground"><KeyRound :size="13" /> {{ t("admin.integrations.configured", { done: configuredCount, total: secretFields.length }) }}</span>
+      <span class="flex items-center gap-2 text[0.65625rem] text-muted-foreground"><KeyRound :size="13" /> {{ t("admin.integrations.configured", { done: configuredCount, total: secretFields.length }) }}</span>
     </div>
 
     <p v-if="error" :class="[alertErrorClass, 'mt-4']" role="alert">{{ error }}</p>
     <p v-if="saved" :class="[alertInfoClass, 'mt-4']">{{ saved }}</p>
-    <p v-if="testResult" class="mt-4 flex items-center gap-2 border px-3 py-2 text-[11.5px]" :class="testOk ? 'border-pine/40 bg-pine/10 text-pine' : 'border-[var(--orange)]/40 bg-[var(--orange)]/10 text-[var(--orange)]'">
+    <p v-if="testResult" class="mt-4 flex items-center gap-2 border px-3 py-2 text[0.71875rem]" :class="testOk ? 'border-pine/40 bg-pine/10 text-pine' : 'border-[var(--orange)]/40 bg-[var(--orange)]/10 text-[var(--orange)]'">
       <CheckCircle2 v-if="testOk" :size="14" />
       <span>{{ testResult }}</span>
     </p>
@@ -217,12 +217,12 @@ onMounted(load);
           <div>
             <label :class="labelClass" for="cf-cdn">{{ t("admin.integrations.cdnUrl") }}</label>
             <input id="cf-cdn" v-model="form.cdnUrl" :class="inputClass" placeholder="https://cdn.example.com" />
-            <p class="mt-1 text-[10px] text-muted-foreground">{{ t("admin.integrations.effective", { value: data?.effective.cloudflare.cdnUrl || t("admin.integrations.sourceMissing") }) }}</p>
+            <p class="mt-1 text[0.625rem] text-muted-foreground">{{ t("admin.integrations.effective", { value: data?.effective.cloudflare.cdnUrl || t("admin.integrations.sourceMissing") }) }}</p>
           </div>
           <div>
             <label :class="labelClass" for="cf-site-key">Turnstile Site Key</label>
             <input id="cf-site-key" v-model="form.turnstileSiteKey" :class="inputClass" placeholder="0x4AAAAAAA..." />
-            <p class="mt-1 text-[10px] text-muted-foreground">{{ t("admin.integrations.siteKeyNote", { value: data?.effective.cloudflare.turnstileSiteKey || t("admin.integrations.sourceMissing") }) }}</p>
+            <p class="mt-1 text[0.625rem] text-muted-foreground">{{ t("admin.integrations.siteKeyNote", { value: data?.effective.cloudflare.turnstileSiteKey || t("admin.integrations.sourceMissing") }) }}</p>
           </div>
         </div>
       </section>
@@ -251,12 +251,12 @@ onMounted(load);
             <div class="flex flex-wrap items-center justify-between gap-2">
               <label :class="labelClass" :for="`secret-${field.key}`">{{ field.label }}</label>
               <span class="mb-1 inline-flex items-center gap-2">
-                <span class="rounded-full border px-2 py-0.5 text-[10px]" :class="statusClass(data?.secrets[field.key].source ?? 'missing')">{{ statusLabel(data?.secrets[field.key].source ?? "missing") }}</span>
-                <button v-if="data?.secrets[field.key].source === 'database'" type="button" class="text-[10px] text-[var(--orange)] hover:opacity-80" :disabled="busy === `clear:${field.key}`" @click="clearSecret(field.key, field.label)"><Trash2 :size="11" class="inline" /> {{ t("admin.integrations.clear") }}</button>
+                <span class="rounded-full border px-2 py-0.5 text[0.625rem]" :class="statusClass(data?.secrets[field.key].source ?? 'missing')">{{ statusLabel(data?.secrets[field.key].source ?? "missing") }}</span>
+                <button v-if="data?.secrets[field.key].source === 'database'" type="button" class="text[0.625rem] text-[var(--orange)] hover:opacity-80" :disabled="busy === `clear:${field.key}`" @click="clearSecret(field.key, field.label)"><Trash2 :size="11" class="inline" /> {{ t("admin.integrations.clear") }}</button>
               </span>
             </div>
             <input :id="`secret-${field.key}`" v-model="secrets[field.key]" :class="inputClass" type="password" autocomplete="new-password" :placeholder="data?.secrets[field.key].configured ? t('admin.integrations.secretKeepPlaceholder') : t('admin.integrations.secretPastePlaceholder')" />
-            <p class="mt-1 text-[10px] text-muted-foreground">{{ field.hint }}</p>
+            <p class="mt-1 text[0.625rem] text-muted-foreground">{{ field.hint }}</p>
           </div>
         </div>
       </section>
@@ -273,12 +273,12 @@ onMounted(load);
             <div class="flex flex-wrap items-center justify-between gap-2">
               <label :class="labelClass" :for="`secret-${field.key}`">{{ field.label }}</label>
               <span class="mb-1 inline-flex items-center gap-2">
-                <span class="rounded-full border px-2 py-0.5 text-[10px]" :class="statusClass(data?.secrets[field.key].source ?? 'missing')">{{ statusLabel(data?.secrets[field.key].source ?? "missing") }}</span>
-                <button v-if="data?.secrets[field.key].source === 'database'" type="button" class="text-[10px] text-[var(--orange)] hover:opacity-80" :disabled="busy === `clear:${field.key}`" @click="clearSecret(field.key, field.label)"><Trash2 :size="11" class="inline" /> {{ t("admin.integrations.clear") }}</button>
+                <span class="rounded-full border px-2 py-0.5 text[0.625rem]" :class="statusClass(data?.secrets[field.key].source ?? 'missing')">{{ statusLabel(data?.secrets[field.key].source ?? "missing") }}</span>
+                <button v-if="data?.secrets[field.key].source === 'database'" type="button" class="text[0.625rem] text-[var(--orange)] hover:opacity-80" :disabled="busy === `clear:${field.key}`" @click="clearSecret(field.key, field.label)"><Trash2 :size="11" class="inline" /> {{ t("admin.integrations.clear") }}</button>
               </span>
             </div>
             <input :id="`secret-${field.key}`" v-model="secrets[field.key]" :class="inputClass" type="password" autocomplete="new-password" :placeholder="data?.secrets[field.key].configured ? t('admin.integrations.secretKeepPlaceholder') : t('admin.integrations.secretPastePlaceholder')" />
-            <p class="mt-1 text-[10px] text-muted-foreground">{{ field.hint }}</p>
+            <p class="mt-1 text[0.625rem] text-muted-foreground">{{ field.hint }}</p>
           </div>
         </div>
       </section>
@@ -286,7 +286,7 @@ onMounted(load);
       <div class="flex flex-wrap items-center gap-3">
         <button type="submit" class="v2-btn solid" :disabled="busy === 'save'">{{ busy === "save" ? t("admin.common.saving") : t("admin.integrations.save") }}</button>
         <button type="button" class="v2-btn" :disabled="busy === 'save'" @click="load">{{ t("admin.integrations.reload") }}</button>
-        <span class="text-[10.5px] text-muted-foreground">{{ t("admin.integrations.footer") }}</span>
+        <span class="text[0.65625rem] text-muted-foreground">{{ t("admin.integrations.footer") }}</span>
       </div>
     </form>
   </div>

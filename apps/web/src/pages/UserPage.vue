@@ -74,8 +74,8 @@ watch(() => [route.params.username, route.query.tab], () => load(1));
       <template v-if="tab === 'replies'">
         <div v-if="replies.length">
           <RouterLink v-for="reply in replies" :key="reply.id" :to="`/t/${reply.topic.id}`" class="block border-b border-line px-3 py-3 last:border-b-0 hover:bg-hover">
-            <p class="text-[10.5px] text-muted-foreground">{{ t("user.repliedIn", { title: reply.topic.title }) }} · <RelativeTime :seconds="reply.createdAt" /></p>
-            <p class="mt-1 line-clamp-2 text-[12.5px] leading-6">{{ reply.contentText || t("user.deletedReply") }}</p>
+            <p class="text[0.65625rem] text-muted-foreground">{{ t("user.repliedIn", { title: reply.topic.title }) }} · <RelativeTime :seconds="reply.createdAt" /></p>
+            <p class="mt-1 line-clamp-2 text[0.78125rem] leading-6">{{ reply.contentText || t("user.deletedReply") }}</p>
           </RouterLink>
         </div>
         <EmptyState v-else :message="t('user.noReplies')" />

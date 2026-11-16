@@ -98,11 +98,11 @@ async function signOut(): Promise<void> {
     </aside>
 
     <div class="min-w-0">
-      <div v-if="isSelf && !auth.isVerified" class="mb-2 flex items-center gap-3 border-l-[3px] border-l-[var(--amber)] bg-[var(--amber-soft)] px-3 py-2 text-[11px] text-[var(--muted)]">
+      <div v-if="isSelf && !auth.isVerified" class="mb-2 flex items-center gap-3 border-l-[3px] border-l-[var(--amber)] bg-[var(--amber-soft)] px-3 py-2 text[0.6875rem] text-[var(--muted)]">
         <span class="min-w-0 flex-1">{{ t("account.unverified") }}{{ resent ? t("account.verifySent") : "" }}</span>
         <button type="button" class="shrink-0 text-[var(--orange)] hover:underline" :disabled="resending" @click="resendVerification">{{ resending ? t("common.sending") : t("account.resend") }}</button>
       </div>
-      <p v-if="resendError" class="mb-2 text-[11px] text-[var(--orange)]">{{ resendError }}</p>
+      <p v-if="resendError" class="mb-2 text[0.6875rem] text-[var(--orange)]">{{ resendError }}</p>
       <header class="v2-profile-head">
         <div class="v2-profile-top">
           <span class="v2-profile-avatar" aria-hidden="true">{{ profile.name.slice(0, 1) }}</span>

@@ -107,7 +107,7 @@ watch(
                 {{ option[1] }}
               </button>
             </div>
-            <span class="ml-auto text-[10.5px]">{{ t("stats.topicTotal", { count: total }) }}</span>
+            <span class="ml-auto text[0.65625rem]">{{ t("stats.topicTotal", { count: total }) }}</span>
           </div>
           <ErrorState v-if="error" :message="error" retry @retry="load()" />
           <LoadingRows v-else-if="loading" :rows="8" />
@@ -119,7 +119,7 @@ watch(
 
         <aside class="v2-side">
           <button type="button" class="v2-side-toggle" :aria-expanded="sideOpen" @click="sideOpen = !sideOpen">
-            {{ t("stats.siteInfo") }} <span class="ml-auto text-[11px] text-muted-foreground">{{ sideOpen ? t("stats.collapse") : t("stats.expand") }}</span>
+            {{ t("stats.siteInfo") }} <span class="ml-auto text[0.6875rem] text-muted-foreground">{{ sideOpen ? t("stats.collapse") : t("stats.expand") }}</span>
           </button>
           <div class="v2-side-body" :class="{ '!block': sideOpen }">
             <section class="v2-mod">

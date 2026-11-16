@@ -220,8 +220,8 @@ onMounted(load);
   <div>
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
       <div>
-        <h1 class="text-[19px] font-bold leading-[1.3]">{{ t("admin.nav.categories") }}</h1>
-        <p class="mt-1 text-[10.5px] text-muted-foreground">{{ t("admin.categories.subtitle") }}</p>
+        <h1 class="text[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.categories") }}</h1>
+        <p class="mt-1 text[0.65625rem] text-muted-foreground">{{ t("admin.categories.subtitle") }}</p>
       </div>
       <button type="button" class="v2-btn solid sm" @click="openCreate"><Plus :size="13" /> {{ t("admin.categories.create") }}</button>
     </div>
@@ -243,7 +243,7 @@ onMounted(load);
           <div>
             <label :class="labelClass" for="category-slug">Slug</label>
             <input id="category-slug" v-model="form.slug" :class="inputClass" maxlength="40" placeholder="tools" />
-            <p class="mt-1 text-[10px] text-muted-foreground">{{ t("admin.common.slugHint", { path: "/c/<slug>" }) }}</p>
+            <p class="mt-1 text[0.625rem] text-muted-foreground">{{ t("admin.common.slugHint", { path: "/c/<slug>" }) }}</p>
           </div>
           <div class="sm:col-span-2">
             <label :class="labelClass" for="category-description">{{ t("admin.common.description") }}</label>
@@ -257,7 +257,7 @@ onMounted(load);
             </div>
           </div>
           <div class="flex items-end">
-            <label class="flex items-center gap-2 pb-2 text-[12px]">
+            <label class="flex items-center gap-2 pb-2 text[0.75rem]">
               <input v-model="form.isVisible" type="checkbox" class="size-4 accent-brand" />
               {{ t("admin.categories.visibleHint") }}
             </label>
@@ -276,18 +276,18 @@ onMounted(load);
         <button type="button" class="text-muted-foreground hover:text-ink" :aria-label="t('admin.common.close')" @click="moderatorFor = null"><X :size="15" /></button>
       </div>
       <div class="p-4">
-        <p class="text-[10.5px] leading-5 text-muted-foreground">{{ t("admin.categories.moderatorHint") }}</p>
+        <p class="text[0.65625rem] leading-5 text-muted-foreground">{{ t("admin.categories.moderatorHint") }}</p>
         <div v-if="moderatorFor.moderators.length" class="mt-3 divide-y divide-line border-y border-line">
           <div v-for="moderator in moderatorFor.moderators" :key="moderator.id" class="flex items-center gap-3 py-2">
-            <span class="grid size-7 flex-none place-items-center rounded-full bg-pine/10 text-[11px] font-semibold text-pine">{{ moderator.name.slice(0, 1) }}</span>
+            <span class="grid size-7 flex-none place-items-center rounded-full bg-pine/10 text[0.6875rem] font-semibold text-pine">{{ moderator.name.slice(0, 1) }}</span>
             <div class="min-w-0 flex-1">
-              <p class="truncate text-[12px] font-medium">{{ moderator.name }} <span class="font-normal text-muted-foreground">@{{ moderator.username || "—" }}</span></p>
-              <p class="text-[10px] text-muted-foreground">{{ moderator.role === "admin" ? t("account.roleAdmin") : t("account.roleModerator") }}</p>
+              <p class="truncate text[0.75rem] font-medium">{{ moderator.name }} <span class="font-normal text-muted-foreground">@{{ moderator.username || "—" }}</span></p>
+              <p class="text[0.625rem] text-muted-foreground">{{ moderator.role === "admin" ? t("account.roleAdmin") : t("account.roleModerator") }}</p>
             </div>
             <button type="button" class="v2-btn sm danger" :disabled="moderatorBusy === `remove:${moderator.id}`" @click="removeModerator(moderator.id, moderator.name)"><UserMinus :size="13" /> {{ t("admin.categories.remove") }}</button>
           </div>
         </div>
-        <p v-else class="mt-3 border-y border-line py-3 text-[11.5px] text-muted-foreground">{{ t("admin.categories.noModerators") }}</p>
+        <p v-else class="mt-3 border-y border-line py-3 text[0.71875rem] text-muted-foreground">{{ t("admin.categories.noModerators") }}</p>
         <p v-if="moderatorError" class="v2-alert mt-3">{{ moderatorError }}</p>
         <form class="v2-inline-controls mt-3" @submit.prevent="addModerator">
           <input v-model="moderatorInput" :class="inputClass" class="max-w-xs" maxlength="254" :placeholder="t('admin.categories.moderatorPlaceholder')" :aria-label="t('admin.categories.moderatorPlaceholder')" />
@@ -304,18 +304,18 @@ onMounted(load);
     </div>
 
     <section v-else class="v2-admin-panel mt-4">
-      <div class="v2-admin-panel-head"><span>{{ t("admin.categories.all") }}</span><span class="text-[10.5px] font-normal text-muted-foreground">{{ t("admin.common.count", { count: categories.length }) }}</span></div>
-      <div v-if="!categories.length" class="p-6 text-center text-[11.5px] text-muted-foreground">{{ t("admin.categories.empty") }}</div>
+      <div class="v2-admin-panel-head"><span>{{ t("admin.categories.all") }}</span><span class="text[0.65625rem] font-normal text-muted-foreground">{{ t("admin.common.count", { count: categories.length }) }}</span></div>
+      <div v-if="!categories.length" class="p-6 text-center text[0.71875rem] text-muted-foreground">{{ t("admin.categories.empty") }}</div>
       <div v-for="(category, index) in categories" :key="category.id" class="v2-admin-row">
         <div class="flex min-w-0 items-center gap-3">
           <span class="size-2.5 flex-none rounded-full" :style="{ background: category.color }" />
           <div class="min-w-0">
-            <p class="flex flex-wrap items-center gap-2 text-[12.5px] font-semibold">
+            <p class="flex flex-wrap items-center gap-2 text[0.78125rem] font-semibold">
               {{ category.name }}
-              <span class="font-mono text-[10px] font-normal text-muted-foreground">/c/{{ category.slug }}</span>
+              <span class="font-mono text[0.625rem] font-normal text-muted-foreground">/c/{{ category.slug }}</span>
               <span v-if="!category.isVisible" class="v2-flag">{{ t("admin.tags.statusHidden") }}</span>
             </p>
-            <p class="mt-0.5 truncate text-[10.5px] text-muted-foreground">{{ category.description || t("common.notSet") }} · {{ t("admin.categories.topicCount", { count: category.topicCount }) }} · {{ t("admin.categories.moderatorLabel", { names: category.moderators.length ? category.moderators.map((item) => item.name).join(listSeparator()) : t("common.none") }) }}</p>
+            <p class="mt-0.5 truncate text[0.65625rem] text-muted-foreground">{{ category.description || t("common.notSet") }} · {{ t("admin.categories.topicCount", { count: category.topicCount }) }} · {{ t("admin.categories.moderatorLabel", { names: category.moderators.length ? category.moderators.map((item) => item.name).join(listSeparator()) : t("common.none") }) }}</p>
           </div>
         </div>
         <div class="flex flex-none items-center gap-1">
