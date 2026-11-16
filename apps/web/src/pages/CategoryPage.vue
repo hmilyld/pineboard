@@ -87,13 +87,13 @@ watch(() => route.params.slug, () => load(1));
       <header v-if="category" class="v2-cat-head mb-3 border-b border-line pb-3" :class="categoryClass(category.slug)" :style="categoryStyle(category.color)">
         <div class="flex flex-wrap items-end gap-x-5 gap-y-3">
           <div class="v2-cat-head-main min-w-0 flex-1">
-            <h1 class="flex items-center gap-2 text-[20px] font-bold leading-[1.3] tracking-[-0.02em]"><i class="size-2.5 rounded-full" :style="{ background: 'var(--c)' }" />{{ category.name }}</h1>
-            <p class="mt-1 text-[11.5px] text-muted-foreground">{{ category.description }}</p>
+            <h1 class="flex items-center gap-2 text[1.25rem] font-bold leading-[1.3] tracking-[-0.02em]"><i class="size-2.5 rounded-full" :style="{ background: 'var(--c)' }" />{{ category.name }}</h1>
+            <p class="mt-1 text[0.71875rem] text-muted-foreground">{{ category.description }}</p>
           </div>
           <div class="v2-cat-head-stats flex items-center gap-5">
-            <div class="text-right"><b class="num block text-[15px] font-semibold">{{ category.stats?.topics ?? 0 }}</b><span class="text-[10px] text-muted-foreground">{{ t("stats.topics") }}</span></div>
-            <div class="text-right"><b class="num block text-[15px] font-semibold">{{ category.stats?.todayTopics ?? 0 }}</b><span class="text-[10px] text-muted-foreground">{{ t("stats.today") }}</span></div>
-            <div class="text-right"><b class="num block text-[15px] font-semibold">{{ category.stats?.replies ?? 0 }}</b><span class="text-[10px] text-muted-foreground">{{ t("stats.replies") }}</span></div>
+            <div class="text-right"><b class="num block text[0.9375rem] font-semibold">{{ category.stats?.topics ?? 0 }}</b><span class="text[0.625rem] text-muted-foreground">{{ t("stats.topics") }}</span></div>
+            <div class="text-right"><b class="num block text[0.9375rem] font-semibold">{{ category.stats?.todayTopics ?? 0 }}</b><span class="text[0.625rem] text-muted-foreground">{{ t("stats.today") }}</span></div>
+            <div class="text-right"><b class="num block text[0.9375rem] font-semibold">{{ category.stats?.replies ?? 0 }}</b><span class="text[0.625rem] text-muted-foreground">{{ t("stats.replies") }}</span></div>
             <RouterLink :to="`/new?category=${category.slug}`" class="v2-btn orange">{{ t("nav.newTopic") }}</RouterLink>
           </div>
         </div>
@@ -105,7 +105,7 @@ watch(() => route.params.slug, () => load(1));
             <div class="flex items-center gap-3" role="tablist" :aria-label="t('topicSort.filterLabel')">
               <button v-for="option in sortOptions" :key="option[0]" type="button" class="v2-tab" :data-active="sort === option[0]" role="tab" :aria-selected="sort === option[0]" @click="load(1, option[0])">{{ option[1] }}</button>
             </div>
-            <span class="ml-auto text-[10.5px]">{{ t("stats.topicTotal", { count: total }) }} · {{ filterLabel }}</span>
+            <span class="ml-auto text[0.65625rem]">{{ t("stats.topicTotal", { count: total }) }} · {{ filterLabel }}</span>
           </div>
           <ErrorState v-if="error" :message="error" retry @retry="load()" />
           <LoadingRows v-else-if="loading" :rows="8" />
@@ -116,7 +116,7 @@ watch(() => route.params.slug, () => load(1));
         </section>
 
         <aside class="v2-side">
-          <button type="button" class="v2-side-toggle" :aria-expanded="sideOpen" @click="sideOpen = !sideOpen">{{ t("stats.siteInfo") }} <span class="ml-auto text-[11px] text-muted-foreground">{{ sideOpen ? t("stats.collapse") : t("stats.expand") }}</span></button>
+          <button type="button" class="v2-side-toggle" :aria-expanded="sideOpen" @click="sideOpen = !sideOpen">{{ t("stats.siteInfo") }} <span class="ml-auto text[0.6875rem] text-muted-foreground">{{ sideOpen ? t("stats.collapse") : t("stats.expand") }}</span></button>
           <div class="v2-side-body" :class="{ '!block': sideOpen }">
           <section class="v2-mod">
             <h3>{{ t("page.categories") }}</h3>

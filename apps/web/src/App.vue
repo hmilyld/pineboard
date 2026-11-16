@@ -273,16 +273,16 @@ async function signOut(): Promise<void> {
                   <template v-if="item.kind === 'categories'">
                     <RouterLink v-for="category in categories" :key="category.id" :to="`/c/${category.slug}`" @click="openNavId = null">
                       <i :class="categoryClass(category.slug)" :style="categoryStyle(category.color)" />{{ category.name }}
-                      <span class="ml-auto text-[10px] text-muted-foreground">{{ category.topicCount ?? 0 }}</span>
+                      <span class="ml-auto text[0.625rem] text-muted-foreground">{{ category.topicCount ?? 0 }}</span>
                     </RouterLink>
-                    <p v-if="!categories.length" class="px-2 py-2 text-[11px] text-muted-foreground">{{ t("nav.noCategories") }}</p>
+                    <p v-if="!categories.length" class="px-2 py-2 text[0.6875rem] text-muted-foreground">{{ t("nav.noCategories") }}</p>
                   </template>
                   <template v-else>
                     <template v-for="child in item.children ?? []" :key="child.id">
                       <RouterLink v-if="isInternal(child.href)" :to="child.href" @click="openNavId = null">{{ child.label }}</RouterLink>
                       <a v-else :href="child.href" :target="child.openInNewTab ? '_blank' : undefined" rel="noopener noreferrer" @click="openNavId = null">{{ child.label }}</a>
                     </template>
-                    <p v-if="!item.children?.length" class="px-2 py-2 text-[11px] text-muted-foreground">{{ t("nav.noChildren") }}</p>
+                    <p v-if="!item.children?.length" class="px-2 py-2 text[0.6875rem] text-muted-foreground">{{ t("nav.noChildren") }}</p>
                   </template>
                 </div>
               </div>
@@ -382,7 +382,7 @@ async function signOut(): Promise<void> {
           <RouterLink to="/notifications" @click="closeDrawer">{{ t("nav.notifications") }}</RouterLink>
           <RouterLink v-if="auth.permissions?.isModerator" to="/admin/reports" @click="closeDrawer">{{ t("nav.moderation") }}</RouterLink>
           <RouterLink v-if="auth.isAdmin" to="/admin" @click="closeDrawer">{{ t("nav.adminEntry") }}</RouterLink>
-          <button type="button" class="flex min-h-[42px] w-full items-center border-b border-white/10 text-[15px] text-white/80" @click="signOut">{{ t("nav.signOut") }}</button>
+          <button type="button" class="flex min-h-[42px] w-full items-center border-b border-white/10 text[0.9375rem] text-white/80" @click="signOut">{{ t("nav.signOut") }}</button>
         </div>
         <div v-else>
           <RouterLink to="/login" @click="closeDrawer">{{ t("auth.loginButton") }}</RouterLink>

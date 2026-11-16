@@ -80,15 +80,15 @@ onMounted(load);
 <template>
   <main class="v2-page">
     <div class="v2-container">
-      <div class="flex items-end justify-between gap-4"><h1 class="text-[20px] font-bold leading-[1.3]">{{ t("editTopic.title") }}</h1><RouterLink :to="`/t/${route.params.id}`" class="text-[11.5px] text-muted-foreground hover:text-ink">{{ t("editTopic.cancel") }}</RouterLink></div>
+      <div class="flex items-end justify-between gap-4"><h1 class="text[1.25rem] font-bold leading-[1.3]">{{ t("editTopic.title") }}</h1><RouterLink :to="`/t/${route.params.id}`" class="text[0.71875rem] text-muted-foreground hover:text-ink">{{ t("editTopic.cancel") }}</RouterLink></div>
       <PageSkeleton v-if="loading" class="mt-4" variant="form" :header="false" narrow bare />
       <p v-else-if="error && !detail" :class="[alertErrorClass, 'mt-4']">{{ error }}</p>
       <p v-else-if="detail && !detail.viewer.canEdit" :class="[alertInfoClass, 'mt-4']">{{ t("editTopic.notEditable") }}</p>
       <form v-else-if="detail" class="mt-4" @submit.prevent="save">
         <div class="overflow-hidden rounded-[6px] border border-line bg-surface">
           <div class="flex h-[58px] items-center border-b border-line px-3">
-            <input id="edit-title" v-model="form.title" name="title" class="min-w-0 flex-1 border-0 bg-transparent text-[19px] font-semibold outline-none" maxlength="120" :aria-label="t('editTopic.titleLabel')" />
-            <span class="num text-[10.5px] text-muted-foreground">{{ form.title.length }}/120</span>
+            <input id="edit-title" v-model="form.title" name="title" class="min-w-0 flex-1 border-0 bg-transparent text[1.1875rem] font-semibold outline-none" maxlength="120" :aria-label="t('editTopic.titleLabel')" />
+            <span class="num text[0.65625rem] text-muted-foreground">{{ form.title.length }}/120</span>
           </div>
           <MarkdownEditor v-model="form.contentMd" flat :rows="14" :height="360" />
         </div>
@@ -103,7 +103,7 @@ onMounted(load);
           @error="error = $event"
         />
         <p v-if="error" class="v2-alert mt-3" role="alert">{{ error }}</p>
-        <div class="mt-3 flex items-center gap-3"><button type="submit" class="v2-btn solid" :disabled="saving">{{ saving ? t("common.saving") : t("editTopic.save") }}</button><RouterLink :to="`/t/${route.params.id}/history`" class="text-[11.5px] text-muted-foreground hover:text-ink">{{ t("editTopic.viewHistory") }}</RouterLink><span class="ml-auto text-[10.5px] text-muted-foreground">{{ t("editTopic.currentVersion", { version: detail.firstPost.version }) }}</span></div>
+        <div class="mt-3 flex items-center gap-3"><button type="submit" class="v2-btn solid" :disabled="saving">{{ saving ? t("common.saving") : t("editTopic.save") }}</button><RouterLink :to="`/t/${route.params.id}/history`" class="text[0.71875rem] text-muted-foreground hover:text-ink">{{ t("editTopic.viewHistory") }}</RouterLink><span class="ml-auto text[0.65625rem] text-muted-foreground">{{ t("editTopic.currentVersion", { version: detail.firstPost.version }) }}</span></div>
       </form>
     </div>
   </main>

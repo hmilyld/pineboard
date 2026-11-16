@@ -433,22 +433,22 @@ watch([() => route.query.page, () => route.query.onlyOp], () => {
               </header>
             </div>
 
-            <div v-if="actionError" class="fixed inset-x-4 bottom-4 z-[70] mx-auto max-w-md border border-orange/40 bg-card px-3 py-2 text-[11.5px] text-ink shadow-lg" role="alert">
+            <div v-if="actionError" class="fixed inset-x-4 bottom-4 z-[70] mx-auto max-w-md border border-orange/40 bg-card px-3 py-2 text[0.71875rem] text-ink shadow-lg" role="alert">
               <span class="mr-2">{{ actionError }}</span>
               <button type="button" class="text-muted-foreground hover:text-ink" @click="actionError = ''">{{ t("topic.actionClose") }}</button>
             </div>
 
             <details v-if="detail.viewer.canModerate" class="v2-panel mb-3 mt-3 p-3">
-              <summary class="cursor-pointer text-[12px] font-medium">{{ t("topic.moderation") }}</summary>
-              <div class="v2-inline-controls mt-3 items-end text-[12px]">
-                <label class="flex flex-col gap-1"><span class="text-[10.5px] text-muted-foreground">{{ t("topic.pinLabel") }}</span>
+              <summary class="cursor-pointer text[0.75rem] font-medium">{{ t("topic.moderation") }}</summary>
+              <div class="v2-inline-controls mt-3 items-end text[0.75rem]">
+                <label class="flex flex-col gap-1"><span class="text[0.65625rem] text-muted-foreground">{{ t("topic.pinLabel") }}</span>
                   <select :value="pinLevel" class="v2-input w-28 px-2" :disabled="modBusy" @change="setPin(Number(($event.target as HTMLSelectElement).value) as 0 | 1 | 2)">
                     <option :value="0">{{ t("topic.noPin") }}</option><option :value="1">{{ t("topic.categoryPin") }}</option><option v-if="auth.isAdmin" :value="2">{{ t("topic.globalPin") }}</option>
                   </select>
                 </label>
                 <button type="button" class="v2-btn sm" :disabled="modBusy" @click="toggleLock">{{ detail.topic.isLocked ? t("topic.unlock") : t("topic.lock") }}</button>
                 <button type="button" class="v2-btn sm" :disabled="modBusy" @click="toggleDigest">{{ detail.topic.isDigest ? t("topic.unfeature") : t("topic.feature") }}</button>
-                <label class="flex flex-col gap-1"><span class="text-[10.5px] text-muted-foreground">{{ t("topic.moveTo") }}</span>
+                <label class="flex flex-col gap-1"><span class="text[0.65625rem] text-muted-foreground">{{ t("topic.moveTo") }}</span>
                   <select v-model="moveCategory" class="v2-input w-36 px-2"><option value="">{{ t("topic.chooseCategory") }}</option><option v-for="item in categories" :key="item.id" :value="item.id">{{ item.name }}</option></select>
                 </label>
                 <button type="button" class="v2-btn sm" :disabled="modBusy || !moveCategory" @click="move">{{ t("topic.move") }}</button>
@@ -499,7 +499,7 @@ watch([() => route.query.page, () => route.query.onlyOp], () => {
                   <button type="button" class="v2-btn solid sm" :disabled="submitting" @click="submitReply">{{ submitting ? t("topic.replying") : t("topic.submitReply") }}</button>
                 </div>
               </template>
-              <div v-else class="border-t border-line p-4 text-[12px] text-muted-foreground">
+              <div v-else class="border-t border-line p-4 text[0.75rem] text-muted-foreground">
                 <template v-if="detail.topic.isLocked">{{ t("topic.lockedNoReply") }}</template>
                 <template v-else-if="!auth.user"><RouterLink to="/login" class="text-link">{{ t("topic.loginToReply") }}</RouterLink> {{ t("topic.loginToReplySuffix") }}</template>
                 <template v-else>{{ t("topic.verifyNeeded") }} <RouterLink to="/me" class="text-link">{{ t("topic.goVerify") }}</RouterLink></template>

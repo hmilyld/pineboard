@@ -39,8 +39,8 @@ function onClick(event: MouseEvent): void {
       @click="onClick"
     >
       <div class="p-5">
-        <h2 id="confirm-dialog-title" class="text-[15px] font-semibold">{{ confirmState.title }}</h2>
-        <p class="mt-2 text-[12px] leading-6 text-muted-foreground">{{ confirmState.message }}</p>
+        <h2 id="confirm-dialog-title" class="text[0.9375rem] font-semibold">{{ confirmState.title }}</h2>
+        <p class="mt-2 text[0.75rem] leading-6 text-muted-foreground">{{ confirmState.message }}</p>
         <div class="mt-5 flex justify-end gap-2">
           <button type="button" class="v2-btn" @click="resolveConfirm(false)">{{ confirmState.cancelLabel }}</button>
           <button type="button" autofocus class="v2-btn" :class="confirmState.danger ? 'border-[var(--orange-cta)] bg-[var(--orange-cta)] text-[var(--on-orange)]' : 'solid'" @click="resolveConfirm(true)">{{ confirmState.confirmLabel }}</button>

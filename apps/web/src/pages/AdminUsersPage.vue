@@ -127,7 +127,7 @@ onMounted(() => load());
 <template>
   <div>
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
-      <div><h1 class="text-[19px] font-bold leading-[1.3]">{{ t("admin.nav.users") }}</h1><p class="mt-1 text-[10.5px] text-muted-foreground">{{ t("admin.users.subtitle") }}</p></div>
+      <div><h1 class="text[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.users") }}</h1><p class="mt-1 text[0.65625rem] text-muted-foreground">{{ t("admin.users.subtitle") }}</p></div>
       <form class="flex gap-2" @submit.prevent="search">
         <input v-model="q" :class="inputClass" class="h-8 w-[240px]" type="search" :placeholder="t('admin.users.searchPlaceholder')" :aria-label="t('admin.users.searchLabel')" />
         <button type="submit" class="v2-btn sm">{{ t("admin.common.search") }}</button>
@@ -135,16 +135,16 @@ onMounted(() => load());
     </div>
 
     <div class="mt-3 flex flex-wrap items-center gap-3">
-      <div class="flex items-center gap-3 text-[11.5px]">
+      <div class="flex items-center gap-3 text[0.71875rem]">
         <button v-for="[value, label] in statusTabs" :key="value" type="button" class="v2-tab" :data-active="status === value" @click="setStatus(value)">{{ label }}</button>
       </div>
-      <select v-model="role" class="v2-input h-8 w-28 px-2 text-[11.5px]" :aria-label="t('admin.users.roleFilter')" @change="load(1)">
+      <select v-model="role" class="v2-input h-8 w-28 px-2 text[0.71875rem]" :aria-label="t('admin.users.roleFilter')" @change="load(1)">
         <option value="all">{{ t("admin.users.allRoles") }}</option>
         <option value="user">{{ t("admin.users.roleUser") }}</option>
         <option value="moderator">{{ roleLabel("moderator") }}</option>
         <option value="admin">{{ roleLabel("admin") }}</option>
       </select>
-      <span class="ml-auto text-[10.5px] text-muted-foreground">{{ t("admin.users.totalUsers", { count: total }) }}</span>
+      <span class="ml-auto text[0.65625rem] text-muted-foreground">{{ t("admin.users.totalUsers", { count: total }) }}</span>
     </div>
 
     <p v-if="message" :class="[alertInfoClass, 'mt-3']">{{ message }}</p>
@@ -157,17 +157,17 @@ onMounted(() => load());
         <tbody>
           <tr v-for="user in users" :key="user.id">
             <td class="p-3">
-              <b class="block text-[12px]">{{ user.name }}</b>
-              <span class="block text-[10.5px] text-muted-foreground">{{ user.email }}<template v-if="user.username"> · @{{ user.username }}</template></span>
+              <b class="block text[0.75rem]">{{ user.name }}</b>
+              <span class="block text[0.65625rem] text-muted-foreground">{{ user.email }}<template v-if="user.username"> · @{{ user.username }}</template></span>
             </td>
             <td class="p-3">
-              <select class="v2-input h-7 w-24 px-1.5 text-[11px]" :value="user.role" :disabled="busy === user.id || user.id === selfId" @change="changeRole(user, ($event.target as HTMLSelectElement).value, $event.target as HTMLSelectElement)">
+              <select class="v2-input h-7 w-24 px-1.5 text[0.6875rem]" :value="user.role" :disabled="busy === user.id || user.id === selfId" @change="changeRole(user, ($event.target as HTMLSelectElement).value, $event.target as HTMLSelectElement)">
                 <option v-for="value in roles" :key="value" :value="value">{{ roleLabel(value) }}</option>
               </select>
             </td>
             <td class="p-3"><span class="v2-status-pill" :class="{ active: user.status === 'active' }">{{ statusLabel(user.status) }}</span></td>
-            <td class="p-3 text-[11px] text-muted-foreground">{{ user.topicCount }} / {{ user.replyCount }}</td>
-            <td class="p-3 text-[10.5px] text-muted-foreground">{{ formatDate(user.createdAt) }}</td>
+            <td class="p-3 text[0.6875rem] text-muted-foreground">{{ user.topicCount }} / {{ user.replyCount }}</td>
+            <td class="p-3 text[0.65625rem] text-muted-foreground">{{ formatDate(user.createdAt) }}</td>
             <td class="p-3 text-right">
               <button type="button" class="v2-btn sm" :class="{ danger: user.status === 'active' }" :disabled="busy === user.id || user.id === selfId || user.status === 'deleted' || user.status === 'deleting'" @click="toggleSuspend(user)">
                 {{ user.status === "suspended" ? t("admin.users.unsuspend") : t("admin.users.suspend") }}

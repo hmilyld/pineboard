@@ -60,12 +60,12 @@ onMounted(load);
   <AccountSkeleton v-if="!auth.user || loading" />
   <AccountShell v-else-if="auth.user" :profile="profile" active="preferences" :topic-count="summary.topicCount" :reply-count="summary.replyCount" :like-count="summary.likeCount" :bookmark-count="summary.bookmarkCount" :notification-count="summary.unreadCount" is-self>
     <div class="v2-section-head"><h2>{{ t("preferences.title") }}</h2><span>{{ t("preferences.subtitle") }}</span></div>
-    <p class="mb-3 text-[11.5px] text-muted-foreground">{{ t("preferences.intro") }}</p>
+    <p class="mb-3 text[0.71875rem] text-muted-foreground">{{ t("preferences.intro") }}</p>
     <p v-if="error" :class="[alertErrorClass, 'mb-3']" role="alert">{{ error }}</p>
     <p v-if="saved" :class="[alertInfoClass, 'mb-3']">{{ saved }}</p>
     <section class="v2-panel p-4">
       <div class="space-y-3">
-        <label v-for="(label, key) in labels" :key="key" class="flex items-start gap-3 text-[12px]">
+        <label v-for="(label, key) in labels" :key="key" class="flex items-start gap-3 text[0.75rem]">
           <input v-model="email[key]" :name="`email-${key}`" type="checkbox" class="mt-0.5 size-4 accent-brand" />
           <span class="font-medium">{{ label }}</span>
         </label>
