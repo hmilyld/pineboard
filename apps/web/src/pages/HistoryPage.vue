@@ -37,7 +37,7 @@ onMounted(async () => {
   <main class="v2-page">
     <div class="v2-container">
       <div class="flex items-end justify-between gap-4"><h1 class="text-[20px] font-bold leading-[1.3]">{{ t("history.title") }}</h1><RouterLink :to="`/t/${route.params.id}`" class="text-[11.5px] text-muted-foreground hover:text-ink">{{ t("history.backToTopic") }}</RouterLink></div>
-      <p v-if="error" :class="[alertErrorClass, 'mt-4']">{{ error }}</p>
+      <p v-if="error" :class="[alertErrorClass, 'mt-4']" role="alert">{{ error }}</p>
       <PageSkeleton v-else-if="loading" class="mt-4" :rows="4" :header="false" narrow bare />
       <div v-else-if="!revisions.length" class="v2-empty mt-4">{{ t("history.empty") }}</div>
       <div v-else class="mt-4 grid gap-3 sm:grid-cols-[220px_minmax(0,1fr)]">

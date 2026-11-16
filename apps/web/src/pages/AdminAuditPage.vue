@@ -88,12 +88,13 @@ onMounted(load);
       <div><h1 class="text-[19px] font-bold leading-[1.3]">{{ t("admin.nav.audit") }}</h1><p class="mt-1 text-[10.5px] text-muted-foreground">{{ t("admin.audit.subtitle") }}</p></div>
       <button type="button" class="v2-btn sm" :disabled="loading" @click="load">{{ t("admin.audit.refresh") }}</button>
     </div>
-    <p v-if="error" :class="[alertErrorClass, 'mt-4']">{{ error }}</p>
+    <p v-if="error" :class="[alertErrorClass, 'mt-4']" role="alert">{{ error }}</p>
     <p v-if="message" :class="[alertInfoClass, 'mt-4']">{{ message }}</p>
     <AdminSkeleton v-if="loading" class="mt-4" />
     <div v-else class="v2-admin-panel mt-4 overflow-x-auto">
       <table class="v2-admin-table min-w-[760px]">
-        <thead><tr><th>{{ t("admin.audit.colTime") }}</th><th>{{ t("admin.audit.colActor") }}</th><th>{{ t("admin.audit.colAction") }}</th><th>{{ t("admin.audit.colTarget") }}</th><th>{{ t("admin.audit.colDetail") }}</th><th></th></tr></thead>
+        <caption class="sr-only">{{ t("admin.nav.audit") }}</caption>
+        <thead><tr><th scope="col">{{ t("admin.audit.colTime") }}</th><th scope="col">{{ t("admin.audit.colActor") }}</th><th scope="col">{{ t("admin.audit.colAction") }}</th><th scope="col">{{ t("admin.audit.colTarget") }}</th><th scope="col">{{ t("admin.audit.colDetail") }}</th><th></th></tr></thead>
         <tbody>
           <tr v-for="row in rows" :key="row.id">
             <td class="whitespace-nowrap p-3 text-muted-foreground">{{ formatDate(row.createdAt) }}</td>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref, watch } from "vue";
 import { RouterLink } from "vue-router";
 import AuthShell from "@/components/AuthShell.vue";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,15 @@ import { useConfigStore } from "@/stores/config";
 const config = useConfigStore();
 const email = ref("");
 const error = ref("");
+const errorEl = ref<HTMLElement | null>(null);
+// On failure, route keyboard and screen-reader focus to the error message so
+// the failure is not silent for non-visual users.
+watch(error, async (value) => {
+  if (value) {
+    await nextTick();
+    errorEl.value?.focus();
+  }
+});
 const sent = ref(false);
 const submitting = ref(false);
 
@@ -44,9 +53,9 @@ async function submit(): Promise<void> {
     <form v-else class="space-y-4" @submit.prevent="submit">
       <div>
         <label :class="labelClass" for="forgot-email">{{ t("auth.email") }}</label>
-        <input id="forgot-email" v-model="email" name="email" type="email" spellcheck="false" :class="inputClass" autocomplete="email" :placeholder="t('auth.emailPlaceholder')" />
+        <input id="forgot-email" v-model="email" name="email" type="email" spellcheck="false" autocapitalize="none" enterkeyhint="next" :class="inputClass" autocomplete="email" :placeholder="t('auth.emailPlaceholder')" />
       </div>
-      <p v-if="error" :class="alertErrorClass">{{ error }}</p>
+      <p v-if="error" ref="errorEl" tabindex="-1" :class="alertErrorClass" role="alert">{{ error }}</p>
       <Button class="w-full" type="submit" :disabled="submitting">
         {{ submitting ? t("common.sending") : t("auth.sendReset") }}
       </Button>

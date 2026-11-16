@@ -268,10 +268,12 @@ async function signOut(): Promise<void> {
             </template>
           </nav>
 
-          <form v-if="!isSearch" class="v2-search" role="search" @submit.prevent="submitSearch">
-            <Search :size="13" aria-hidden="true" />
-            <input v-model="searchQ" name="q" type="search" autocomplete="off" :placeholder="t('nav.searchPlaceholderShort')" :aria-label="t('nav.searchPlaceholder')" />
-          </form>
+          <search v-if="!isSearch" class="v2-search">
+            <form class="contents" @submit.prevent="submitSearch">
+              <Search :size="13" aria-hidden="true" />
+              <input v-model="searchQ" name="q" type="search" autocomplete="off" autocapitalize="none" :placeholder="t('nav.searchPlaceholderShort')" :aria-label="t('nav.searchPlaceholder')" />
+            </form>
+          </search>
 
           <div class="v2-hauth">
             <RouterLink v-if="auth.isAdmin" to="/admin" class="v2-admin-entry" :aria-label="t('nav.adminEntry')"><Settings :size="14" /><span>{{ t('nav.adminShort') }}</span></RouterLink>

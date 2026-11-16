@@ -180,7 +180,7 @@ onMounted(load);
       <span class="flex items-center gap-2 text-[10.5px] text-muted-foreground"><KeyRound :size="13" /> {{ t("admin.integrations.configured", { done: configuredCount, total: secretFields.length }) }}</span>
     </div>
 
-    <p v-if="error" :class="[alertErrorClass, 'mt-4']">{{ error }}</p>
+    <p v-if="error" :class="[alertErrorClass, 'mt-4']" role="alert">{{ error }}</p>
     <p v-if="saved" :class="[alertInfoClass, 'mt-4']">{{ saved }}</p>
     <p v-if="testResult" class="mt-4 flex items-center gap-2 border px-3 py-2 text-[11.5px]" :class="testOk ? 'border-pine/40 bg-pine/10 text-pine' : 'border-[var(--orange)]/40 bg-[var(--orange)]/10 text-[var(--orange)]'">
       <CheckCircle2 v-if="testOk" :size="14" />

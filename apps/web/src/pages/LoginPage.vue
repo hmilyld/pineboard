@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref, watch } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import AuthShell from "@/components/AuthShell.vue";
 import { t } from "@/i18n";
@@ -14,6 +14,16 @@ const route = useRoute();
 const email = ref("");
 const password = ref("");
 const error = ref("");
+const errorEl = ref<HTMLElement | null>(null);
+// On failure, route keyboard and screen-reader focus to the error message so
+// the failure is not silent for non-visual users. (forms guide: move focus to
+// the error summary when a form submission fails validation.)
+watch(error, async (value) => {
+  if (value) {
+    await nextTick();
+    errorEl.value?.focus();
+  }
+});
 const showPassword = ref(false);
 const submitting = ref(false);
 
@@ -41,7 +51,7 @@ async function submit(): Promise<void> {
     <form class="space-y-4" @submit.prevent="submit">
       <div>
         <label class="v2-auth-label" for="login-email">{{ t("auth.email") }}</label>
-        <input id="login-email" v-model="email" name="email" type="email" spellcheck="false" autocomplete="email" :placeholder="t('auth.emailPlaceholder')" class="v2-input" />
+        <input id="login-email" v-model="email" name="email" type="email" spellcheck="false" autocapitalize="none" enterkeyhint="next" autocomplete="email" :placeholder="t('auth.emailPlaceholder')" class="v2-input" />
       </div>
       <div>
         <div class="flex items-center justify-between">
@@ -58,7 +68,7 @@ async function submit(): Promise<void> {
           class="v2-input"
         />
       </div>
-      <p v-if="error" :class="alertErrorClass">{{ error }}</p>
+      <p v-if="error" ref="errorEl" tabindex="-1" :class="alertErrorClass" role="alert">{{ error }}</p>
       <button type="submit" class="v2-auth-submit" :disabled="submitting">
         {{ submitting ? t("auth.loggingIn") : t("auth.loginButton") }}
       </button>

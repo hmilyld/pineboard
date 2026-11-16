@@ -193,7 +193,7 @@ onMounted(load);
       <button type="button" class="v2-btn solid sm" @click="openCreate"><Plus :size="13" /> {{ t("admin.navPage.create") }}</button>
     </div>
 
-    <p v-if="error" :class="[alertErrorClass, 'mt-4']">{{ error }}</p>
+    <p v-if="error" :class="[alertErrorClass, 'mt-4']" role="alert">{{ error }}</p>
     <p v-if="saved" :class="[alertInfoClass, 'mt-4']">{{ saved }}</p>
 
     <section v-if="formOpen" class="v2-admin-panel mt-4">

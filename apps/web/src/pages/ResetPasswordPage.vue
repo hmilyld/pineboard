@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 import { derivePassword } from "@pineboard/shared";
 import AuthShell from "@/components/AuthShell.vue";
@@ -16,6 +16,15 @@ const email = computed(() => (typeof route.query.email === "string" ? route.quer
 const password = ref("");
 const confirm = ref("");
 const error = ref("");
+const errorEl = ref<HTMLElement | null>(null);
+// On failure, route keyboard and screen-reader focus to the error message so
+// the failure is not silent for non-visual users.
+watch(error, async (value) => {
+  if (value) {
+    await nextTick();
+    errorEl.value?.focus();
+  }
+});
 const done = ref(false);
 const submitting = ref(false);
 const passwordMin = computed(() => config.config?.account.passwordMinLength ?? 8);
@@ -68,7 +77,7 @@ async function submit(): Promise<void> {
         <label :class="labelClass" for="reset-confirm">{{ t("auth.passwordConfirm") }}</label>
         <input id="reset-confirm" v-model="confirm" name="confirm-password" type="password" :class="inputClass" autocomplete="new-password" />
       </div>
-      <p v-if="error" :class="alertErrorClass">{{ error }}</p>
+      <p v-if="error" ref="errorEl" tabindex="-1" :class="alertErrorClass" role="alert">{{ error }}</p>
       <Button class="w-full" type="submit" :disabled="submitting">
         {{ submitting ? t("auth.updating") : t("auth.updatePassword") }}
       </Button>

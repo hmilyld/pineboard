@@ -148,7 +148,7 @@ onMounted(load);
       <RouterLink to="/admin/emails" class="text-[11.5px] text-muted-foreground hover:text-ink">{{ t("admin.nav.emails") }}</RouterLink>
     </div>
 
-    <p v-if="error" :class="[alertErrorClass, 'mt-6']">{{ error }}</p>
+    <p v-if="error" :class="[alertErrorClass, 'mt-6']" role="alert">{{ error }}</p>
     <p v-if="saved" :class="[alertInfoClass, 'mt-6']">{{ saved }}</p>
 
     <AdminSkeleton v-if="loading" class="mt-4" />
