@@ -192,18 +192,18 @@ function onPick(kind: UploadKind, event: Event): void {
       <button type="button" class="v2-tab" :data-active="tab === 'preview'" @click="tab = 'preview'">{{ t("composer.preview") }}</button>
       <span class="mx-1 h-3 w-px bg-line" />
       <div v-if="tab === 'write'" class="flex items-center gap-0.5 text-muted-foreground">
-        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] font-semibold hover:bg-hover hover:text-ink" :aria-label="t('composer.bold')" :title="t('composer.bold')" @click="wrap('**', '**')">B</button>
-        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] italic hover:bg-hover hover:text-ink" :aria-label="t('composer.italic')" :title="t('composer.italic')" @click="wrap('_', '_')">I</button>
-        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :aria-label="t('composer.quote')" :title="t('composer.quoteTitle')" @click="wrap('> ')">›</button>
-        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :aria-label="t('composer.code')" :title="t('composer.codeTitle')" @click="wrap('`', '`')">`</button>
-        <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :aria-label="t('composer.link')" :title="t('composer.linkTitle')" @click="wrap('[', '](https://)')">↗</button>
+        <button type="button" class="grid size-6 place-items-center rounded-[2px] font-semibold hover:bg-hover hover:text-ink" :aria-label="t('composer.bold')" :title="t('composer.bold')" @click="wrap('**', '**')">B</button>
+        <button type="button" class="grid size-6 place-items-center rounded-[2px] italic hover:bg-hover hover:text-ink" :aria-label="t('composer.italic')" :title="t('composer.italic')" @click="wrap('_', '_')">I</button>
+        <button type="button" class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :aria-label="t('composer.quote')" :title="t('composer.quoteTitle')" @click="wrap('> ')">›</button>
+        <button type="button" class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :aria-label="t('composer.code')" :title="t('composer.codeTitle')" @click="wrap('`', '`')">`</button>
+        <button type="button" class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :aria-label="t('composer.link')" :title="t('composer.linkTitle')" @click="wrap('[', '](https://)')">↗</button>
         <template v-if="uploadsEnabled">
           <span class="mx-1 h-3 w-px bg-line" />
-          <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :disabled="uploading !== null" :aria-label="t('composer.uploadImage')" :title="t('composer.uploadImageTitle')" @click="imageInput?.click()">
+          <button type="button" class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :disabled="uploading !== null" :aria-label="t('composer.uploadImage')" :title="t('composer.uploadImageTitle')" @click="imageInput?.click()">
             <Loader2 v-if="uploading === 'image'" :size="13" class="animate-spin" />
             <ImagePlus v-else :size="13" />
           </button>
-          <button type="button" class="grid size-[22px] place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :disabled="uploading !== null" :aria-label="t('composer.uploadArchive')" :title="t('composer.uploadArchiveTitle')" @click="archiveInput?.click()">
+          <button type="button" class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :disabled="uploading !== null" :aria-label="t('composer.uploadArchive')" :title="t('composer.uploadArchiveTitle')" @click="archiveInput?.click()">
             <Loader2 v-if="uploading === 'attachment'" :size="13" class="animate-spin" />
             <Paperclip v-else :size="13" />
           </button>
