@@ -107,8 +107,8 @@ onMounted(async () => {
 <template>
   <div>
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
-      <div><h1 class="text[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.reviews") }}</h1><p class="mt-1 text[0.65625rem] text-muted-foreground">{{ t("admin.reviews.subtitle") }}</p></div>
-      <RouterLink to="/" class="text[0.71875rem] text-muted-foreground hover:text-ink">{{ t("admin.shell.backToForum") }}</RouterLink>
+      <div><h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.reviews") }}</h1><p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.reviews.subtitle") }}</p></div>
+      <RouterLink to="/" class="text-[0.71875rem] text-muted-foreground hover:text-ink">{{ t("admin.shell.backToForum") }}</RouterLink>
     </div>
 
     <p v-if="message" :class="[alertInfoClass, 'mt-6']">{{ message }}</p>
@@ -137,23 +137,23 @@ onMounted(async () => {
     <section v-if="isAdmin" class="mt-10 border-t border-line pt-6">
       <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 class="text[0.9375rem] font-bold">{{ t("admin.reviews.wordsTitle") }}</h2>
-          <p class="mt-1 text[0.65625rem] text-muted-foreground">{{ t("admin.reviews.wordsSubtitle") }}</p>
+          <h2 class="text-[0.9375rem] font-bold">{{ t("admin.reviews.wordsTitle") }}</h2>
+          <p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.reviews.wordsSubtitle") }}</p>
         </div>
-        <span class="num text[0.65625rem] text-muted-foreground">{{ t("admin.reviews.wordsCount", { n: wordCount }) }}</span>
+        <span class="num text-[0.65625rem] text-muted-foreground">{{ t("admin.reviews.wordsCount", { n: wordCount }) }}</span>
       </div>
-      <label class="mt-3 flex items-center gap-2 text[0.75rem]">
+      <label class="mt-3 flex items-center gap-2 text-[0.75rem]">
         <input v-model="wordsEnabled" type="checkbox" class="size-3.5" />
         {{ t("admin.reviews.wordsEnabled") }}
       </label>
       <label class="mt-3 block">
         <span class="v2-label">{{ t("admin.reviews.wordsLabel") }}</span>
-        <textarea v-model="words" :class="[textareaClass, 'mt-1 min-h-[220px] font-mono text[0.75rem]']" :placeholder="t('admin.reviews.wordsPlaceholder')" spellcheck="false" />
+        <textarea v-model="words" :class="[textareaClass, 'mt-1 min-h-[220px] font-mono text-[0.75rem]']" :placeholder="t('admin.reviews.wordsPlaceholder')" spellcheck="false" />
       </label>
       <div class="mt-3 flex flex-wrap items-center gap-2">
         <Button size="sm" :disabled="savingWords" @click="saveWords()">{{ savingWords ? t("common.saving") : t("common.save") }}</Button>
         <Button size="sm" variant="outline" :disabled="savingWords" @click="seedDefaults">{{ t("admin.reviews.seedDefaults") }}</Button>
-        <span v-if="wordsMessage" class="text[0.71875rem] text-muted-foreground">{{ wordsMessage }}</span>
+        <span v-if="wordsMessage" class="text-[0.71875rem] text-muted-foreground">{{ wordsMessage }}</span>
       </div>
     </section>
   </div>

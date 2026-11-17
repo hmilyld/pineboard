@@ -187,7 +187,7 @@ function onPick(kind: UploadKind, event: Event): void {
 
 <template>
   <div :class="flat ? '' : 'overflow-hidden rounded-[6px] border border-line bg-surface'">
-    <div class="flex min-h-8 items-center gap-2 border-b border-line px-3 text[0.71875rem]">
+    <div class="flex min-h-8 items-center gap-2 border-b border-line px-3 text-[0.71875rem]">
       <button type="button" class="v2-tab" :data-active="tab === 'write'" @click="tab = 'write'">{{ t("composer.write") }}</button>
       <button type="button" class="v2-tab" :data-active="tab === 'preview'" @click="tab = 'preview'">{{ t("composer.preview") }}</button>
       <span class="mx-1 h-3 w-px bg-line" />
@@ -209,7 +209,7 @@ function onPick(kind: UploadKind, event: Event): void {
           </button>
         </template>
       </div>
-      <span class="ml-auto text[0.65625rem] text-muted-foreground">Markdown</span>
+      <span class="ml-auto text-[0.65625rem] text-muted-foreground">Markdown</span>
     </div>
 
     <textarea
@@ -218,19 +218,19 @@ function onPick(kind: UploadKind, event: Event): void {
       :value="modelValue"
       :rows="rows"
       :placeholder="placeholder ?? t('composer.placeholder')"
-      class="block w-full resize-y border-0 bg-transparent px-3 py-2.5 text[0.84375rem] leading-[1.85] text-ink outline-none placeholder:text-muted-foreground/70"
+      class="block w-full resize-y border-0 bg-transparent px-3 py-2.5 text-[0.84375rem] leading-[1.85] text-ink outline-none placeholder:text-muted-foreground/70"
       :style="{ minHeight: height ? `${height}px` : `${Math.max(4, rows) * 1.75}rem` }"
       @input="update"
     />
     <div v-else class="min-h-28 px-4 py-3">
       <MarkdownRenderer v-if="modelValue.trim()" :source="modelValue" />
-      <p v-else class="text[0.75rem] text-muted-foreground">{{ t("composer.previewEmpty") }}</p>
+      <p v-else class="text-[0.75rem] text-muted-foreground">{{ t("composer.previewEmpty") }}</p>
     </div>
 
     <input ref="imageInput" type="file" class="hidden" :accept="IMAGE_ACCEPT" @change="onPick('image', $event)" />
     <input ref="archiveInput" type="file" class="hidden" :accept="ARCHIVE_ACCEPT" @change="onPick('attachment', $event)" />
 
-    <div class="flex items-center border-t border-line px-3 py-1.5 text[0.65625rem] text-muted-foreground">
+    <div class="flex items-center border-t border-line px-3 py-1.5 text-[0.65625rem] text-muted-foreground">
       <span>{{ t("composer.chars", { count: modelValue.length }) }}</span>
       <span v-if="uploadError" class="ml-3 text-[var(--orange)]">{{ uploadError }}</span>
     </div>

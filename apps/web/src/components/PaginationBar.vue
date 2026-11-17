@@ -39,6 +39,6 @@ function go(page: number): void {
       <button v-else type="button" :aria-current="item === page ? 'page' : undefined" @click="go(item)">{{ item }}</button>
     </template>
     <button type="button" :disabled="page >= totalPages" :aria-label="t('pager.next')" @click="go(page + 1)">›</button>
-    <span v-if="total !== undefined" class="ml-3 text[0.65625rem] text-muted-foreground">{{ t("pager.total", { total, unit: unitLabel }) }}</span>
+    <span v-if="total !== undefined" class="ml-3 text-[0.65625rem] text-muted-foreground">{{ t("pager.total", { total, unit: unitLabel }) }}</span>
   </nav>
 </template>

@@ -187,8 +187,8 @@ onMounted(load);
   <div>
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
       <div>
-        <h1 class="text[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.nav") }}</h1>
-        <p class="mt-1 text[0.65625rem] text-muted-foreground">{{ t("admin.navPage.subtitle") }}</p>
+        <h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.nav") }}</h1>
+        <p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.navPage.subtitle") }}</p>
       </div>
       <button type="button" class="v2-btn solid sm" @click="openCreate"><Plus :size="13" /> {{ t("admin.navPage.create") }}</button>
     </div>
@@ -231,8 +231,8 @@ onMounted(load);
             <p v-else class="v2-note">{{ t("admin.navPage.dropdownNote") }}</p>
           </div>
           <div class="flex items-end gap-4 pb-2">
-            <label class="flex items-center gap-2 text[0.75rem]"><input v-model="form.isVisible" type="checkbox" class="size-4 accent-brand" /> {{ t("admin.common.show") }}</label>
-            <label v-if="form.kind === 'link'" class="flex items-center gap-2 text[0.75rem]"><input v-model="form.openInNewTab" type="checkbox" class="size-4 accent-brand" /> {{ t("admin.navPage.newTab") }}</label>
+            <label class="flex items-center gap-2 text-[0.75rem]"><input v-model="form.isVisible" type="checkbox" class="size-4 accent-brand" /> {{ t("admin.common.show") }}</label>
+            <label v-if="form.kind === 'link'" class="flex items-center gap-2 text-[0.75rem]"><input v-model="form.openInNewTab" type="checkbox" class="size-4 accent-brand" /> {{ t("admin.navPage.newTab") }}</label>
           </div>
         </div>
         <div class="mt-4 flex items-center gap-2">
@@ -250,18 +250,18 @@ onMounted(load);
     </div>
 
     <section v-else class="v2-admin-panel mt-4">
-      <div class="v2-admin-panel-head"><span>{{ t("admin.navPage.listTitle") }}</span><span class="text[0.65625rem] font-normal text-muted-foreground">{{ t("admin.navPage.itemCount", { count: navRows.length }) }}</span></div>
-      <div v-if="!items.length" class="p-6 text-center text[0.71875rem] text-muted-foreground">{{ t("admin.navPage.empty") }}</div>
+      <div class="v2-admin-panel-head"><span>{{ t("admin.navPage.listTitle") }}</span><span class="text-[0.65625rem] font-normal text-muted-foreground">{{ t("admin.navPage.itemCount", { count: navRows.length }) }}</span></div>
+      <div v-if="!items.length" class="p-6 text-center text-[0.71875rem] text-muted-foreground">{{ t("admin.navPage.empty") }}</div>
       <div v-for="(item, index) in navRows" :key="item.id" class="v2-admin-row" :class="{ 'pl-8': item.depth > 0 }">
         <div class="flex min-w-0 items-center gap-3">
-          <span class="grid size-6 flex-none place-items-center rounded-[3px] bg-pine/10 text[0.625rem] font-semibold text-pine">{{ item.kind === "categories" ? "▾" : item.kind === "dropdown" ? "▾" : "↗" }}</span>
+          <span class="grid size-6 flex-none place-items-center rounded-[3px] bg-pine/10 text-[0.625rem] font-semibold text-pine">{{ item.kind === "categories" ? "▾" : item.kind === "dropdown" ? "▾" : "↗" }}</span>
           <div class="min-w-0">
-            <p class="flex flex-wrap items-center gap-2 text[0.78125rem] font-semibold">
+            <p class="flex flex-wrap items-center gap-2 text-[0.78125rem] font-semibold">
               {{ item.label }}
-              <span class="text[0.625rem] font-normal text-muted-foreground">{{ item.kind === "categories" ? t("admin.navPage.kindCategories") : item.kind === "dropdown" ? t("admin.navPage.kindDropdown") : item.href }}</span>
+              <span class="text-[0.625rem] font-normal text-muted-foreground">{{ item.kind === "categories" ? t("admin.navPage.kindCategories") : item.kind === "dropdown" ? t("admin.navPage.kindDropdown") : item.href }}</span>
               <span v-if="!item.isVisible" class="v2-flag">{{ t("admin.tags.statusHidden") }}</span>
             </p>
-            <p v-if="item.kind === 'link'" class="mt-0.5 text[0.65625rem] text-muted-foreground">{{ item.openInNewTab ? t("admin.navPage.opensNewTab") : t("admin.navPage.opensHere") }}</p>
+            <p v-if="item.kind === 'link'" class="mt-0.5 text-[0.65625rem] text-muted-foreground">{{ item.openInNewTab ? t("admin.navPage.opensNewTab") : t("admin.navPage.opensHere") }}</p>
           </div>
         </div>
         <div class="flex flex-none items-center gap-1">
