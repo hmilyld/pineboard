@@ -91,10 +91,10 @@ watch(() => route.query.q, (value) => {
     <div class="v2-container">
       <nav class="v2-crumb mb-3"><RouterLink to="/">{{ t("page.home") }}</RouterLink><span class="sep">/</span><span>{{ t("page.search") }}</span></nav>
       <form class="flex h-11 items-stretch border border-line bg-surface" role="search" @submit.prevent="submit">
-        <span class="grid w-11 place-items-center text[0.9375rem] text-muted-foreground" aria-hidden="true">⌕</span>
-        <input v-model="q" name="q" type="search" autocomplete="off" class="min-w-0 flex-1 bg-transparent text[0.875rem] outline-none placeholder:text-muted-foreground/60" :placeholder="t('search.placeholder')" :aria-label="t('page.search')" />
-        <button v-if="q" type="button" class="px-2 text[0.875rem] text-muted-foreground hover:text-ink" :aria-label="t('search.clear')" @click="clear">×</button>
-        <button type="submit" class="w-[72px] bg-pine text[0.78125rem] font-medium text-on-pine">{{ t("search.button") }}</button>
+        <span class="grid w-11 place-items-center text-[0.9375rem] text-muted-foreground" aria-hidden="true">⌕</span>
+        <input v-model="q" name="q" type="search" autocomplete="off" class="min-w-0 flex-1 bg-transparent text-[0.875rem] outline-none placeholder:text-muted-foreground/60" :placeholder="t('search.placeholder')" :aria-label="t('page.search')" />
+        <button v-if="q" type="button" class="px-2 text-[0.875rem] text-muted-foreground hover:text-ink" :aria-label="t('search.clear')" @click="clear">×</button>
+        <button type="submit" class="w-[72px] bg-pine text-[0.78125rem] font-medium text-on-pine">{{ t("search.button") }}</button>
       </form>
 
       <div class="v2-main mt-4">
@@ -102,7 +102,7 @@ watch(() => route.query.q, (value) => {
           <ErrorState v-if="error" :message="error" retry @retry="load()" />
           <PageSkeleton v-else-if="loading" :rows="4" :header="false" bare />
           <template v-else-if="result">
-            <div class="flex items-center justify-between border-b border-line pb-2 text[0.71875rem] text-muted-foreground">
+            <div class="flex items-center justify-between border-b border-line pb-2 text-[0.71875rem] text-muted-foreground">
               <span>{{ t("search.results", { count: result.total }) }}</span>
               <span class="flex items-center gap-3">
                 <button type="button" class="v2-tab" :data-active="sort === 'relevance'" :aria-pressed="sort === 'relevance'" @click="load(1, 'relevance')">{{ t("search.relevance") }}</button>
@@ -111,13 +111,13 @@ watch(() => route.query.q, (value) => {
             </div>
             <div class="mt-3 border border-line bg-surface">
               <RouterLink v-for="item in result.items" :key="item.postId" :to="`/t/${item.topicId}${Math.ceil(item.floor / (config.config?.seo.postsPerPage ?? 20)) > 1 ? `?page=${Math.ceil(item.floor / (config.config?.seo.postsPerPage ?? 20))}` : ''}#post-${item.floor}`" class="block border-b border-line px-3.5 py-3 last:border-b-0 hover:bg-hover" :class="categoryClass(item.category.slug)" :style="categoryStyle(item.category.color)">
-                <h2 class="truncate text[0.9375rem] font-semibold leading-[1.45]">
+                <h2 class="truncate text-[0.9375rem] font-semibold leading-[1.45]">
                   <template v-for="(piece, index) in parts(item.topicTitle)" :key="index"><mark v-if="piece.hit" class="rounded-[1px] bg-[var(--amber-mark)] px-0.5 text-inherit">{{ piece.text }}</mark><template v-else>{{ piece.text }}</template></template>
                 </h2>
-                <p class="mt-1 line-clamp-2 text[0.78125rem] leading-[1.7] text-muted-foreground">
+                <p class="mt-1 line-clamp-2 text-[0.78125rem] leading-[1.7] text-muted-foreground">
                   <template v-for="(piece, index) in parts(item.snippet)" :key="index"><mark v-if="piece.hit" class="rounded-[1px] bg-[var(--amber-mark)] px-0.5 text-inherit">{{ piece.text }}</mark><template v-else>{{ piece.text }}</template></template>
                 </p>
-                <p class="mt-1 text[0.65625rem] text-muted-foreground">
+                <p class="mt-1 text-[0.65625rem] text-muted-foreground">
                   <span class="mr-1 inline-block size-1.5 rounded-full" :style="{ ...categoryStyle(item.category.color), background: 'var(--c)' }" />{{ item.category.name }} · {{ item.author.name }} · #{{ item.floor }} · <RelativeTime :seconds="item.createdAt" />
                 </p>
               </RouterLink>
@@ -126,8 +126,8 @@ watch(() => route.query.q, (value) => {
             <PaginationBar v-if="result.total > 0" class="mt-3" :page="page" :total-pages="Math.max(1, Math.ceil(result.total / result.perPage))" :total="result.total" @change="load" />
           </template>
           <div v-else class="py-10 text-center">
-            <p class="text[0.9375rem] font-semibold">{{ t("search.emptyTitle") }}</p>
-            <p class="mt-1 text[0.71875rem] text-muted-foreground">{{ t("search.emptyHint") }}</p>
+            <p class="text-[0.9375rem] font-semibold">{{ t("search.emptyTitle") }}</p>
+            <p class="mt-1 text-[0.71875rem] text-muted-foreground">{{ t("search.emptyHint") }}</p>
           </div>
         </section>
         <aside class="v2-side">
@@ -137,10 +137,10 @@ watch(() => route.query.q, (value) => {
           </section>
           <section v-if="latest.length" class="v2-mod">
             <h3>{{ t("stats.latestTopics") }}</h3>
-            <RouterLink v-for="item in latest" :key="item.id" :to="`/t/${item.id}`" class="flex items-center gap-2 border-b border-line py-2 text[0.6875rem] last:border-b-0">
+            <RouterLink v-for="item in latest" :key="item.id" :to="`/t/${item.id}`" class="flex items-center gap-2 border-b border-line py-2 text-[0.6875rem] last:border-b-0">
               <span class="inline-block size-1.5 rounded-full" :class="categoryClass(item.category.slug)" :style="{ ...categoryStyle(item.category.color), background: 'var(--c)' }" />
               <span class="min-w-0 flex-1 truncate">{{ item.title }}</span>
-              <RelativeTime :seconds="item.lastPostAt" class="text[0.625rem] text-muted-foreground" />
+              <RelativeTime :seconds="item.lastPostAt" class="text-[0.625rem] text-muted-foreground" />
             </RouterLink>
           </section>
         </aside>

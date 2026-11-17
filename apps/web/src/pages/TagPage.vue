@@ -72,13 +72,13 @@ watch(() => route.params.slug, () => load(1));
       <header v-if="tag" class="mb-3 border-b border-line pb-3">
         <div class="flex flex-wrap items-end gap-x-5 gap-y-2">
           <div class="min-w-0 flex-1">
-            <h1 class="text[1.25rem] font-bold leading-[1.3] tracking-[-0.02em]"><span class="mr-1 text-pine">#</span>{{ tag.name }}</h1>
-            <p class="mt-1 text[0.71875rem] text-muted-foreground">{{ tag.description }}</p>
+            <h1 class="text-[1.25rem] font-bold leading-[1.3] tracking-[-0.02em]"><span class="mr-1 text-pine">#</span>{{ tag.name }}</h1>
+            <p class="mt-1 text-[0.71875rem] text-muted-foreground">{{ tag.description }}</p>
           </div>
           <div class="flex gap-5 text-right">
-            <div><b class="num block text[0.9375rem] font-semibold">{{ tag.stats.topics }}</b><span class="text[0.625rem] text-muted-foreground">{{ t("stats.topics") }}</span></div>
-            <div><b class="num block text[0.9375rem] font-semibold">{{ tag.stats.todayTopics }}</b><span class="text[0.625rem] text-muted-foreground">{{ t("stats.today") }}</span></div>
-            <div><b class="num block text[0.9375rem] font-semibold">{{ tag.stats.replies }}</b><span class="text[0.625rem] text-muted-foreground">{{ t("stats.replies") }}</span></div>
+            <div><b class="num block text-[0.9375rem] font-semibold">{{ tag.stats.topics }}</b><span class="text-[0.625rem] text-muted-foreground">{{ t("stats.topics") }}</span></div>
+            <div><b class="num block text-[0.9375rem] font-semibold">{{ tag.stats.todayTopics }}</b><span class="text-[0.625rem] text-muted-foreground">{{ t("stats.today") }}</span></div>
+            <div><b class="num block text-[0.9375rem] font-semibold">{{ tag.stats.replies }}</b><span class="text-[0.625rem] text-muted-foreground">{{ t("stats.replies") }}</span></div>
           </div>
         </div>
       </header>
@@ -89,7 +89,7 @@ watch(() => route.params.slug, () => load(1));
           <div class="flex items-center gap-3" role="tablist" :aria-label="t('topicSort.label')">
             <button v-for="option in sortOptions" :key="option[0]" type="button" class="v2-tab" :data-active="sort === option[0]" role="tab" :aria-selected="sort === option[0]" @click="load(1, option[0])">{{ option[1] }}</button>
           </div>
-          <span class="ml-auto text[0.65625rem]">{{ t("tags.tagTotal", { count: total, sort: label }) }}</span>
+          <span class="ml-auto text-[0.65625rem]">{{ t("tags.tagTotal", { count: total, sort: label }) }}</span>
         </div>
         <LoadingRows v-if="loading" :rows="6" />
         <template v-else>
@@ -101,8 +101,8 @@ watch(() => route.params.slug, () => load(1));
         <aside class="v2-side">
           <section class="v2-mod">
             <h3>{{ t("tags.tagAbout") }}</h3>
-            <p class="text[0.65625rem] leading-6 text-muted-foreground">{{ t("tags.tagAboutBody") }}</p>
-            <RouterLink to="/tags" class="mt-2 inline-block text[0.6875rem] text-pine hover:underline">{{ t("tags.browseAll") }}</RouterLink>
+            <p class="text-[0.65625rem] leading-6 text-muted-foreground">{{ t("tags.tagAboutBody") }}</p>
+            <RouterLink to="/tags" class="mt-2 inline-block text-[0.6875rem] text-pine hover:underline">{{ t("tags.browseAll") }}</RouterLink>
           </section>
         </aside>
       </div>

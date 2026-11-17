@@ -150,11 +150,11 @@ onMounted(load);
   <div>
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
       <div>
-        <h1 class="text[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.tags") }}</h1>
-        <p class="mt-1 text[0.65625rem] text-muted-foreground">{{ t("admin.tags.subtitle") }}</p>
+        <h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.tags") }}</h1>
+        <p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.tags.subtitle") }}</p>
       </div>
       <div class="v2-inline-controls">
-        <input v-model="query" class="v2-input w-40 text[0.71875rem]" type="search" :placeholder="t('tags.searchPlaceholder')" :aria-label="t('tags.searchPlaceholder')" />
+        <input v-model="query" class="v2-input w-40 text-[0.71875rem]" type="search" :placeholder="t('tags.searchPlaceholder')" :aria-label="t('tags.searchPlaceholder')" />
         <button type="button" class="v2-btn solid sm" @click="openCreate"><Plus :size="13" /> {{ t("admin.tags.create") }}</button>
       </div>
     </div>
@@ -176,7 +176,7 @@ onMounted(load);
           <div>
             <label :class="labelClass" for="tag-slug">Slug</label>
             <input id="tag-slug" v-model="form.slug" :class="inputClass" maxlength="40" placeholder="guide" />
-            <p class="mt-1 text[0.625rem] text-muted-foreground">{{ t("admin.common.slugHint", { path: "/tag/<slug>" }) }}</p>
+            <p class="mt-1 text-[0.625rem] text-muted-foreground">{{ t("admin.common.slugHint", { path: "/tag/<slug>" }) }}</p>
           </div>
           <div class="sm:col-span-2">
             <label :class="labelClass" for="tag-description">{{ t("admin.common.description") }}</label>
@@ -213,18 +213,18 @@ onMounted(load);
     </div>
 
     <section v-else class="v2-admin-panel mt-4">
-      <div class="v2-admin-panel-head"><span>{{ t("admin.tags.all") }}</span><span class="text[0.65625rem] font-normal text-muted-foreground">{{ t("admin.common.count", { count: filtered.length }) }}</span></div>
-      <div v-if="!filtered.length" class="p-6 text-center text[0.71875rem] text-muted-foreground">{{ query ? t("admin.tags.noMatch") : t("admin.tags.empty") }}</div>
+      <div class="v2-admin-panel-head"><span>{{ t("admin.tags.all") }}</span><span class="text-[0.65625rem] font-normal text-muted-foreground">{{ t("admin.common.count", { count: filtered.length }) }}</span></div>
+      <div v-if="!filtered.length" class="p-6 text-center text-[0.71875rem] text-muted-foreground">{{ query ? t("admin.tags.noMatch") : t("admin.tags.empty") }}</div>
       <div v-for="tag in filtered" :key="tag.id" class="v2-admin-row">
         <div class="flex min-w-0 items-center gap-3">
           <span class="size-2.5 flex-none rounded-full" :style="{ background: tag.color }" />
           <div class="min-w-0">
-            <p class="flex flex-wrap items-center gap-2 text[0.78125rem] font-semibold">
+            <p class="flex flex-wrap items-center gap-2 text-[0.78125rem] font-semibold">
               <span class="text-pine">#</span>{{ tag.name }}
-              <span class="font-mono text[0.625rem] font-normal text-muted-foreground">/tag/{{ tag.slug }}</span>
+              <span class="font-mono text-[0.625rem] font-normal text-muted-foreground">/tag/{{ tag.slug }}</span>
               <span class="v2-status-pill" :class="tag.status">{{ statusLabel[tag.status] }}</span>
             </p>
-            <p class="mt-0.5 truncate text[0.65625rem] text-muted-foreground">{{ tag.description || t("common.notSet") }} · {{ t("admin.tags.usage", { count: tag.topicCount }) }}</p>
+            <p class="mt-0.5 truncate text-[0.65625rem] text-muted-foreground">{{ tag.description || t("common.notSet") }} · {{ t("admin.tags.usage", { count: tag.topicCount }) }}</p>
           </div>
         </div>
         <div class="flex flex-none items-center gap-1">

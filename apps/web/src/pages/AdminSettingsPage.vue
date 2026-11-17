@@ -144,8 +144,8 @@ onMounted(load);
 <template>
   <div>
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
-      <div><h1 class="text[1.1875rem] font-bold leading-[1.3]">{{ t("admin.settings.title") }}</h1><p class="mt-1 text[0.65625rem] text-muted-foreground">{{ t("admin.settings.subtitle", { version }) }}</p></div>
-      <RouterLink to="/admin/emails" class="text[0.71875rem] text-muted-foreground hover:text-ink">{{ t("admin.nav.emails") }}</RouterLink>
+      <div><h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.settings.title") }}</h1><p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.settings.subtitle", { version }) }}</p></div>
+      <RouterLink to="/admin/emails" class="text-[0.71875rem] text-muted-foreground hover:text-ink">{{ t("admin.nav.emails") }}</RouterLink>
     </div>
 
     <p v-if="error" :class="[alertErrorClass, 'mt-6']" role="alert">{{ error }}</p>
@@ -155,7 +155,7 @@ onMounted(load);
 
     <form v-else class="mt-8 space-y-6" @submit.prevent="save">
       <section :class="cardClass">
-        <h2 class="text[0.75rem] font-semibold">{{ t("admin.settings.siteSection") }}</h2>
+        <h2 class="text-[0.75rem] font-semibold">{{ t("admin.settings.siteSection") }}</h2>
         <div class="mt-3 grid gap-3">
           <div>
             <label :class="labelClass" for="site-name">{{ t("admin.settings.siteName") }}</label>
@@ -173,8 +173,8 @@ onMounted(load);
       </section>
 
       <section :class="cardClass">
-        <h2 class="text[0.75rem] font-semibold">{{ t("admin.settings.languageTitle") }}</h2>
-        <p class="mt-1 text[0.65625rem] leading-5 text-muted-foreground">{{ t("admin.settings.languageHint") }}</p>
+        <h2 class="text-[0.75rem] font-semibold">{{ t("admin.settings.languageTitle") }}</h2>
+        <p class="mt-1 text-[0.65625rem] leading-5 text-muted-foreground">{{ t("admin.settings.languageHint") }}</p>
         <div class="mt-3 grid gap-3">
           <div>
             <label :class="labelClass" for="site-language">{{ t("admin.settings.languageLabel") }}</label>
@@ -182,13 +182,13 @@ onMounted(load);
               <option value="zh-CN">{{ t("admin.settings.languageZh") }}</option>
               <option value="en">{{ t("admin.settings.languageEn") }}</option>
             </select>
-            <p class="mt-1 text[0.625rem] text-muted-foreground">{{ t("admin.settings.languageNote") }}</p>
+            <p class="mt-1 text-[0.625rem] text-muted-foreground">{{ t("admin.settings.languageNote") }}</p>
           </div>
         </div>
       </section>
 
       <section :class="cardClass">
-        <h2 class="text[0.75rem] font-semibold">{{ t("admin.settings.writeSection") }}</h2>
+        <h2 class="text-[0.75rem] font-semibold">{{ t("admin.settings.writeSection") }}</h2>
         <div class="mt-4 space-y-3 text-sm">
           <label class="flex items-start gap-3">
             <input v-model="form.registrationOpen" type="checkbox" class="mt-1 size-4 accent-brand" />
@@ -222,22 +222,22 @@ onMounted(load);
       </section>
 
       <section :class="cardClass">
-        <h2 class="text[0.75rem] font-semibold">{{ t("admin.settings.announcementSection") }}</h2>
+        <h2 class="text-[0.75rem] font-semibold">{{ t("admin.settings.announcementSection") }}</h2>
         <div class="mt-3 space-y-3">
-          <label class="flex items-start gap-3 text[0.75rem]"><input v-model="form.announcementEnabled" type="checkbox" class="mt-1 size-4 accent-brand" /><span><span class="font-medium">{{ t("admin.settings.announcementEnabled") }}</span><span class="block text[0.65625rem] text-muted-foreground">{{ t("admin.settings.announcementEnabledHint") }}</span></span></label>
+          <label class="flex items-start gap-3 text-[0.75rem]"><input v-model="form.announcementEnabled" type="checkbox" class="mt-1 size-4 accent-brand" /><span><span class="font-medium">{{ t("admin.settings.announcementEnabled") }}</span><span class="block text-[0.65625rem] text-muted-foreground">{{ t("admin.settings.announcementEnabledHint") }}</span></span></label>
           <div><label :class="labelClass" for="announcement-text">{{ t("admin.settings.announcementText") }}</label><input id="announcement-text" v-model="form.announcementText" :class="inputClass" maxlength="300" :placeholder="t('admin.settings.announcementPlaceholder')" /></div>
           <div><label :class="labelClass" for="announcement-href">{{ t("admin.settings.announcementHref") }}</label><input id="announcement-href" v-model="form.announcementHref" :class="inputClass" maxlength="300" placeholder="/t/..." /></div>
         </div>
       </section>
 
       <section :class="cardClass">
-        <h2 class="text[0.75rem] font-semibold">SEO</h2>
-        <p class="mt-1 text[0.65625rem] leading-5 text-muted-foreground">{{ t("admin.settings.seoHint") }}</p>
+        <h2 class="text-[0.75rem] font-semibold">SEO</h2>
+        <p class="mt-1 text-[0.65625rem] leading-5 text-muted-foreground">{{ t("admin.settings.seoHint") }}</p>
         <div class="mt-3 grid gap-3">
           <div><label :class="labelClass" for="seo-title-template">{{ t("admin.settings.titleTemplate") }}</label><input id="seo-title-template" v-model="form.titleTemplate" :class="inputClass" maxlength="200" /></div>
           <div><label :class="labelClass" for="seo-home-title">{{ t("admin.settings.homeTitle") }}</label><input id="seo-home-title" v-model="form.homeTitle" :class="inputClass" maxlength="200" :placeholder="t('admin.settings.homeTitlePlaceholder')" /></div>
           <div><label :class="labelClass" for="seo-description">{{ t("admin.settings.seoDescription") }}</label><textarea id="seo-description" v-model="form.seoDescription" :class="textareaClass" rows="2" maxlength="500" :placeholder="t('admin.settings.seoDescriptionPlaceholder')" /></div>
-          <div class="flex flex-wrap gap-4 text[0.75rem]">
+          <div class="flex flex-wrap gap-4 text-[0.75rem]">
             <label class="inline-flex items-center gap-2"><input v-model="form.noindex" type="checkbox" class="size-4 accent-brand" />{{ t("admin.settings.noindex") }}</label>
             <label class="inline-flex items-center gap-2"><input v-model="form.sitemapEnabled" type="checkbox" class="size-4 accent-brand" />{{ t("admin.settings.sitemap") }}</label>
           </div>
@@ -245,8 +245,8 @@ onMounted(load);
       </section>
 
       <section :class="cardClass">
-        <h2 class="text[0.75rem] font-semibold">{{ t("admin.settings.paginationSection") }}</h2>
-        <p class="mt-1 text[0.65625rem] leading-5 text-muted-foreground">{{ t("admin.settings.paginationHint") }}</p>
+        <h2 class="text-[0.75rem] font-semibold">{{ t("admin.settings.paginationSection") }}</h2>
+        <p class="mt-1 text-[0.65625rem] leading-5 text-muted-foreground">{{ t("admin.settings.paginationHint") }}</p>
         <div class="mt-3 grid gap-3 sm:grid-cols-2">
           <div>
             <label :class="labelClass" for="topics-per-page">{{ t("admin.settings.topicsPerPage") }}</label>
@@ -260,7 +260,7 @@ onMounted(load);
       </section>
 
       <section :class="cardClass">
-        <h2 class="text[0.75rem] font-semibold">{{ t("admin.settings.maintenanceSection") }}</h2>
+        <h2 class="text-[0.75rem] font-semibold">{{ t("admin.settings.maintenanceSection") }}</h2>
         <div class="mt-4 space-y-4">
           <label class="flex items-start gap-3 text-sm">
             <input v-model="form.maintenanceEnabled" type="checkbox" class="mt-1 size-4 accent-brand" />

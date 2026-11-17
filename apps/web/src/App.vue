@@ -132,6 +132,8 @@ watch(drawerOpen, async (open) => {
 function onDropdownEscape(event: KeyboardEvent, id: string): void {
   if (openNavId.value !== id) return;
   openNavId.value = null;
+  // currentTarget is the .v2-nav-dropdown wrapper, so the first button is the
+  // trigger — refocus it so keyboard users do not fall out to <body>.
   (event.currentTarget as HTMLElement | null)?.querySelector<HTMLElement>("button")?.focus();
 }
 
@@ -237,7 +239,7 @@ async function signOut(): Promise<void> {
 <template>
   <div class="min-h-dvh" :class="isBare ? '' : 'flex flex-col'">
     <a v-if="!isBare" href="#main-content" class="skip-link">{{ t("nav.skipToContent") }}</a>
-    <div v-if="config.config?.maintenance.enabled && !auth.isAdmin && !isBare" class="border-b border-signal/40 bg-signal/10 px-4 py-2 text-center text-xs text-signal">
+    <div v-if="config.config?.maintenance.enabled && !auth.isAdmin && !isBare" class="border-b border-signal/40 bg-signal/10 px-4 py-2 text-center text-xs text-signal" :inert="drawerOpen">
       {{ config.maintenanceMessage }}
     </div>
 
@@ -258,6 +260,7 @@ async function signOut(): Promise<void> {
                 @mouseleave="openNavId = null"
                 @focusin="openNavId = item.id"
                 @focusout="onDropdownFocusOut($event, item.id)"
+                @keydown.esc.prevent="onDropdownEscape($event, item.id)"
               >
                 <button
                   type="button"
@@ -269,20 +272,20 @@ async function signOut(): Promise<void> {
                 >
                   {{ item.label }}<ChevronDown :size="11" class="v2-nav-arrow" :class="{ open: openNavId === item.id }" />
                 </button>
-                <div v-show="openNavId === item.id" class="v2-dropdown" @keydown.esc.prevent="onDropdownEscape($event, item.id)">
+                <div v-show="openNavId === item.id" class="v2-dropdown">
                   <template v-if="item.kind === 'categories'">
                     <RouterLink v-for="category in categories" :key="category.id" :to="`/c/${category.slug}`" @click="openNavId = null">
                       <i :class="categoryClass(category.slug)" :style="categoryStyle(category.color)" />{{ category.name }}
-                      <span class="ml-auto text[0.625rem] text-muted-foreground">{{ category.topicCount ?? 0 }}</span>
+                      <span class="ml-auto text-[0.625rem] text-muted-foreground">{{ category.topicCount ?? 0 }}</span>
                     </RouterLink>
-                    <p v-if="!categories.length" class="px-2 py-2 text[0.6875rem] text-muted-foreground">{{ t("nav.noCategories") }}</p>
+                    <p v-if="!categories.length" class="px-2 py-2 text-[0.6875rem] text-muted-foreground">{{ t("nav.noCategories") }}</p>
                   </template>
                   <template v-else>
                     <template v-for="child in item.children ?? []" :key="child.id">
                       <RouterLink v-if="isInternal(child.href)" :to="child.href" @click="openNavId = null">{{ child.label }}</RouterLink>
                       <a v-else :href="child.href" :target="child.openInNewTab ? '_blank' : undefined" rel="noopener noreferrer" @click="openNavId = null">{{ child.label }}</a>
                     </template>
-                    <p v-if="!item.children?.length" class="px-2 py-2 text[0.6875rem] text-muted-foreground">{{ t("nav.noChildren") }}</p>
+                    <p v-if="!item.children?.length" class="px-2 py-2 text-[0.6875rem] text-muted-foreground">{{ t("nav.noChildren") }}</p>
                   </template>
                 </div>
               </div>
@@ -343,7 +346,7 @@ async function signOut(): Promise<void> {
     <RouterView v-if="isBare" />
     <ConfirmDialog />
 
-    <div v-if="ui.needRefresh || ui.offlineReady" class="fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-md items-center gap-3 rounded-lg border border-border bg-card p-3 text-sm shadow-[0_12px_32px_rgba(0,0,0,.18)]">
+    <div v-if="ui.needRefresh || ui.offlineReady" class="fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-md items-center gap-3 rounded-lg border border-border bg-card p-3 text-sm shadow-[0_12px_32px_rgba(0,0,0,.18)]" :inert="drawerOpen">
       <span class="flex-1">{{ ui.needRefresh ? t("pwa.needRefresh") : t("pwa.offlineReady") }}</span>
       <button v-if="ui.needRefresh" type="button" class="bg-[var(--orange-cta)] px-3 py-1.5 text-xs text-[var(--on-orange)]" @click="ui.applyUpdate()">{{ t("pwa.refresh") }}</button>
       <button type="button" class="text-xs text-muted-foreground hover:text-foreground" @click="ui.dismiss()">{{ t("pwa.dismiss") }}</button>
@@ -382,7 +385,7 @@ async function signOut(): Promise<void> {
           <RouterLink to="/notifications" @click="closeDrawer">{{ t("nav.notifications") }}</RouterLink>
           <RouterLink v-if="auth.permissions?.isModerator" to="/admin/reports" @click="closeDrawer">{{ t("nav.moderation") }}</RouterLink>
           <RouterLink v-if="auth.isAdmin" to="/admin" @click="closeDrawer">{{ t("nav.adminEntry") }}</RouterLink>
-          <button type="button" class="flex min-h-[42px] w-full items-center border-b border-white/10 text[0.9375rem] text-white/80" @click="signOut">{{ t("nav.signOut") }}</button>
+          <button type="button" class="flex min-h-[42px] w-full items-center border-b border-white/10 text-[0.9375rem] text-white/80" @click="signOut">{{ t("nav.signOut") }}</button>
         </div>
         <div v-else>
           <RouterLink to="/login" @click="closeDrawer">{{ t("auth.loginButton") }}</RouterLink>

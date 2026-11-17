@@ -41,7 +41,7 @@ const auth = useAuthStore();
       <span class="v2-floor">#{{ post.floor }}</span>
     </aside>
     <div class="v2-post-body">
-      <div v-if="post.status === 'deleted'" class="text[0.75rem] text-muted-foreground">{{ t("topic.deletedFloor") }}</div>
+      <div v-if="post.status === 'deleted'" class="text-[0.75rem] text-muted-foreground">{{ t("topic.deletedFloor") }}</div>
       <template v-else>
         <MarkdownRenderer :source="post.contentMd" />
         <div class="v2-acts">

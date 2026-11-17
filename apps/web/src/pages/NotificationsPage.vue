@@ -203,16 +203,16 @@ onMounted(() => {
       <span>{{ t("notifications.subtitle", { count: totalUnread }) }}</span>
       <div class="ml-auto flex items-center gap-2">
         <button type="button" class="v2-btn sm" role="switch" :aria-checked="unreadOnly" @click="toggleUnread">{{ t("notifications.unreadOnly") }}</button>
-        <button type="button" class="text[0.71875rem] text-muted-foreground hover:text-ink" @click="markAll">{{ t("notifications.markAllRead") }}</button>
+        <button type="button" class="text-[0.71875rem] text-muted-foreground hover:text-ink" @click="markAll">{{ t("notifications.markAllRead") }}</button>
       </div>
     </div>
 
     <ErrorState v-if="error" :message="error" retry @retry="load()" />
     <div v-else-if="loading" class="v2-panel"><LoadingRows :rows="5" /></div>
-    <div v-else-if="!groups.length" class="v2-panel"><EmptyState :title="t('notifications.emptyTitle')" :message="t('notifications.emptyBody')"><RouterLink to="/" class="mt-3 inline-block text[0.71875rem] text-pine">{{ t("notifications.emptyHome") }}</RouterLink></EmptyState></div>
+    <div v-else-if="!groups.length" class="v2-panel"><EmptyState :title="t('notifications.emptyTitle')" :message="t('notifications.emptyBody')"><RouterLink to="/" class="mt-3 inline-block text-[0.71875rem] text-pine">{{ t("notifications.emptyHome") }}</RouterLink></EmptyState></div>
     <template v-else>
       <section v-for="section in grouped" :key="section.label" class="mt-3 first:mt-0">
-        <div class="flex items-center gap-3 px-1 pb-1.5 text[0.65625rem] text-muted-foreground"><span>{{ section.label }}</span><span class="h-px flex-1 bg-line" /></div>
+        <div class="flex items-center gap-3 px-1 pb-1.5 text-[0.65625rem] text-muted-foreground"><span>{{ section.label }}</span><span class="h-px flex-1 bg-line" /></div>
         <div class="v2-panel">
           <RouterLink
             v-for="group in section.groups"
@@ -222,16 +222,16 @@ onMounted(() => {
             :class="group.unread ? 'border-l-[3px] border-l-pine bg-[color-mix(in_srgb,var(--pine)_4.5%,var(--surface))]' : ''"
             @click="openGroup(group)"
           >
-            <span class="grid size-8 place-items-center rounded-[3px] bg-pine text[0.75rem] font-semibold text-on-pine">{{ (group.latest.actor?.name ?? t("notifications.fallbackInitial")).slice(0, 1) }}</span>
+            <span class="grid size-8 place-items-center rounded-[3px] bg-pine text-[0.75rem] font-semibold text-on-pine">{{ (group.latest.actor?.name ?? t("notifications.fallbackInitial")).slice(0, 1) }}</span>
             <div class="min-w-0">
-              <p class="text[0.6875rem] text-muted-foreground">
+              <p class="text-[0.6875rem] text-muted-foreground">
                 {{ group.actorLabel }} <template v-if="group.latest.type === 'mention'">{{ t("notifications.mentionedYou") }}</template><template v-else-if="group.latest.type === 'moderation'">{{ t("notifications.handledReport") }}</template><template v-else>{{ t("notifications.repliedToTopic") }}</template>
               </p>
               <div class="mt-0.5 flex items-center gap-2">
-                <span class="truncate text[0.875rem] font-semibold" :class="group.unread ? 'text-ink' : ''">{{ group.latest.title }}</span>
-                <span v-if="group.count > 1" class="v2-tag !py-0 !text[0.625rem]">{{ t("notifications.countBadge", { count: group.count }) }}</span>
+                <span class="truncate text-[0.875rem] font-semibold" :class="group.unread ? 'text-ink' : ''">{{ group.latest.title }}</span>
+                <span v-if="group.count > 1" class="v2-tag !py-0 !text-[0.625rem]">{{ t("notifications.countBadge", { count: group.count }) }}</span>
               </div>
-              <p class="mt-0.5 truncate text[0.6875rem] text-muted-foreground">{{ group.latest.snippet }}</p>
+              <p class="mt-0.5 truncate text-[0.6875rem] text-muted-foreground">{{ group.latest.snippet }}</p>
             </div>
           </RouterLink>
         </div>

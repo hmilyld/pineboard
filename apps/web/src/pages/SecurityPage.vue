@@ -146,7 +146,7 @@ async function deleteAccount(): Promise<void> {
   <AccountSkeleton v-if="!auth.user || loading" />
   <AccountShell v-else-if="auth.user" :profile="profile" active="security" :topic-count="summary.topicCount" :reply-count="summary.replyCount" :like-count="summary.likeCount" :bookmark-count="summary.bookmarkCount" :notification-count="summary.unreadCount" is-self>
     <div class="v2-section-head"><h2>{{ t("security.title") }}</h2><span>{{ t("security.subtitle") }}</span></div>
-    <p class="mb-3 text[0.71875rem] leading-6 text-muted-foreground">{{ t("security.intro") }}</p>
+    <p class="mb-3 text-[0.71875rem] leading-6 text-muted-foreground">{{ t("security.intro") }}</p>
     <section v-if="isDeleting" class="v2-note mb-3 flex flex-wrap items-center gap-3">
       <span class="min-w-0 flex-1">{{ t("security.deletionPending") }}</span>
       <button type="button" class="v2-btn solid sm" :disabled="cancelling" @click="cancelDeletion">{{ cancelling ? t("security.cancelling") : t("security.cancelDeletion") }}</button>
@@ -155,8 +155,8 @@ async function deleteAccount(): Promise<void> {
     <p v-if="error" :class="[alertErrorClass, 'mb-3']" role="alert">{{ error }}</p>
 
     <section v-if="!isDeleting" class="v2-panel p-4">
-      <h2 class="text[0.75rem] font-semibold">{{ t("security.changePassword") }}</h2>
-      <p class="mt-1 text[0.6875rem] leading-6 text-muted-foreground">{{ t("security.changePasswordHint") }}</p>
+      <h2 class="text-[0.75rem] font-semibold">{{ t("security.changePassword") }}</h2>
+      <p class="mt-1 text-[0.6875rem] leading-6 text-muted-foreground">{{ t("security.changePasswordHint") }}</p>
       <div class="mt-3 grid gap-3 sm:grid-cols-3">
         <div>
           <label class="v2-label" for="current-password">{{ t("security.currentPassword") }}</label>
@@ -175,19 +175,19 @@ async function deleteAccount(): Promise<void> {
     </section>
 
     <section class="v2-panel mt-3 p-4">
-      <h2 class="text[0.75rem] font-semibold">{{ t("security.exportTitle") }}</h2>
-      <p class="mt-1 text[0.6875rem] leading-6 text-muted-foreground">{{ t("security.exportHint") }}</p>
+      <h2 class="text-[0.75rem] font-semibold">{{ t("security.exportTitle") }}</h2>
+      <p class="mt-1 text-[0.6875rem] leading-6 text-muted-foreground">{{ t("security.exportHint") }}</p>
       <Button class="mt-3" variant="outline" :disabled="exporting" @click="exportData">{{ exporting ? t("security.exporting") : t("security.exportButton") }}</Button>
     </section>
 
     <section v-if="!isDeleting" class="v2-panel mt-3 border-orange/40 p-4">
-      <h2 class="text[0.75rem] font-semibold text-orange">{{ t("security.deleteTitle") }}</h2>
-      <p class="mt-1 text[0.6875rem] leading-6 text-muted-foreground">{{ t("security.deleteHint") }}</p>
+      <h2 class="text-[0.75rem] font-semibold text-orange">{{ t("security.deleteTitle") }}</h2>
+      <p class="mt-1 text-[0.6875rem] leading-6 text-muted-foreground">{{ t("security.deleteHint") }}</p>
       <div class="mt-3 max-w-xs">
         <label class="v2-label" for="delete-password">{{ t("security.deleteConfirmLabel") }}</label>
         <input id="delete-password" v-model="password" name="password" type="password" class="v2-input" autocomplete="current-password" :placeholder="t('security.deletePasswordPlaceholder')" />
       </div>
-      <div class="mt-3 flex items-center gap-3"><Button variant="destructive" :disabled="deleting" @click="deleteAccount">{{ deleting ? t("common.working") : t("security.deleteButton") }}</Button><RouterLink to="/me" class="text[0.71875rem] text-muted-foreground hover:text-ink">{{ t("security.backToCenter") }}</RouterLink></div>
+      <div class="mt-3 flex items-center gap-3"><Button variant="destructive" :disabled="deleting" @click="deleteAccount">{{ deleting ? t("common.working") : t("security.deleteButton") }}</Button><RouterLink to="/me" class="text-[0.71875rem] text-muted-foreground hover:text-ink">{{ t("security.backToCenter") }}</RouterLink></div>
     </section>
   </AccountShell>
 </template>
