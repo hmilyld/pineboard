@@ -294,12 +294,15 @@ async function signOut(): Promise<void> {
             </template>
           </nav>
 
-          <search v-if="!isSearch" class="v2-search">
-            <form class="contents" @submit.prevent="submitSearch">
-              <Search :size="13" aria-hidden="true" />
-              <input v-model="searchQ" name="q" type="search" autocomplete="off" autocapitalize="none" :placeholder="t('nav.searchPlaceholderShort')" :aria-label="t('nav.searchPlaceholder')" />
-            </form>
-          </search>
+          <!-- `search` is not in Vue 3.5's HTML_TAGS list, and a lowercase
+               <search> tag resolves to the imported lucide `Search` icon —
+               the compiler then renders the whole box inside the icon's
+               <svg>, hiding the input. Keep a plain form with role="search"
+               until Vue ships the element in its native-tag list. -->
+          <form v-if="!isSearch" class="v2-search" role="search" @submit.prevent="submitSearch">
+            <Search :size="13" aria-hidden="true" />
+            <input v-model="searchQ" name="q" type="search" autocomplete="off" autocapitalize="none" :placeholder="t('nav.searchPlaceholderShort')" :aria-label="t('nav.searchPlaceholder')" />
+          </form>
 
           <div class="v2-hauth">
             <RouterLink v-if="auth.isAdmin" to="/admin" class="v2-admin-entry" :aria-label="t('nav.adminEntry')"><Settings :size="14" /><span>{{ t('nav.adminShort') }}</span></RouterLink>
