@@ -27,7 +27,7 @@ jobs:
       R2_BUCKET_NAME: ${{ vars.R2_BUCKET_NAME }}
       CDN_URL: ${{ vars.CDN_URL }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
         with:
           version: 12.5.1
@@ -59,7 +59,7 @@ jobs:
       R2_BUCKET_NAME: ${{ vars.R2_BUCKET_NAME }}
       CDN_URL: ${{ vars.CDN_URL }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
         with:
           version: 12.5.1

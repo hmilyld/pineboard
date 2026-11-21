@@ -18,7 +18,7 @@ jobs:
       D1_DATABASE_NAME: ${{ vars.D1_DATABASE_NAME }}
       R2_BACKUP_BUCKET: ${{ vars.R2_BACKUP_BUCKET }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
         with:
           version: 12.5.1
