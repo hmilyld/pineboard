@@ -38,6 +38,14 @@ function toHex(buffer: ArrayBuffer): string {
   return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+function decodeFileName(raw: string): string {
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
 async function sha256Hex(value: string): Promise<string> {
   return toHex(await crypto.subtle.digest("SHA-256", encoder.encode(value)));
 }
@@ -264,12 +272,7 @@ uploadRoutes.post("/api/uploads/direct", requireAuth, requireVerified, async (c)
   }
   const kind = c.req.header("x-upload-kind") === "attachment" ? "attachment" : c.req.header("x-upload-kind") === "image" ? "image" : null;
   if (!kind) return c.json(fail("validation_error", "缺少上传类型"), 400);
-  let filename = "file";
-  try {
-    filename = decodeURIComponent(c.req.header("x-file-name") ?? "file");
-  } catch {
-    filename = "file";
-  }
+  const filename = decodeFileName(c.req.header("x-file-name") ?? "file");
   const contentType = c.req.header("content-type") ?? "application/octet-stream";
   const meta = resolveMeta(kind, contentType, filename);
   if (!meta) return c.json(fail("validation_error", kind === "image" ? "仅支持 JPG/PNG/WebP/GIF/AVIF 图片" : "附件仅支持 ZIP/RAR/7Z 压缩包"), 400);

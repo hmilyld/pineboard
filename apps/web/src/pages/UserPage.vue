@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Post, TopicSummary } from "@pineboard/shared";
 import { computed, onMounted, ref, watch } from "vue";
-import { RouterLink, useRoute, useRouter } from "vue-router";
+import { RouterLink, useRoute } from "vue-router";
 import AccountShell from "@/components/AccountShell.vue";
 import AccountSkeleton from "@/components/AccountSkeleton.vue";
 import EmptyState from "@/components/EmptyState.vue";
@@ -19,7 +19,6 @@ import { useConfigStore } from "@/stores/config";
 type ReplyItem = Post & { topic: { id: string; title: string; category: { slug: string; name: string } } };
 type Profile = Awaited<ReturnType<typeof api.user>>;
 const route = useRoute();
-const router = useRouter();
 const auth = useAuthStore();
 const config = useConfigStore();
 const profile = ref<Profile | null>(null);
@@ -55,10 +54,6 @@ async function load(nextPage = 1): Promise<void> {
   } finally {
     loading.value = false;
   }
-}
-
-function setTab(next: "topics" | "replies"): void {
-  void router.replace({ query: next === "replies" ? { tab: "replies" } : {} });
 }
 
 onMounted(() => load());

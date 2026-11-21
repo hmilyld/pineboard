@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { getConfig, readConfigVersion, writeConfigPatch } from "../config";
 import type { AppEnv } from "../env";
 import { requireAdmin } from "../middleware/guards";
-import { siteStats, startOfDaySeconds } from "../stats";
+import { siteStats } from "../stats";
 
 export const adminRoutes = new Hono<AppEnv>();
 

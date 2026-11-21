@@ -8,7 +8,7 @@ import AccountSkeleton from "@/components/AccountSkeleton.vue";
 import { Button } from "@/components/ui/button";
 import { t } from "@/i18n";
 import { api } from "@/lib/api";
-import { alertErrorClass, alertInfoClass, cardClass, inputClass, labelClass, linkClass } from "@/lib/ui";
+import { alertErrorClass, alertInfoClass } from "@/lib/ui";
 import { useAuthStore } from "@/stores/auth";
 import { useConfigStore } from "@/stores/config";
 

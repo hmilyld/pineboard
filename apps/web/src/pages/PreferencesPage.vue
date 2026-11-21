@@ -7,7 +7,7 @@ import AccountSkeleton from "@/components/AccountSkeleton.vue";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth";
 import { useConfigStore } from "@/stores/config";
-import { alertErrorClass, alertInfoClass, cardClass } from "@/lib/ui";
+import { alertErrorClass, alertInfoClass } from "@/lib/ui";
 
 const profile = computed(() => ({ id: auth.user?.id ?? "", name: auth.user?.name ?? "", username: auth.user?.username ?? null, role: auth.user?.role ?? "user", bio: auth.user?.bio ?? null, createdAt: auth.user?.createdAt ?? 0 }));
 const auth = useAuthStore();

@@ -5,7 +5,6 @@ import {
   excerpt,
   markdownToPlainText,
   pageQuerySchema,
-  slugSchema,
   topicSortSchema,
   ulid,
   type AuthorSummary,
@@ -16,7 +15,6 @@ import {
   type TopicDetail,
   type TopicList,
   type TopicSummary,
-  type PostList,
 } from "@pineboard/shared";
 import { Hono, type Context } from "hono";
 import { getSecurityConfig } from "./config";
@@ -155,16 +153,6 @@ async function categoryExists(db: D1Database, categoryId: string): Promise<{ slu
     .bind(categoryId)
     .first<{ slug: string; name: string }>();
   return row ?? null;
-}
-
-async function canModerateCategory(db: D1Database, user: SessionUser, categoryId: string): Promise<boolean> {
-  if (user.role === "admin") return true;
-  if (user.role !== "moderator") return false;
-  const row = await db
-    .prepare("SELECT 1 AS ok FROM category_moderators WHERE category_id = ? AND user_id = ?")
-    .bind(categoryId, user.id)
-    .first<{ ok: number }>();
-  return row?.ok === 1;
 }
 
 function zodFields(error: { issues: ReadonlyArray<{ path: PropertyKey[]; message: string }> }): Record<string, string[]> {

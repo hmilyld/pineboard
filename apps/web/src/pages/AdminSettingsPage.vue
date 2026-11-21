@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { t } from "@/i18n";
 import { api } from "@/lib/api";
 import { useConfigStore } from "@/stores/config";
-import { alertErrorClass, alertInfoClass, cardClass, inputClass, labelClass, linkClass, textareaClass } from "@/lib/ui";
+import { alertErrorClass, alertInfoClass, cardClass, inputClass, labelClass, textareaClass } from "@/lib/ui";
 
 const form = reactive({
   siteName: "",

@@ -1,5 +1,4 @@
 import type { MiddlewareHandler } from "hono";
-import { ulid } from "@pineboard/shared";
 import { createAuth, promoteAdminIfConfigured } from "../auth";
 import type { AppEnv, SessionUser } from "../env";
 

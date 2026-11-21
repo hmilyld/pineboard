@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SearchResponse, SearchSort, Tag, TopicSummary } from "@pineboard/shared";
-import { computed, onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import ErrorState from "@/components/ErrorState.vue";
 import PageSkeleton from "@/components/PageSkeleton.vue";

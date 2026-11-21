@@ -3,7 +3,6 @@ import type { TopicSummary } from "@pineboard/shared";
 import { computed, onMounted, ref } from "vue";
 import AccountShell from "@/components/AccountShell.vue";
 import AccountSkeleton from "@/components/AccountSkeleton.vue";
-import EmptyState from "@/components/EmptyState.vue";
 import ErrorState from "@/components/ErrorState.vue";
 import LoadingRows from "@/components/LoadingRows.vue";
 import PaginationBar from "@/components/PaginationBar.vue";

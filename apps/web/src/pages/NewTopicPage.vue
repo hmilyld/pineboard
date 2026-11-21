@@ -36,7 +36,6 @@ let completed = false;
 
 const turnstileEnabled = computed(() => Boolean(config.config?.feature.turnstile && config.turnstileSiteKey));
 const canPublish = computed(() => Boolean(auth.user && auth.permissions?.canWrite));
-const selectedTags = computed(() => tags.value.filter((tag) => form.tagIds.includes(tag.id)));
 const draftLabel = computed(() => (draftAt.value ? new Intl.DateTimeFormat(intlLocale(), { hour: "2-digit", minute: "2-digit" }).format(new Date(draftAt.value)) : ""));
 
 function toggleTag(id: string): void {

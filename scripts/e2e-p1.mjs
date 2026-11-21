@@ -50,7 +50,7 @@ async function request(path, options = {}) {
   return { status: response.status, body, setCookie };
 }
 
-let lastCookie = null;
+let lastCookie;
 
 async function outbox(email, category) {
   const deadline = Date.now() + 3000;

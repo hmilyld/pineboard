@@ -117,7 +117,6 @@ const reply = await replier.request(`/api/topics/${topicId}/posts`, {
   headers: { "x-turnstile-token": TURNSTILE },
 });
 assert("reply created", reply.status === 201, reply.body);
-const replyId = reply.body.data.id;
 
 // Mention notification via a second reply.
 const mentionedMe = await mentioned.request("/api/me");
@@ -144,7 +143,6 @@ assert("preferences defaults", prefs.body.data.email.topic_reply === true && pre
 const prefPatch = await author.request("/api/me/preferences", { method: "PATCH", json: { email: { post_reply: true, moderation: false } } });
 assert("preferences patch forces moderation on", prefPatch.body.data.email.post_reply === true && prefPatch.body.data.email.moderation === true, prefPatch.body);
 
-const beforeDigest = await outbox(authorEmail, "digest", 10);
 const digestResult = await digest(admin);
 assert("digest runs", digestResult.status === 200, digestResult.body);
 await new Promise((r) => setTimeout(r, 300));

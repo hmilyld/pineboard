@@ -5,11 +5,10 @@ import { RouterLink, useRoute, useRouter } from "vue-router";
 import MarkdownEditor from "@/components/MarkdownEditor.vue";
 import PageSkeleton from "@/components/PageSkeleton.vue";
 import TurnstileWidget from "@/components/TurnstileWidget.vue";
-import { Button } from "@/components/ui/button";
 import { t } from "@/i18n";
 import { api } from "@/lib/api";
 import { useConfigStore } from "@/stores/config";
-import { alertErrorClass, alertInfoClass, inputClass, labelClass, linkClass, withSkeletonDelay } from "@/lib/ui";
+import { alertErrorClass, alertInfoClass, withSkeletonDelay } from "@/lib/ui";
 
 const route = useRoute();
 const router = useRouter();

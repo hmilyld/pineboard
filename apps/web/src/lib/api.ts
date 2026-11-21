@@ -35,7 +35,6 @@ import {
   type UploadKind,
   type UploadResult,
   type UploadSignInput,
-  type ApiEnvelope,
 } from "@pineboard/shared";
 import { t } from "@/i18n";
 

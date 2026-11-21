@@ -9,7 +9,6 @@ const DB_DIR = ".wrangler/state/v3/d1/miniflare-D1DatabaseObject";
 const TURNSTILE = "XXXX.DUMMY.TOKEN.XXXX";
 const results = [];
 let cookie = "";
-let lastCookie = null;
 
 function assert(name, condition, detail) {
   results.push({ name, pass: Boolean(condition), detail });
@@ -35,11 +34,10 @@ async function request(path, options = {}) {
     redirect: "manual",
   });
   for (const raw of response.headers.getSetCookie?.() ?? []) {
-    const [pair, ...attrs] = raw.split(";");
+    const [pair] = raw.split(";");
     const [name, value] = pair.split("=");
     if (/max-age=0/i.test(raw) || !value) continue;
     cookie = `${name}=${value}`;
-    lastCookie = { raw, name, value, attrs: attrs.map((a) => a.trim()) };
   }
   const text = await response.text();
   let body;
@@ -76,7 +74,6 @@ async function verify(email) {
 
 await request("/api/dev/reset", { method: "POST" });
 cookie = "";
-lastCookie = null;
 
 // Admin bootstrap + disable posting interval so reply can immediately follow.
 

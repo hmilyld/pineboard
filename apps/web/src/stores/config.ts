@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, type Locale, type PublicConfig } from "@pineboard/shared";
+import type { Locale, PublicConfig } from "@pineboard/shared";
 import { defineStore } from "pinia";
 import { computed, ref, watch } from "vue";
 import { errorMessage } from "@/i18n/errors";

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { UPLOAD_ARCHIVE_EXT, UPLOAD_IMAGE_EXT } from "./config";
 
 export const uploadKindSchema = z.enum(["image", "attachment"]);
 export type UploadKind = z.infer<typeof uploadKindSchema>;

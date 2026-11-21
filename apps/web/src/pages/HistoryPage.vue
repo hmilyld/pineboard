@@ -8,7 +8,7 @@ import RelativeTime from "@/components/RelativeTime.vue";
 import { t } from "@/i18n";
 import { api } from "@/lib/api";
 import { useConfigStore } from "@/stores/config";
-import { alertErrorClass, linkClass, withSkeletonDelay } from "@/lib/ui";
+import { alertErrorClass, withSkeletonDelay } from "@/lib/ui";
 
 const route = useRoute();
 const config = useConfigStore();

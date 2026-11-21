@@ -122,7 +122,6 @@ export type Health = z.infer<typeof healthSchema>;
 
 const nonEmpty = z.string().trim().min(1).max(200);
 const nullableKey = z.string().max(300).nullable();
-const hexColor = z.string().regex(/^#[0-9a-fA-F]{3,8}$/);
 
 export const siteConfigSchema = z.object({
   name: nonEmpty.default("Pineboard"),
