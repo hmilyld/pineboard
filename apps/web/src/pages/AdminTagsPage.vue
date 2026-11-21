@@ -9,6 +9,8 @@ import { alertErrorClass, alertInfoClass, inputClass, labelClass } from "@/lib/u
 import { useConfigStore } from "@/stores/config";
 
 const config = useConfigStore();
+// Kept out of the template: a literal "<slug>" breaks the Vue template parser.
+const slugPathExample = "/tag/<slug>";
 const tags = ref<AdminTag[]>([]);
 const loading = ref(true);
 const busy = ref("");
@@ -123,12 +125,15 @@ async function toggleStatus(tag: AdminTag): Promise<void> {
 }
 
 async function remove(tag: AdminTag): Promise<void> {
-  if (!(await confirmDialog({
-    title: t("admin.tags.deleteTitle"),
-    message: t("admin.tags.deleteBody", { name: tag.name }),
-    confirmLabel: t("admin.common.delete"),
-    danger: true,
-  }))) return;
+  if (
+    !(await confirmDialog({
+      title: t("admin.tags.deleteTitle"),
+      message: t("admin.tags.deleteBody", { name: tag.name }),
+      confirmLabel: t("admin.common.delete"),
+      danger: true,
+    }))
+  )
+    return;
   busy.value = `delete:${tag.id}`;
   error.value = "";
   saved.value = "";
@@ -154,8 +159,16 @@ onMounted(load);
         <p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.tags.subtitle") }}</p>
       </div>
       <div class="v2-inline-controls">
-        <input v-model="query" class="v2-input w-40 text-[0.71875rem]" type="search" :placeholder="t('tags.searchPlaceholder')" :aria-label="t('tags.searchPlaceholder')" />
-        <button type="button" class="v2-btn solid sm" @click="openCreate"><Plus :size="13" /> {{ t("admin.tags.create") }}</button>
+        <input
+          v-model="query"
+          class="v2-input w-40 text-[0.71875rem]"
+          type="search"
+          :placeholder="t('tags.searchPlaceholder')"
+          :aria-label="t('tags.searchPlaceholder')"
+        />
+        <button type="button" class="v2-btn solid sm" @click="openCreate">
+          <Plus :size="13" /> {{ t("admin.tags.create") }}
+        </button>
       </div>
     </div>
 
@@ -165,27 +178,53 @@ onMounted(load);
     <section v-if="formOpen" class="v2-admin-panel mt-4">
       <div class="v2-admin-panel-head">
         <span>{{ editing ? t("admin.tags.editTitle", { name: editing.name }) : t("admin.tags.create") }}</span>
-        <button type="button" class="text-muted-foreground hover:text-ink" :aria-label="t('admin.common.close')" @click="formOpen = false"><X :size="15" /></button>
+        <button
+          type="button"
+          class="text-muted-foreground hover:text-ink"
+          :aria-label="t('admin.common.close')"
+          @click="formOpen = false"
+        >
+          <X :size="15" />
+        </button>
       </div>
       <form class="p-4" @submit.prevent="save">
         <div class="grid gap-3 sm:grid-cols-2">
           <div>
             <label :class="labelClass" for="tag-name">{{ t("admin.common.name") }}</label>
-            <input id="tag-name" v-model="form.name" :class="inputClass" maxlength="30" :placeholder="t('admin.tags.namePlaceholder')" />
+            <input
+              id="tag-name"
+              v-model="form.name"
+              :class="inputClass"
+              maxlength="30"
+              :placeholder="t('admin.tags.namePlaceholder')"
+            />
           </div>
           <div>
             <label :class="labelClass" for="tag-slug">Slug</label>
             <input id="tag-slug" v-model="form.slug" :class="inputClass" maxlength="40" placeholder="guide" />
-            <p class="mt-1 text-[0.625rem] text-muted-foreground">{{ t("admin.common.slugHint", { path: "/tag/<slug>" }) }}</p>
+            <p class="mt-1 text-[0.625rem] text-muted-foreground">
+              {{ t("admin.common.slugHint", { path: slugPathExample }) }}
+            </p>
           </div>
           <div class="sm:col-span-2">
             <label :class="labelClass" for="tag-description">{{ t("admin.common.description") }}</label>
-            <input id="tag-description" v-model="form.description" :class="inputClass" maxlength="200" :placeholder="t('admin.tags.descriptionPlaceholder')" />
+            <input
+              id="tag-description"
+              v-model="form.description"
+              :class="inputClass"
+              maxlength="200"
+              :placeholder="t('admin.tags.descriptionPlaceholder')"
+            />
           </div>
           <div>
             <label :class="labelClass" for="tag-color">{{ t("admin.common.color") }}</label>
             <div class="flex items-center gap-2">
-              <input id="tag-color" v-model="form.color" type="color" class="h-[38px] w-12 cursor-pointer rounded-[3px] border border-line bg-surface p-1" />
+              <input
+                id="tag-color"
+                v-model="form.color"
+                type="color"
+                class="h-[38px] w-12 cursor-pointer rounded-[3px] border border-line bg-surface p-1"
+              />
               <input v-model="form.color" :class="inputClass" maxlength="7" placeholder="#71717a" />
             </div>
           </div>
@@ -199,7 +238,9 @@ onMounted(load);
           </div>
         </div>
         <div class="mt-4 flex items-center gap-2">
-          <button type="submit" class="v2-btn solid sm" :disabled="busy === 'save'">{{ busy === "save" ? t("admin.common.saving") : t("admin.tags.save") }}</button>
+          <button type="submit" class="v2-btn solid sm" :disabled="busy === 'save'">
+            {{ busy === "save" ? t("admin.common.saving") : t("admin.tags.save") }}
+          </button>
           <button type="button" class="v2-btn sm" @click="formOpen = false">{{ t("admin.common.cancel") }}</button>
         </div>
       </form>
@@ -208,13 +249,22 @@ onMounted(load);
     <div v-if="loading" class="v2-admin-panel mt-4 p-4">
       <div v-for="i in 5" :key="i" class="flex items-center gap-3 border-b border-line py-3 last:border-b-0">
         <div class="size-2.5 animate-pulse rounded-full bg-muted" />
-        <div class="flex-1 space-y-2"><div class="h-3 w-1/4 animate-pulse bg-muted" /><div class="h-2.5 w-1/2 animate-pulse bg-muted" /></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-3 w-1/4 animate-pulse bg-muted" />
+          <div class="h-2.5 w-1/2 animate-pulse bg-muted" />
+        </div>
       </div>
     </div>
 
     <section v-else class="v2-admin-panel mt-4">
-      <div class="v2-admin-panel-head"><span>{{ t("admin.tags.all") }}</span><span class="text-[0.65625rem] font-normal text-muted-foreground">{{ t("admin.common.count", { count: filtered.length }) }}</span></div>
-      <div v-if="!filtered.length" class="p-6 text-center text-[0.71875rem] text-muted-foreground">{{ query ? t("admin.tags.noMatch") : t("admin.tags.empty") }}</div>
+      <div class="v2-admin-panel-head">
+        <span>{{ t("admin.tags.all") }}</span><span class="text-[0.65625rem] font-normal text-muted-foreground">{{
+          t("admin.common.count", { count: filtered.length })
+        }}</span>
+      </div>
+      <div v-if="!filtered.length" class="p-6 text-center text-[0.71875rem] text-muted-foreground">
+        {{ query ? t("admin.tags.noMatch") : t("admin.tags.empty") }}
+      </div>
       <div v-for="tag in filtered" :key="tag.id" class="v2-admin-row">
         <div class="flex min-w-0 items-center gap-3">
           <span class="size-2.5 flex-none rounded-full" :style="{ background: tag.color }" />
@@ -224,15 +274,25 @@ onMounted(load);
               <span class="font-mono text-[0.625rem] font-normal text-muted-foreground">/tag/{{ tag.slug }}</span>
               <span class="v2-status-pill" :class="tag.status">{{ statusLabel[tag.status] }}</span>
             </p>
-            <p class="mt-0.5 truncate text-[0.65625rem] text-muted-foreground">{{ tag.description || t("common.notSet") }} · {{ t("admin.tags.usage", { count: tag.topicCount }) }}</p>
+            <p class="mt-0.5 truncate text-[0.65625rem] text-muted-foreground">
+              {{ tag.description || t("common.notSet") }} · {{ t("admin.tags.usage", { count: tag.topicCount }) }}
+            </p>
           </div>
         </div>
         <div class="flex flex-none items-center gap-1">
-          <button type="button" class="v2-btn sm" :disabled="busy === `status:${tag.id}`" :aria-label="tag.status === 'active' ? t('admin.common.hide') : t('admin.common.show')" @click="toggleStatus(tag)">
+          <button
+            type="button"
+            class="v2-btn sm"
+            :disabled="busy === `status:${tag.id}`"
+            :aria-label="tag.status === 'active' ? t('admin.common.hide') : t('admin.common.show')"
+            @click="toggleStatus(tag)"
+          >
             <Eye v-if="tag.status === 'active'" :size="13" />
             <EyeOff v-else :size="13" />
           </button>
-          <button type="button" class="v2-btn sm" :aria-label="t('admin.common.edit')" @click="openEdit(tag)"><Pencil :size="13" /></button>
+          <button type="button" class="v2-btn sm" :aria-label="t('admin.common.edit')" @click="openEdit(tag)">
+            <Pencil :size="13" />
+          </button>
           <button
             type="button"
             class="v2-btn sm danger"

@@ -51,16 +51,30 @@ async function confirm(): Promise<void> {
 <template>
   <main class="flex min-h-dvh items-center justify-center bg-page px-4 py-10">
     <div class="w-full max-w-[420px] border border-line bg-surface p-6">
-      <div class="flex items-center gap-2"><BrandMark :size="18" :show-name="false" /><span class="text-[0.9375rem] font-bold">{{ config.siteName }}</span></div>
+      <div class="flex items-center gap-2">
+        <BrandMark :size="18" :show-name="false" /><span class="text-[0.9375rem] font-bold">{{ config.siteName }}</span>
+      </div>
       <h1 class="mt-5 text-[1.25rem] font-bold leading-[1.3]">{{ t("unsubscribe.title") }}</h1>
       <template v-if="done">
         <p :class="[alertInfoClass, 'mt-4']">{{ t("unsubscribe.done") }}</p>
-        <RouterLink to="/" :class="[linkClass, 'mt-4 inline-block text-[0.75rem]']">{{ t("auth.backHome") }}</RouterLink>
+        <RouterLink to="/" :class="[linkClass, 'mt-4 inline-block text-[0.75rem]']">{{
+          t("auth.backHome")
+        }}</RouterLink>
       </template>
       <template v-else-if="preview">
-        <p class="mt-2 text-[0.71875rem] leading-6 text-muted-foreground">{{ t("unsubscribe.confirmPrefix") }}<strong class="text-ink">{{ preview.email }}</strong>{{ t("unsubscribe.confirmMiddle") }}{{ categoryLabel(preview.category) }}{{ t("unsubscribe.confirmSuffix") }}</p>
+        <p class="mt-2 text-[0.71875rem] leading-6 text-muted-foreground">
+          {{ t("unsubscribe.confirmPrefix") }}<strong class="text-ink">{{ preview.email }}</strong
+          >{{ t("unsubscribe.confirmMiddle") }}{{ categoryLabel(preview.category) }}{{ t("unsubscribe.confirmSuffix") }}
+        </p>
         <p v-if="error" :class="[alertErrorClass, 'mt-3']" role="alert">{{ error }}</p>
-        <div class="mt-5 flex gap-2"><button type="button" class="v2-btn solid flex-1" :disabled="submitting" @click="confirm">{{ submitting ? t("common.working") : t("unsubscribe.confirm") }}</button><RouterLink to="/" class="v2-btn">{{ t("common.cancel") }}</RouterLink></div>
+        <div class="mt-5 flex gap-2">
+          <button type="button" class="v2-btn solid flex-1" :disabled="submitting" @click="confirm">
+            {{ submitting ? t("common.working") : t("unsubscribe.confirm") }}</button><RouterLink
+            to="/"
+            class="v2-btn"
+            >{{ t("common.cancel") }}</RouterLink
+          >
+        </div>
       </template>
       <p v-else-if="error" :class="[alertErrorClass, 'mt-4']">{{ error }}</p>
       <div v-else class="mt-4 space-y-3">

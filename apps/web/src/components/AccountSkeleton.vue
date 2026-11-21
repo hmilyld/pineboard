@@ -24,7 +24,10 @@ import { t } from "@/i18n";
           </div>
         </div>
         <div class="v2-profile-stats">
-          <div v-for="i in 4" :key="i" class="v2-profile-stat"><div class="h-4 w-10 animate-pulse bg-muted" /><div class="mt-1 h-2.5 w-10 animate-pulse bg-muted" /></div>
+          <div v-for="i in 4" :key="i" class="v2-profile-stat">
+            <div class="h-4 w-10 animate-pulse bg-muted" />
+            <div class="mt-1 h-2.5 w-10 animate-pulse bg-muted" />
+          </div>
         </div>
       </div>
       <div class="mt-4 h-3 w-24 animate-pulse bg-muted" />

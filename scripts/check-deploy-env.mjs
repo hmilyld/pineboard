@@ -17,8 +17,10 @@ try {
 }
 if (config) {
   if (config.vars?.ENVIRONMENT !== "production") failures.push("wrangler.jsonc vars.ENVIRONMENT must be production");
-  if (JSON.stringify(config).includes('"ENVIRONMENT":"development"')) failures.push("wrangler.jsonc must not contain ENVIRONMENT=development");
-  if (JSON.stringify(config).includes('"TURNSTILE_SITE_KEY"')) failures.push("wrangler.jsonc must not ship a Turnstile site key");
+  if (JSON.stringify(config).includes('"ENVIRONMENT":"development"'))
+    failures.push("wrangler.jsonc must not contain ENVIRONMENT=development");
+  if (JSON.stringify(config).includes('"TURNSTILE_SITE_KEY"'))
+    failures.push("wrangler.jsonc must not ship a Turnstile site key");
   if (config.d1_databases?.[0]?.database_id !== "00000000-0000-0000-0000-000000000000") {
     failures.push("wrangler.jsonc must keep the placeholder D1 id; real ids belong in wrangler.site.jsonc");
   }

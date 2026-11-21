@@ -19,12 +19,20 @@ function assert(name, condition, detail) {
 }
 
 function remoteSql(sql) {
-  const output = execFileSync("pnpm", ["exec", "wrangler", "d1", "execute", D1_DATABASE_NAME, "--remote", "--json", "--command", sql], {
-    cwd: process.cwd(),
-    env: { ...process.env, XDG_CONFIG_HOME: `${process.cwd()}/.config`, WRANGLER_LOG_PATH: `${process.cwd()}/.wrangler/logs` },
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  const output = execFileSync(
+    "pnpm",
+    ["exec", "wrangler", "d1", "execute", D1_DATABASE_NAME, "--remote", "--json", "--command", sql],
+    {
+      cwd: process.cwd(),
+      env: {
+        ...process.env,
+        XDG_CONFIG_HOME: `${process.cwd()}/.config`,
+        WRANGLER_LOG_PATH: `${process.cwd()}/.wrangler/logs`,
+      },
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
   return JSON.parse(output)[0].results;
 }
 
@@ -60,10 +68,19 @@ function makeClient() {
     }
     const text = await response.text();
     let body;
-    try { body = text ? JSON.parse(text) : null; } catch { body = text; }
+    try {
+      body = text ? JSON.parse(text) : null;
+    } catch {
+      body = text;
+    }
     return { status: response.status, body, headers: response.headers };
   }
-  return { request, get cookie() { return cookie; } };
+  return {
+    request,
+    get cookie() {
+      return cookie;
+    },
+  };
 }
 
 async function signup(client, email, name, username) {
@@ -86,10 +103,12 @@ async function verify(client, email) {
   return client.request(`/api/auth/verify-email?token=${encodeURIComponent(mail.token)}`);
 }
 
-
 async function patchSettings(client, patch) {
   const current = await client.request("/api/admin/settings");
-  return client.request("/api/admin/settings", { method: "PATCH", json: { version: current.body?.data?.version, patch } });
+  return client.request("/api/admin/settings", {
+    method: "PATCH",
+    json: { version: current.body?.data?.version, patch },
+  });
 }
 
 const admin = makeClient();
@@ -97,19 +116,23 @@ const author = makeClient();
 const reporter = makeClient();
 
 const adminSignup = await signup(admin, "admin@example.test", "Remote Admin", "remoteadmin");
-assert("remote: admin signup/login", adminSignup.response.status === 200 || adminSignup.response.status === 201, adminSignup.response.body);
+assert(
+  "remote: admin signup/login",
+  adminSignup.response.status === 200 || adminSignup.response.status === 201,
+  adminSignup.response.body,
+);
 if (adminSignup.created) await verify(admin, "admin@example.test");
 const adminMe = await admin.request("/api/me");
 assert("remote: admin promoted", adminMe.status === 200 && adminMe.body.data.user.role === "admin", adminMe.body);
 
 const config = await patchSettings(admin, {
-    mail: { enabled: true, digestWindowMinutes: 5 },
-    security: { postMinIntervalSeconds: 0, signupPerHour: 50 },
-    account: { registrationOpen: true },
-    feature: { search: true, reports: true, guestRead: true },
-    edit: { lockAfterReply: false, requireReason: false, windowUserMinutes: 60 },
-    seo: { noindex: false, sitemapEnabled: true },
-  },);
+  mail: { enabled: true, digestWindowMinutes: 5 },
+  security: { postMinIntervalSeconds: 0, signupPerHour: 50 },
+  account: { registrationOpen: true },
+  feature: { search: true, reports: true, guestRead: true },
+  edit: { lockAfterReply: false, requireReason: false, windowUserMinutes: 60 },
+  seo: { noindex: false, sitemapEnabled: true },
+});
 assert("remote: admin settings write", config.status === 200, config.body);
 await new Promise((resolve) => setTimeout(resolve, 6000));
 
@@ -117,16 +140,29 @@ const suffix = Date.now().toString(36);
 const authorEmail = `remote-a-${suffix}@example.test`;
 const authorName = `ra${suffix}`.slice(0, 18);
 const authorSignup = await signup(author, authorEmail, "Remote Author", authorName);
-assert("remote: author signup", authorSignup.response.status === 200 || authorSignup.response.status === 201, authorSignup.response.body);
+assert(
+  "remote: author signup",
+  authorSignup.response.status === 200 || authorSignup.response.status === 201,
+  authorSignup.response.body,
+);
 await verify(author, authorEmail);
 const reporterEmail = `remote-b-${suffix}@example.test`;
 const reporterSignup = await signup(reporter, reporterEmail, "Remote Reporter", `rb${suffix}`.slice(0, 18));
-assert("remote: reporter signup", reporterSignup.response.status === 200 || reporterSignup.response.status === 201, reporterSignup.response.body);
+assert(
+  "remote: reporter signup",
+  reporterSignup.response.status === 200 || reporterSignup.response.status === 201,
+  reporterSignup.response.body,
+);
 await verify(reporter, reporterEmail);
 
 const categories = await author.request("/api/categories");
 const topic = await author.request("/api/topics", {
-  json: { categoryId: categories.body.data[0].id, title: "远程冒烟主题", contentMd: "远程部署后的第一条主题，包含中文搜索词。", tagIds: [] },
+  json: {
+    categoryId: categories.body.data[0].id,
+    title: "远程冒烟主题",
+    contentMd: "远程部署后的第一条主题，包含中文搜索词。",
+    tagIds: [],
+  },
   headers: { "x-turnstile-token": TURNSTILE },
 });
 assert("remote: topic create", topic.status === 201, topic.body);
@@ -138,7 +174,11 @@ const reply = await reporter.request(`/api/topics/${topicId}/posts`, {
 assert("remote: reply create", reply.status === 201, reply.body);
 
 const authorNotifications = await author.request("/api/me/notifications");
-assert("remote: reply notification", authorNotifications.body?.data?.items?.some((item) => item.type === "topic_reply"), authorNotifications.body);
+assert(
+  "remote: reply notification",
+  authorNotifications.body?.data?.items?.some((item) => item.type === "topic_reply"),
+  authorNotifications.body,
+);
 
 const reindex = await admin.request("/api/admin/search/reindex", { method: "POST" });
 assert("remote: search reindex", reindex.status === 200 && reindex.body.data.posts >= 2, reindex.body);
@@ -148,7 +188,11 @@ assert("remote: Chinese search", search.status === 200 && search.body.data.items
 const detail = await author.request(`/api/topics/${topicId}`);
 const edit = await author.request(`/api/topics/${topicId}`, {
   method: "PATCH",
-  json: { version: detail.body.data.firstPost.version, title: "远程冒烟主题（已编辑）", contentMd: "编辑后的远程内容，用于版本与 FTS 验证。" },
+  json: {
+    version: detail.body.data.firstPost.version,
+    title: "远程冒烟主题（已编辑）",
+    contentMd: "编辑后的远程内容，用于版本与 FTS 验证。",
+  },
 });
 assert("remote: topic edit", edit.status === 200, edit.body);
 const stale = await author.request(`/api/topics/${topicId}`, {
@@ -181,39 +225,76 @@ assert("remote: digest runs", digest.status === 200, digest.body);
 const digestMail = await outbox(authorEmail, "digest");
 assert("remote: dev outbox digest", Boolean(digestMail?.subject?.includes("新通知")), digestMail?.subject);
 const unsubToken = digestMail?.text?.match(/\/unsubscribe\?token=([A-Za-z0-9_-]+)/)?.[1];
-const unsubPreview = unsubToken ? await author.request(`/api/unsubscribe/preview?token=${encodeURIComponent(unsubToken)}`) : { status: 0, body: null };
+const unsubPreview = unsubToken
+  ? await author.request(`/api/unsubscribe/preview?token=${encodeURIComponent(unsubToken)}`)
+  : { status: 0, body: null };
 assert("remote: unsubscribe preview", unsubPreview.status === 200, unsubPreview.body);
-const unsub = unsubToken ? await author.request("/api/unsubscribe", { method: "POST", json: { token: unsubToken } }) : { status: 0, body: null };
+const unsub = unsubToken
+  ? await author.request("/api/unsubscribe", { method: "POST", json: { token: unsubToken } })
+  : { status: 0, body: null };
 assert("remote: unsubscribe apply", unsub.status === 200, unsub.body);
 
-const exportResponse = await fetch(BASE + "/api/me/export", { method: "POST", headers: { origin: BASE, cookie: author.cookie } });
+const exportResponse = await fetch(BASE + "/api/me/export", {
+  method: "POST",
+  headers: { origin: BASE, cookie: author.cookie },
+});
 const exported = await exportResponse.json().catch(() => null);
-assert("remote: account export", exportResponse.status === 200 && exported?.topics?.length >= 1, { status: exportResponse.status });
+assert("remote: account export", exportResponse.status === 200 && exported?.topics?.length >= 1, {
+  status: exportResponse.status,
+});
 
 const temp = makeClient();
 const tempEmail = `remote-d-${suffix}@example.test`;
 const tempSignup = await signup(temp, tempEmail, "Remote Delete", `rd${suffix}`.slice(0, 18));
-assert("remote: temp signup", tempSignup.response.status === 200 || tempSignup.response.status === 201, tempSignup.response.body);
+assert(
+  "remote: temp signup",
+  tempSignup.response.status === 200 || tempSignup.response.status === 201,
+  tempSignup.response.body,
+);
 await verify(temp, tempEmail);
-const deleteResponse = await temp.request("/api/me/delete", { json: { password: await derivePassword(tempEmail, PASSWORD_RAW) } });
+const deleteResponse = await temp.request("/api/me/delete", {
+  json: { password: await derivePassword(tempEmail, PASSWORD_RAW) },
+});
 assert("remote: account delete request", deleteResponse.status === 200, deleteResponse.body);
-const restoreLogin = await temp.request("/api/auth/sign-in/email", { json: { email: tempEmail, password: await derivePassword(tempEmail, PASSWORD_RAW) } });
+const restoreLogin = await temp.request("/api/auth/sign-in/email", {
+  json: { email: tempEmail, password: await derivePassword(tempEmail, PASSWORD_RAW) },
+});
 assert("remote: login during grace succeeds", restoreLogin.status === 200, restoreLogin.body);
 const pendingDelete = await temp.request("/api/me");
-assert("remote: login does not auto-cancel deletion", pendingDelete.status === 200 && pendingDelete.body.data.user.status === "deleting", pendingDelete.body);
+assert(
+  "remote: login does not auto-cancel deletion",
+  pendingDelete.status === 200 && pendingDelete.body.data.user.status === "deleting",
+  pendingDelete.body,
+);
 const cancelDelete = await temp.request("/api/me/delete/cancel", { method: "POST" });
-assert("remote: explicit cancel", cancelDelete.status === 200 && cancelDelete.body.data.cancelled === true, cancelDelete.body);
+assert(
+  "remote: explicit cancel",
+  cancelDelete.status === 200 && cancelDelete.body.data.cancelled === true,
+  cancelDelete.body,
+);
 const restored = await temp.request("/api/me");
-assert("remote: account restored", restored.status === 200 && restored.body.data.user.status === "active", restored.body);
+assert(
+  "remote: account restored",
+  restored.status === 200 && restored.body.data.user.status === "active",
+  restored.body,
+);
 
 const manifest = await (await fetch(BASE + "/manifest.webmanifest")).json();
 assert("remote: manifest", manifest.name === siteName && manifest.start_url === "/", manifest);
 const sitemap = await (await fetch(BASE + "/sitemap.xml")).text();
 assert("remote: sitemap includes topic", sitemap.includes(`/t/${topicId}`), sitemap.slice(0, 300));
 const doc = await (await fetch(BASE + `/t/${topicId}`)).text();
-assert("remote: document meta", doc.includes(`<title>远程冒烟主题（已编辑） · ${siteName}</title>`), doc.match(/<title>.*?<\/title>/)?.[0]);
+assert(
+  "remote: document meta",
+  doc.includes(`<title>远程冒烟主题（已编辑） · ${siteName}</title>`),
+  doc.match(/<title>.*?<\/title>/)?.[0],
+);
 const home = await fetch(BASE + "/");
-assert("remote: security headers", Boolean(home.headers.get("content-security-policy")?.includes("challenges.cloudflare.com")), home.headers.get("content-security-policy"));
+assert(
+  "remote: security headers",
+  Boolean(home.headers.get("content-security-policy")?.includes("challenges.cloudflare.com")),
+  home.headers.get("content-security-policy"),
+);
 const health = await (await fetch(BASE + "/api/health")).json();
 assert("remote: health db/r2", health.ok === true && health.data.db === true && health.data.r2 === true, health);
 

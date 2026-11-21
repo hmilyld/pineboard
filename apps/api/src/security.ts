@@ -31,8 +31,7 @@ export async function consumeRateLimit(
 }
 
 export type TurnstileResult =
-  | { ok: true }
-  | { ok: false; code: "captcha_failed" | "captcha_unavailable"; message: string };
+  { ok: true } | { ok: false; code: "captcha_failed" | "captcha_unavailable"; message: string };
 
 /**
  * Siteverify is called only after payload validation and rate limiting. Test
@@ -70,9 +69,12 @@ export async function verifyTurnstile(options: {
   if (!response.ok) {
     return { ok: false, code: "captcha_unavailable", message: "人机验证暂时不可用，请稍后重试" };
   }
-  const result = (await response.json().catch(() => null)) as
-    | { success?: boolean; action?: string; hostname?: string; "error-codes"?: string[] }
-    | null;
+  const result = (await response.json().catch(() => null)) as {
+    success?: boolean;
+    action?: string;
+    hostname?: string;
+    "error-codes"?: string[];
+  } | null;
   if (!result || result.success !== true) {
     const codes = result?.["error-codes"] ?? [];
     const unavailable = codes.some((code) => code === "internal-error" || code === "bad-request");

@@ -49,7 +49,12 @@ async function submit(): Promise<void> {
   submitting.value = true;
   error.value = "";
   try {
-    await api.report({ targetType: props.targetType, targetId: props.targetId, reasonCode: reason.value, detail: detail.value });
+    await api.report({
+      targetType: props.targetType,
+      targetId: props.targetId,
+      reasonCode: reason.value,
+      detail: detail.value,
+    });
     done.value = true;
   } catch (cause) {
     error.value = config.describeError(cause, "report.failed");
@@ -73,7 +78,14 @@ async function submit(): Promise<void> {
         <div class="p-6">
           <div class="flex items-center justify-between">
             <h2 id="report-title" class="text-lg font-semibold">{{ t("report.title") }}</h2>
-            <button type="button" autofocus class="text-sm text-muted-foreground hover:text-foreground" @click="open = false">{{ t("common.close") }}</button>
+            <button
+              type="button"
+              autofocus
+              class="text-sm text-muted-foreground hover:text-foreground"
+              @click="open = false"
+            >
+              {{ t("common.close") }}
+            </button>
           </div>
           <template v-if="done">
             <p :class="[alertInfoClass, 'mt-4']" role="status">{{ t("report.done") }}</p>
@@ -91,7 +103,9 @@ async function submit(): Promise<void> {
               <textarea id="report-detail" v-model="detail" name="detail" :class="textareaClass" maxlength="1000" />
             </div>
             <p v-if="error" :class="alertErrorClass" role="alert">{{ error }}</p>
-            <Button class="w-full" type="submit" :disabled="submitting">{{ submitting ? t("report.submitting") : t("report.submit") }}</Button>
+            <Button class="w-full" type="submit" :disabled="submitting">{{
+              submitting ? t("report.submitting") : t("report.submit")
+            }}</Button>
           </form>
         </div>
       </dialog>

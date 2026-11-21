@@ -36,7 +36,11 @@ function makeClient() {
     }
     const text = await response.text();
     let body;
-    try { body = text ? JSON.parse(text) : null; } catch { body = text; }
+    try {
+      body = text ? JSON.parse(text) : null;
+    } catch {
+      body = text;
+    }
     return { status: response.status, body, headers: response.headers };
   }
   return { request };
@@ -45,7 +49,11 @@ async function outbox(email, category, timeout = 3000) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
     const handle = db();
-    const row = handle.prepare("SELECT payload_json FROM dev_email_outbox WHERE to_email = ? AND category = ? ORDER BY created_at DESC LIMIT 1").get(email, category);
+    const row = handle
+      .prepare(
+        "SELECT payload_json FROM dev_email_outbox WHERE to_email = ? AND category = ? ORDER BY created_at DESC LIMIT 1",
+      )
+      .get(email, category);
     handle.close();
     if (row) return JSON.parse(row.payload_json);
     await new Promise((r) => setTimeout(r, 50));
@@ -66,10 +74,12 @@ async function verify(client, email) {
   return client.request(`/api/auth/verify-email?token=${encodeURIComponent(mail.token)}`);
 }
 
-
 async function patchSettings(client, patch) {
   const current = await client.request("/api/admin/settings");
-  return client.request("/api/admin/settings", { method: "PATCH", json: { version: current.body?.data?.version, patch } });
+  return client.request("/api/admin/settings", {
+    method: "PATCH",
+    json: { version: current.body?.data?.version, patch },
+  });
 }
 
 const admin = makeClient();
@@ -77,7 +87,11 @@ const author = makeClient();
 await admin.request("/api/dev/reset", { method: "POST" });
 await signup(admin, "admin@example.test", "Admin", `adm${Date.now().toString(36)}`.slice(0, 18));
 await verify(admin, "admin@example.test");
-await patchSettings(admin, { security: { postMinIntervalSeconds: 0 }, account: { registrationOpen: true }, seo: { noindex: false, sitemapEnabled: true } },);
+await patchSettings(admin, {
+  security: { postMinIntervalSeconds: 0 },
+  account: { registrationOpen: true },
+  seo: { noindex: false, sitemapEnabled: true },
+});
 
 const email = `p6-${Date.now()}@example.test`;
 const username = `p6${Date.now().toString(36)}`.slice(0, 18);
@@ -85,7 +99,12 @@ await signup(author, email, "P6 Author", username);
 await verify(author, email);
 const categories = await author.request("/api/categories");
 const topic = await author.request("/api/topics", {
-  json: { categoryId: categories.body.data[0].id, title: "P6 文档注入测试", contentMd: "这是用于 P6 meta 注入的摘要。", tagIds: [] },
+  json: {
+    categoryId: categories.body.data[0].id,
+    title: "P6 文档注入测试",
+    contentMd: "这是用于 P6 meta 注入的摘要。",
+    tagIds: [],
+  },
   headers: { "x-turnstile-token": TURNSTILE },
 });
 assert("seed topic", topic.status === 201, topic.body);
@@ -93,25 +112,50 @@ const topicId = topic.body.data.id;
 
 const editShell = await fetch(BASE + `/t/${topicId}/edit`);
 const editShellHtml = await editShell.text();
-assert("doc: edit sub-route returns SPA shell", editShell.status === 200 && editShellHtml.includes('id="app"'), editShell.status);
+assert(
+  "doc: edit sub-route returns SPA shell",
+  editShell.status === 200 && editShellHtml.includes('id="app"'),
+  editShell.status,
+);
 
 const first = await author.request(`/t/${topicId}`);
 const second = await author.request(`/t/${topicId}`);
 const html = typeof first.body === "string" ? first.body : JSON.stringify(first.body);
-assert("doc: title/meta/canonical injected", html.includes("P6 文档注入测试") && html.includes('rel="canonical"') && html.includes(`P6 文档注入测试 · ${siteInfo.data.site.name}`), html.slice(0, 300));
+assert(
+  "doc: title/meta/canonical injected",
+  html.includes("P6 文档注入测试") &&
+    html.includes('rel="canonical"') &&
+    html.includes(`P6 文档注入测试 · ${siteInfo.data.site.name}`),
+  html.slice(0, 300),
+);
 assert("doc: JSON-LD injected", html.includes("DiscussionForumPosting"), html.slice(0, 300));
-assert("doc: CSP header present", Boolean(first.headers.get("content-security-policy")?.includes("challenges.cloudflare.com")), first.headers.get("content-security-policy"));
-assert("doc: first miss then cache hit", first.headers.get("x-doc-cache") === "miss" && second.headers.get("x-doc-cache") === "hit", { a: first.headers.get("x-doc-cache"), b: second.headers.get("x-doc-cache") });
+assert(
+  "doc: CSP header present",
+  Boolean(first.headers.get("content-security-policy")?.includes("challenges.cloudflare.com")),
+  first.headers.get("content-security-policy"),
+);
+assert(
+  "doc: first miss then cache hit",
+  first.headers.get("x-doc-cache") === "miss" && second.headers.get("x-doc-cache") === "hit",
+  { a: first.headers.get("x-doc-cache"), b: second.headers.get("x-doc-cache") },
+);
 
 const missing = await fetch(BASE + "/t/does-not-exist");
 const missingHtml = await missing.text();
 // Server-rendered copy follows `site.language`, so assert against the configured
 // language instead of a hard-coded Chinese phrase.
-const missingTitle = (await author.request("/api/site")).body?.data?.site?.language === "en" ? "Topic not found" : "主题不存在";
+const missingTitle =
+  (await author.request("/api/site")).body?.data?.site?.language === "en" ? "Topic not found" : "主题不存在";
 assert("doc: missing 404 shell", missing.status === 404 && missingHtml.includes(missingTitle), missing.status);
 const homeDoc = await fetch(BASE + "/");
 const homeHtml = await homeDoc.text();
-assert("doc: home SEO meta", homeHtml.includes('"@type":"WebSite"') && homeHtml.includes('property="og:type" content="website"') && homeHtml.includes('name="robots" content="index,follow"'), homeHtml.slice(0, 300));
+assert(
+  "doc: home SEO meta",
+  homeHtml.includes('"@type":"WebSite"') &&
+    homeHtml.includes('property="og:type" content="website"') &&
+    homeHtml.includes('name="robots" content="index,follow"'),
+  homeHtml.slice(0, 300),
+);
 const categoryDoc = await fetch(BASE + "/c/general");
 assert("doc: category meta", (await categoryDoc.text()).includes("综合讨论"));
 const userDoc = await fetch(BASE + `/u/${username}`);
@@ -120,12 +164,36 @@ const tagDoc = await fetch(BASE + "/tag/guide");
 assert("doc: tag meta", (await tagDoc.text()).includes("#攻略"));
 
 const sitemap = await (await fetch(BASE + "/sitemap.xml")).text();
-assert("seo: sitemap includes topic", sitemap.includes(`/t/${topicId}`) && sitemap.includes("<urlset"), sitemap.slice(0, 200));
-assert("seo: sitemap includes home/categories/tags", sitemap.includes(`${siteInfo.data.site.url.replace(/\/$/, "")}/tags`) && sitemap.includes("/c/general") && sitemap.includes("/tag/guide"), sitemap.slice(0, 500));
+assert(
+  "seo: sitemap includes topic",
+  sitemap.includes(`/t/${topicId}`) && sitemap.includes("<urlset"),
+  sitemap.slice(0, 200),
+);
+assert(
+  "seo: sitemap includes home/categories/tags",
+  sitemap.includes(`${siteInfo.data.site.url.replace(/\/$/, "")}/tags`) &&
+    sitemap.includes("/c/general") &&
+    sitemap.includes("/tag/guide"),
+  sitemap.slice(0, 500),
+);
 const robots = await (await fetch(BASE + "/robots.txt")).text();
-assert("seo: robots excludes private routes", robots.includes("Disallow: /api/") && robots.includes("Disallow: /search") && robots.includes("Disallow: /new") && robots.includes("Sitemap:"), robots);
+assert(
+  "seo: robots excludes private routes",
+  robots.includes("Disallow: /api/") &&
+    robots.includes("Disallow: /search") &&
+    robots.includes("Disallow: /new") &&
+    robots.includes("Sitemap:"),
+  robots,
+);
 const manifest = await (await fetch(BASE + "/manifest.webmanifest")).json();
-assert("seo: manifest name/start_url/icons", manifest.name === siteInfo.data.site.name && manifest.start_url === "/" && Array.isArray(manifest.icons) && manifest.icons.length > 0, manifest);
+assert(
+  "seo: manifest name/start_url/icons",
+  manifest.name === siteInfo.data.site.name &&
+    manifest.start_url === "/" &&
+    Array.isArray(manifest.icons) &&
+    manifest.icons.length > 0,
+  manifest,
+);
 
 // Title injection must be escaped in the document shell.
 const xss = await author.request("/api/topics", {
@@ -149,8 +217,16 @@ const hidden = await author.request("/api/topics", {
 const hiddenDoc = await fetch(BASE + `/t/${hidden.body.data.id}`);
 const hiddenHtml = await hiddenDoc.text();
 const afterSitemap = await (await fetch(BASE + "/sitemap.xml")).text();
-assert("doc: hidden 404 without title leak", hiddenDoc.status === 404 && !hiddenHtml.includes("隐藏机密标题"), hiddenDoc.status);
-assert("seo: hidden excluded from sitemap", !afterSitemap.includes(hidden.body.data.id), afterSitemap.includes(hidden.body.data.id));
+assert(
+  "doc: hidden 404 without title leak",
+  hiddenDoc.status === 404 && !hiddenHtml.includes("隐藏机密标题"),
+  hiddenDoc.status,
+);
+assert(
+  "seo: hidden excluded from sitemap",
+  !afterSitemap.includes(hidden.body.data.id),
+  afterSitemap.includes(hidden.body.data.id),
+);
 
 // Soft delete = 410 shell.
 await author.request(`/api/topics/${topicId}`, { method: "DELETE" });

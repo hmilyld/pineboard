@@ -65,9 +65,7 @@ app.get("/api/health", async (c) => {
     r2: r2Ok,
     now: Math.floor(Date.now() / 1000),
     configVersion,
-    turnstileConfigured: Boolean(
-      integration.cloudflare.turnstileSiteKey && integration.secrets.turnstileSecret,
-    ),
+    turnstileConfigured: Boolean(integration.cloudflare.turnstileSiteKey && integration.secrets.turnstileSecret),
   };
   healthSchema.parse(data);
   c.header("cache-control", "no-store");
@@ -138,7 +136,11 @@ app.use("/api/*", async (c, next) => {
   const config = security.config;
   if (!config.feature.guestRead && !c.get("user") && (c.req.method === "GET" || c.req.method === "HEAD")) {
     const path = c.req.path;
-    const allowed = path === "/api/health" || path === "/api/site" || path.startsWith("/api/auth/") || path.startsWith("/api/webhooks/");
+    const allowed =
+      path === "/api/health" ||
+      path === "/api/site" ||
+      path.startsWith("/api/auth/") ||
+      path.startsWith("/api/webhooks/");
     if (!allowed) {
       c.header("cache-control", "no-store");
       return c.json(fail("auth_required", "请先登录"), 401);
@@ -146,7 +148,11 @@ app.use("/api/*", async (c, next) => {
   }
   if (!config.maintenance.enabled) return next();
   const path = c.req.path;
-  const allowed = path === "/api/health" || path === "/api/site" || path.startsWith("/api/auth/") || path.startsWith("/api/webhooks/");
+  const allowed =
+    path === "/api/health" ||
+    path === "/api/site" ||
+    path.startsWith("/api/auth/") ||
+    path.startsWith("/api/webhooks/");
   const adminBypass = config.maintenance.allowAdmin && c.get("user")?.role === "admin";
   if (allowed || adminBypass) return next();
   c.header("cache-control", "no-store");

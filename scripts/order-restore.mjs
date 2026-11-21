@@ -1,12 +1,29 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 const ORDER = [
-  "user", "account", "session", "verification", "settings",
-  "categories", "category_moderators", "tags",
-  "topics", "posts", "post_revisions", "topic_tags", "post_likes", "bookmarks",
-  "reports", "notifications", "notification_preferences",
-  "email_unsubscribe_tokens", "email_logs", "email_suppressions",
-  "audit_logs", "rateLimit", "rate_limits",
+  "user",
+  "account",
+  "session",
+  "verification",
+  "settings",
+  "categories",
+  "category_moderators",
+  "tags",
+  "topics",
+  "posts",
+  "post_revisions",
+  "topic_tags",
+  "post_likes",
+  "bookmarks",
+  "reports",
+  "notifications",
+  "notification_preferences",
+  "email_unsubscribe_tokens",
+  "email_logs",
+  "email_suppressions",
+  "audit_logs",
+  "rateLimit",
+  "rate_limits",
 ];
 
 const [inputPath, outputPath] = process.argv.slice(2);

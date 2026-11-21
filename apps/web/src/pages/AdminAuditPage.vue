@@ -60,11 +60,14 @@ async function load(): Promise<void> {
 async function restore(row: AuditRow): Promise<void> {
   const id = restoreId(row);
   if (!id) return;
-  if (!(await confirmDialog({
-    title: t("admin.audit.restoreTitle"),
-    message: t("admin.audit.restoreBody"),
-    confirmLabel: t("admin.audit.restore"),
-  }))) return;
+  if (
+    !(await confirmDialog({
+      title: t("admin.audit.restoreTitle"),
+      message: t("admin.audit.restoreBody"),
+      confirmLabel: t("admin.audit.restore"),
+    }))
+  )
+    return;
   busy.value = row.id;
   error.value = "";
   message.value = "";
@@ -85,7 +88,10 @@ onMounted(load);
 <template>
   <div>
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
-      <div><h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.audit") }}</h1><p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.audit.subtitle") }}</p></div>
+      <div>
+        <h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.audit") }}</h1>
+        <p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.audit.subtitle") }}</p>
+      </div>
       <button type="button" class="v2-btn sm" :disabled="loading" @click="load">{{ t("admin.audit.refresh") }}</button>
     </div>
     <p v-if="error" :class="[alertErrorClass, 'mt-4']" role="alert">{{ error }}</p>
@@ -93,20 +99,52 @@ onMounted(load);
     <AdminSkeleton v-if="loading" class="mt-4" />
     <div v-else class="v2-admin-panel mt-4 overflow-x-auto">
       <table class="v2-admin-table min-w-[760px]">
-        <caption class="sr-only">{{ t("admin.nav.audit") }}</caption>
-        <thead><tr><th scope="col">{{ t("admin.audit.colTime") }}</th><th scope="col">{{ t("admin.audit.colActor") }}</th><th scope="col">{{ t("admin.audit.colAction") }}</th><th scope="col">{{ t("admin.audit.colTarget") }}</th><th scope="col">{{ t("admin.audit.colDetail") }}</th><th></th></tr></thead>
+        <caption class="sr-only">
+          {{
+            t("admin.nav.audit")
+          }}
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">{{ t("admin.audit.colTime") }}</th>
+            <th scope="col">{{ t("admin.audit.colActor") }}</th>
+            <th scope="col">{{ t("admin.audit.colAction") }}</th>
+            <th scope="col">{{ t("admin.audit.colTarget") }}</th>
+            <th scope="col">{{ t("admin.audit.colDetail") }}</th>
+            <th></th>
+          </tr>
+        </thead>
         <tbody>
           <tr v-for="row in rows" :key="row.id">
             <td class="whitespace-nowrap p-3 text-muted-foreground">{{ formatDate(row.createdAt) }}</td>
-            <td class="p-3">{{ row.actorName ?? t("admin.audit.system") }}<span v-if="row.actorUsername" class="ml-1 text-[0.625rem] text-muted-foreground">@{{ row.actorUsername }}</span></td>
+            <td class="p-3">
+              {{ row.actorName ?? t("admin.audit.system")
+              }}<span v-if="row.actorUsername" class="ml-1 text-[0.625rem] text-muted-foreground"
+                >@{{ row.actorUsername }}</span
+              >
+            </td>
             <td class="p-3">{{ labels[row.action] ?? row.action }}</td>
-            <td class="p-3 font-mono text-[0.625rem] text-muted-foreground">{{ row.targetType ?? "—" }} {{ row.targetId?.slice(-8) ?? "" }}</td>
-            <td class="max-w-[240px] truncate p-3 text-[0.65625rem] text-muted-foreground">{{ row.meta ? JSON.stringify(row.meta) : "—" }}</td>
+            <td class="p-3 font-mono text-[0.625rem] text-muted-foreground">
+              {{ row.targetType ?? "—" }} {{ row.targetId?.slice(-8) ?? "" }}
+            </td>
+            <td class="max-w-[240px] truncate p-3 text-[0.65625rem] text-muted-foreground">
+              {{ row.meta ? JSON.stringify(row.meta) : "—" }}
+            </td>
             <td class="p-3 text-right">
-              <button v-if="restoreId(row)" type="button" class="v2-btn sm" :disabled="busy === row.id" @click="restore(row)">{{ busy === row.id ? t("admin.audit.restoring") : t("admin.audit.restore") }}</button>
+              <button
+                v-if="restoreId(row)"
+                type="button"
+                class="v2-btn sm"
+                :disabled="busy === row.id"
+                @click="restore(row)"
+              >
+                {{ busy === row.id ? t("admin.audit.restoring") : t("admin.audit.restore") }}
+              </button>
             </td>
           </tr>
-          <tr v-if="!rows.length"><td colspan="6" class="p-6 text-center text-muted-foreground">{{ t("admin.audit.empty") }}</td></tr>
+          <tr v-if="!rows.length">
+            <td colspan="6" class="p-6 text-center text-muted-foreground">{{ t("admin.audit.empty") }}</td>
+          </tr>
         </tbody>
       </table>
     </div>

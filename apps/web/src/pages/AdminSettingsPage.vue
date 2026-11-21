@@ -98,41 +98,48 @@ async function save(): Promise<void> {
   error.value = "";
   saved.value = "";
   try {
-    const data = await api.updateAdminSettings({
-      account: {
-        registrationOpen: form.registrationOpen,
-        requireVerificationForWrite: form.requireVerificationForWrite,
-      },
-      feature: { turnstile: form.turnstile, uploads: form.uploads },
-      seo: {
-        topicsPerPage: Number(form.topicsPerPage),
-        postsPerPage: Number(form.postsPerPage),
-        titleTemplate: form.titleTemplate,
-        homeTitle: form.homeTitle,
-        description: form.seoDescription,
-        noindex: form.noindex,
-        sitemapEnabled: form.sitemapEnabled,
-      },
-      maintenance: { enabled: form.maintenanceEnabled, message: form.maintenanceMessage },
-      site: {
-        name: form.siteName,
-        tagline: form.tagline,
-        url: form.siteUrl,
-        language: form.siteLanguage,
-        announcement: {
-          id: current?.site.announcement.id ?? "default",
-          enabled: form.announcementEnabled,
-          text: form.announcementText,
-          href: form.announcementHref,
+    const data = await api.updateAdminSettings(
+      {
+        account: {
+          registrationOpen: form.registrationOpen,
+          requireVerificationForWrite: form.requireVerificationForWrite,
+        },
+        feature: { turnstile: form.turnstile, uploads: form.uploads },
+        seo: {
+          topicsPerPage: Number(form.topicsPerPage),
+          postsPerPage: Number(form.postsPerPage),
+          titleTemplate: form.titleTemplate,
+          homeTitle: form.homeTitle,
+          description: form.seoDescription,
+          noindex: form.noindex,
+          sitemapEnabled: form.sitemapEnabled,
+        },
+        maintenance: { enabled: form.maintenanceEnabled, message: form.maintenanceMessage },
+        site: {
+          name: form.siteName,
+          tagline: form.tagline,
+          url: form.siteUrl,
+          language: form.siteLanguage,
+          announcement: {
+            id: current?.site.announcement.id ?? "default",
+            enabled: form.announcementEnabled,
+            text: form.announcementText,
+            href: form.announcementHref,
+          },
         },
       },
-    }, version.value);
+      version.value,
+    );
     apply(data.config, data.version);
     saved.value = t("admin.settings.saved", { version: data.version });
   } catch (cause) {
-    error.value = cause && typeof cause === "object" && "code" in cause && String((cause as { code: unknown }).code) === "version_conflict"
-      ? t("admin.settings.versionConflict")
-      : config.describeError(cause, "common.saveFailed");
+    error.value =
+      cause &&
+      typeof cause === "object" &&
+      "code" in cause &&
+      String((cause as { code: unknown }).code) === "version_conflict"
+        ? t("admin.settings.versionConflict")
+        : config.describeError(cause, "common.saveFailed");
   } finally {
     saving.value = false;
   }
@@ -144,8 +151,13 @@ onMounted(load);
 <template>
   <div>
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
-      <div><h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.settings.title") }}</h1><p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.settings.subtitle", { version }) }}</p></div>
-      <RouterLink to="/admin/emails" class="text-[0.71875rem] text-muted-foreground hover:text-ink">{{ t("admin.nav.emails") }}</RouterLink>
+      <div>
+        <h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.settings.title") }}</h1>
+        <p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.settings.subtitle", { version }) }}</p>
+      </div>
+      <RouterLink to="/admin/emails" class="text-[0.71875rem] text-muted-foreground hover:text-ink">{{
+        t("admin.nav.emails")
+      }}</RouterLink>
     </div>
 
     <p v-if="error" :class="[alertErrorClass, 'mt-6']" role="alert">{{ error }}</p>
@@ -224,9 +236,32 @@ onMounted(load);
       <section :class="cardClass">
         <h2 class="text-[0.75rem] font-semibold">{{ t("admin.settings.announcementSection") }}</h2>
         <div class="mt-3 space-y-3">
-          <label class="flex items-start gap-3 text-[0.75rem]"><input v-model="form.announcementEnabled" type="checkbox" class="mt-1 size-4 accent-brand" /><span><span class="font-medium">{{ t("admin.settings.announcementEnabled") }}</span><span class="block text-[0.65625rem] text-muted-foreground">{{ t("admin.settings.announcementEnabledHint") }}</span></span></label>
-          <div><label :class="labelClass" for="announcement-text">{{ t("admin.settings.announcementText") }}</label><input id="announcement-text" v-model="form.announcementText" :class="inputClass" maxlength="300" :placeholder="t('admin.settings.announcementPlaceholder')" /></div>
-          <div><label :class="labelClass" for="announcement-href">{{ t("admin.settings.announcementHref") }}</label><input id="announcement-href" v-model="form.announcementHref" :class="inputClass" maxlength="300" placeholder="/t/..." /></div>
+          <label class="flex items-start gap-3 text-[0.75rem]"
+            ><input v-model="form.announcementEnabled" type="checkbox" class="mt-1 size-4 accent-brand" /><span
+              ><span class="font-medium">{{ t("admin.settings.announcementEnabled") }}</span
+              ><span class="block text-[0.65625rem] text-muted-foreground">{{
+                t("admin.settings.announcementEnabledHint")
+              }}</span></span
+            ></label
+          >
+          <div>
+            <label :class="labelClass" for="announcement-text">{{ t("admin.settings.announcementText") }}</label><input
+              id="announcement-text"
+              v-model="form.announcementText"
+              :class="inputClass"
+              maxlength="300"
+              :placeholder="t('admin.settings.announcementPlaceholder')"
+            />
+          </div>
+          <div>
+            <label :class="labelClass" for="announcement-href">{{ t("admin.settings.announcementHref") }}</label><input
+              id="announcement-href"
+              v-model="form.announcementHref"
+              :class="inputClass"
+              maxlength="300"
+              placeholder="/t/..."
+            />
+          </div>
         </div>
       </section>
 
@@ -234,12 +269,44 @@ onMounted(load);
         <h2 class="text-[0.75rem] font-semibold">SEO</h2>
         <p class="mt-1 text-[0.65625rem] leading-5 text-muted-foreground">{{ t("admin.settings.seoHint") }}</p>
         <div class="mt-3 grid gap-3">
-          <div><label :class="labelClass" for="seo-title-template">{{ t("admin.settings.titleTemplate") }}</label><input id="seo-title-template" v-model="form.titleTemplate" :class="inputClass" maxlength="200" /></div>
-          <div><label :class="labelClass" for="seo-home-title">{{ t("admin.settings.homeTitle") }}</label><input id="seo-home-title" v-model="form.homeTitle" :class="inputClass" maxlength="200" :placeholder="t('admin.settings.homeTitlePlaceholder')" /></div>
-          <div><label :class="labelClass" for="seo-description">{{ t("admin.settings.seoDescription") }}</label><textarea id="seo-description" v-model="form.seoDescription" :class="textareaClass" rows="2" maxlength="500" :placeholder="t('admin.settings.seoDescriptionPlaceholder')" /></div>
+          <div>
+            <label :class="labelClass" for="seo-title-template">{{ t("admin.settings.titleTemplate") }}</label><input
+              id="seo-title-template"
+              v-model="form.titleTemplate"
+              :class="inputClass"
+              maxlength="200"
+            />
+          </div>
+          <div>
+            <label :class="labelClass" for="seo-home-title">{{ t("admin.settings.homeTitle") }}</label><input
+              id="seo-home-title"
+              v-model="form.homeTitle"
+              :class="inputClass"
+              maxlength="200"
+              :placeholder="t('admin.settings.homeTitlePlaceholder')"
+            />
+          </div>
+          <div>
+            <label :class="labelClass" for="seo-description">{{ t("admin.settings.seoDescription") }}</label><textarea
+              id="seo-description"
+              v-model="form.seoDescription"
+              :class="textareaClass"
+              rows="2"
+              maxlength="500"
+              :placeholder="t('admin.settings.seoDescriptionPlaceholder')"
+            />
+          </div>
           <div class="flex flex-wrap gap-4 text-[0.75rem]">
-            <label class="inline-flex items-center gap-2"><input v-model="form.noindex" type="checkbox" class="size-4 accent-brand" />{{ t("admin.settings.noindex") }}</label>
-            <label class="inline-flex items-center gap-2"><input v-model="form.sitemapEnabled" type="checkbox" class="size-4 accent-brand" />{{ t("admin.settings.sitemap") }}</label>
+            <label class="inline-flex items-center gap-2"
+              ><input v-model="form.noindex" type="checkbox" class="size-4 accent-brand" />{{
+                t("admin.settings.noindex")
+              }}</label
+            >
+            <label class="inline-flex items-center gap-2"
+              ><input v-model="form.sitemapEnabled" type="checkbox" class="size-4 accent-brand" />{{
+                t("admin.settings.sitemap")
+              }}</label
+            >
           </div>
         </div>
       </section>
@@ -250,11 +317,27 @@ onMounted(load);
         <div class="mt-3 grid gap-3 sm:grid-cols-2">
           <div>
             <label :class="labelClass" for="topics-per-page">{{ t("admin.settings.topicsPerPage") }}</label>
-            <input id="topics-per-page" v-model.number="form.topicsPerPage" :class="inputClass" type="number" min="5" max="50" step="1" />
+            <input
+              id="topics-per-page"
+              v-model.number="form.topicsPerPage"
+              :class="inputClass"
+              type="number"
+              min="5"
+              max="50"
+              step="1"
+            />
           </div>
           <div>
             <label :class="labelClass" for="posts-per-page">{{ t("admin.settings.postsPerPage") }}</label>
-            <input id="posts-per-page" v-model.number="form.postsPerPage" :class="inputClass" type="number" min="5" max="50" step="1" />
+            <input
+              id="posts-per-page"
+              v-model.number="form.postsPerPage"
+              :class="inputClass"
+              type="number"
+              min="5"
+              max="50"
+              step="1"
+            />
           </div>
         </div>
       </section>
@@ -271,15 +354,24 @@ onMounted(load);
           </label>
           <div>
             <label :class="labelClass" for="maintenance-message">{{ t("admin.settings.maintenanceMessage") }}</label>
-            <textarea id="maintenance-message" v-model="form.maintenanceMessage" :class="textareaClass" maxlength="500" />
+            <textarea
+              id="maintenance-message"
+              v-model="form.maintenanceMessage"
+              :class="textareaClass"
+              maxlength="500"
+            />
           </div>
         </div>
       </section>
 
       <div class="flex items-center gap-3">
-        <Button type="submit" :disabled="saving">{{ saving ? t("admin.common.saving") : t("admin.settings.save") }}</Button>
+        <Button type="submit" :disabled="saving">{{
+          saving ? t("admin.common.saving") : t("admin.settings.save")
+        }}</Button>
         <Button type="button" variant="ghost" :disabled="saving" @click="load">{{ t("admin.settings.reload") }}</Button>
-        <Button type="button" variant="outline" :disabled="reindexing" @click="reindex">{{ reindexing ? t("admin.settings.reindexing") : t("admin.settings.reindex") }}</Button>
+        <Button type="button" variant="outline" :disabled="reindexing" @click="reindex">{{
+          reindexing ? t("admin.settings.reindexing") : t("admin.settings.reindex")
+        }}</Button>
       </div>
     </form>
   </div>

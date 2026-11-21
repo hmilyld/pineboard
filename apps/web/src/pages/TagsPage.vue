@@ -47,7 +47,13 @@ onMounted(async () => {
           <h1 class="text-[1.25rem] font-bold leading-[1.3] tracking-[-0.02em]">{{ t("tags.title") }}</h1>
           <p class="mt-1 text-[0.71875rem] text-muted-foreground">{{ t("tags.intro") }}</p>
         </div>
-        <input v-model="q" class="v2-input h-8 w-[220px] text-[0.75rem]" type="search" :placeholder="t('tags.searchPlaceholder')" :aria-label="t('tags.searchPlaceholder')" />
+        <input
+          v-model="q"
+          class="v2-input h-8 w-[220px] text-[0.75rem]"
+          type="search"
+          :placeholder="t('tags.searchPlaceholder')"
+          :aria-label="t('tags.searchPlaceholder')"
+        />
       </div>
 
       <div class="v2-main mt-4">
@@ -55,26 +61,47 @@ onMounted(async () => {
           <ErrorState v-if="error" :message="error" />
           <PageSkeleton v-else-if="loading" :rows="4" :header="false" narrow bare />
           <div v-else class="grid border-t border-line sm:grid-cols-2">
-            <RouterLink v-for="tag in filtered" :key="tag.id" :to="`/tag/${tag.slug}`" class="group border-b border-line px-0 py-3 sm:px-3 sm:odd:border-r">
+            <RouterLink
+              v-for="tag in filtered"
+              :key="tag.id"
+              :to="`/tag/${tag.slug}`"
+              class="group border-b border-line px-0 py-3 sm:px-3 sm:odd:border-r"
+            >
               <div class="flex items-baseline justify-between gap-3">
-                <span class="text-[0.9375rem] font-semibold"><span class="mr-0.5 text-pine">#</span>{{ tag.name }}</span>
-                <span class="num text-[0.65625rem] text-muted-foreground">{{ t("tags.topicCount", { count: tag.topicCount ?? tag.usageCount }) }}</span>
+                <span class="text-[0.9375rem] font-semibold"
+                  ><span class="mr-0.5 text-pine">#</span>{{ tag.name }}</span
+                >
+                <span class="num text-[0.65625rem] text-muted-foreground">{{
+                  t("tags.topicCount", { count: tag.topicCount ?? tag.usageCount })
+                }}</span>
               </div>
-              <p class="mt-1 truncate pl-[11px] text-[0.65625rem] text-muted-foreground group-hover:text-ink">{{ tag.recentTopic?.title ?? t("stats.noTopics") }}</p>
+              <p class="mt-1 truncate pl-[11px] text-[0.65625rem] text-muted-foreground group-hover:text-ink">
+                {{ tag.recentTopic?.title ?? t("stats.noTopics") }}
+              </p>
             </RouterLink>
-            <p v-if="!filtered.length" class="v2-empty col-span-full">{{ q ? t("tags.noMatch", { query: q }) : t("tags.empty") }}</p>
+            <p v-if="!filtered.length" class="v2-empty col-span-full">
+              {{ q ? t("tags.noMatch", { query: q }) : t("tags.empty") }}
+            </p>
           </div>
         </section>
         <aside class="v2-side">
           <section class="v2-mod">
             <h3>{{ t("tags.about") }}</h3>
             <p class="text-[0.65625rem] leading-6 text-muted-foreground">{{ t("tags.aboutBody") }}</p>
-            <RouterLink to="/tags" class="mt-2 inline-block text-[0.6875rem] text-pine hover:underline">{{ t("tags.browseAll") }}</RouterLink>
+            <RouterLink to="/tags" class="mt-2 inline-block text-[0.6875rem] text-pine hover:underline">{{
+              t("tags.browseAll")
+            }}</RouterLink>
           </section>
           <section v-if="ordered.length" class="v2-mod">
             <h3>{{ t("tags.maxTags") }}</h3>
-            <RouterLink v-for="tag in ordered.slice(0, 8)" :key="`side-${tag.id}`" :to="`/tag/${tag.slug}`" class="flex items-center justify-between border-t border-line py-1.5 text-[0.6875rem] text-muted-foreground hover:text-ink">
-              <span class="truncate">#{{ tag.name }}</span><span class="num">{{ tag.topicCount ?? tag.usageCount }}</span>
+            <RouterLink
+              v-for="tag in ordered.slice(0, 8)"
+              :key="`side-${tag.id}`"
+              :to="`/tag/${tag.slug}`"
+              class="flex items-center justify-between border-t border-line py-1.5 text-[0.6875rem] text-muted-foreground hover:text-ink"
+            >
+              <span class="truncate">#{{ tag.name }}</span
+              ><span class="num">{{ tag.topicCount ?? tag.usageCount }}</span>
             </RouterLink>
           </section>
         </aside>

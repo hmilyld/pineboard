@@ -105,7 +105,14 @@ async function submit(): Promise<void> {
     <form v-else class="space-y-4" @submit.prevent="submit">
       <div>
         <label class="v2-auth-label" for="register-name">{{ t("auth.nickname") }}</label>
-        <input id="register-name" v-model="form.name" name="name" class="v2-input" autocomplete="nickname" :placeholder="t('auth.nicknamePlaceholder')" />
+        <input
+          id="register-name"
+          v-model="form.name"
+          name="name"
+          class="v2-input"
+          autocomplete="nickname"
+          :placeholder="t('auth.nicknamePlaceholder')"
+        />
         <p v-if="fields.name" class="mt-1 text-xs text-destructive">{{ fields.name[0] }}</p>
       </div>
       <div>

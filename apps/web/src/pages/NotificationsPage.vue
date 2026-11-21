@@ -59,7 +59,11 @@ function dayLabel(seconds: number): string {
   const day = fmt.format(new Date(seconds * 1000));
   const today = fmt.format(new Date());
   const yesterday = fmt.format(new Date(Date.now() - 86_400_000));
-  return day === today ? t("notifications.today") : day === yesterday ? t("notifications.yesterday") : t("notifications.earlier");
+  return day === today
+    ? t("notifications.today")
+    : day === yesterday
+      ? t("notifications.yesterday")
+      : t("notifications.earlier");
 }
 
 const groups = computed<Group[]>(() => {
@@ -85,9 +89,10 @@ const groups = computed<Group[]>(() => {
       existing.unread ||= !item.readAt;
       if (item.createdAt > existing.latest.createdAt) existing.latest = item;
       const names = [...new Set(existing.items.map((entry) => entry.actor?.name).filter(Boolean))] as string[];
-      existing.actorLabel = names.length > 2
-        ? t("notifications.others", { names: names.slice(0, 2).join(separator()), count: names.length })
-        : names.join(separator());
+      existing.actorLabel =
+        names.length > 2
+          ? t("notifications.others", { names: names.slice(0, 2).join(separator()), count: names.length })
+          : names.join(separator());
     }
   }
   return [...map.values()].sort((a, b) => b.latest.createdAt - a.latest.createdAt);
@@ -95,7 +100,9 @@ const groups = computed<Group[]>(() => {
 
 const grouped = computed(() => {
   const order = [t("notifications.today"), t("notifications.yesterday"), t("notifications.earlier")];
-  return order.map((label) => ({ label, groups: groups.value.filter((group) => group.label === label) })).filter((section) => section.groups.length);
+  return order
+    .map((label) => ({ label, groups: groups.value.filter((group) => group.label === label) }))
+    .filter((section) => section.groups.length);
 });
 
 function target(item: NotificationItem): string {
@@ -202,34 +209,61 @@ onMounted(() => {
       <h2>{{ t("notifications.title") }}</h2>
       <span>{{ t("notifications.subtitle", { count: totalUnread }) }}</span>
       <div class="ml-auto flex items-center gap-2">
-        <button type="button" class="v2-btn sm" role="switch" :aria-checked="unreadOnly" @click="toggleUnread">{{ t("notifications.unreadOnly") }}</button>
-        <button type="button" class="text-[0.71875rem] text-muted-foreground hover:text-ink" @click="markAll">{{ t("notifications.markAllRead") }}</button>
+        <button type="button" class="v2-btn sm" role="switch" :aria-checked="unreadOnly" @click="toggleUnread">
+          {{ t("notifications.unreadOnly") }}
+        </button>
+        <button type="button" class="text-[0.71875rem] text-muted-foreground hover:text-ink" @click="markAll">
+          {{ t("notifications.markAllRead") }}
+        </button>
       </div>
     </div>
 
     <ErrorState v-if="error" :message="error" retry @retry="load()" />
     <div v-else-if="loading" class="v2-panel"><LoadingRows :rows="5" /></div>
-    <div v-else-if="!groups.length" class="v2-panel"><EmptyState :title="t('notifications.emptyTitle')" :message="t('notifications.emptyBody')"><RouterLink to="/" class="mt-3 inline-block text-[0.71875rem] text-pine">{{ t("notifications.emptyHome") }}</RouterLink></EmptyState></div>
+    <div v-else-if="!groups.length" class="v2-panel">
+      <EmptyState :title="t('notifications.emptyTitle')" :message="t('notifications.emptyBody')"
+        ><RouterLink to="/" class="mt-3 inline-block text-[0.71875rem] text-pine">{{
+          t("notifications.emptyHome")
+        }}</RouterLink></EmptyState
+      >
+    </div>
     <template v-else>
       <section v-for="section in grouped" :key="section.label" class="mt-3 first:mt-0">
-        <div class="flex items-center gap-3 px-1 pb-1.5 text-[0.65625rem] text-muted-foreground"><span>{{ section.label }}</span><span class="h-px flex-1 bg-line" /></div>
+        <div class="flex items-center gap-3 px-1 pb-1.5 text-[0.65625rem] text-muted-foreground">
+          <span>{{ section.label }}</span><span class="h-px flex-1 bg-line" />
+        </div>
         <div class="v2-panel">
           <RouterLink
             v-for="group in section.groups"
             :key="group.key"
             :to="target(group.latest)"
             class="grid grid-cols-[32px_minmax(0,1fr)] gap-2.5 border-b border-line px-3.5 py-3 last:border-b-0"
-            :class="group.unread ? 'border-l-[3px] border-l-pine bg-[color-mix(in_srgb,var(--pine)_4.5%,var(--surface))]' : ''"
+            :class="
+              group.unread ? 'border-l-[3px] border-l-pine bg-[color-mix(in_srgb,var(--pine)_4.5%,var(--surface))]' : ''
+            "
             @click="openGroup(group)"
           >
-            <span class="grid size-8 place-items-center rounded-[3px] bg-pine text-[0.75rem] font-semibold text-on-pine">{{ (group.latest.actor?.name ?? t("notifications.fallbackInitial")).slice(0, 1) }}</span>
+            <span
+              class="grid size-8 place-items-center rounded-[3px] bg-pine text-[0.75rem] font-semibold text-on-pine"
+              >{{ (group.latest.actor?.name ?? t("notifications.fallbackInitial")).slice(0, 1) }}</span
+            >
             <div class="min-w-0">
               <p class="text-[0.6875rem] text-muted-foreground">
-                {{ group.actorLabel }} <template v-if="group.latest.type === 'mention'">{{ t("notifications.mentionedYou") }}</template><template v-else-if="group.latest.type === 'moderation'">{{ t("notifications.handledReport") }}</template><template v-else>{{ t("notifications.repliedToTopic") }}</template>
+                {{ group.actorLabel }}
+                <template v-if="group.latest.type === 'mention'">{{
+                  t("notifications.mentionedYou")
+                }}</template><template v-else-if="group.latest.type === 'moderation'">{{
+                  t("notifications.handledReport")
+                }}</template
+                ><template v-else>{{ t("notifications.repliedToTopic") }}</template>
               </p>
               <div class="mt-0.5 flex items-center gap-2">
-                <span class="truncate text-[0.875rem] font-semibold" :class="group.unread ? 'text-ink' : ''">{{ group.latest.title }}</span>
-                <span v-if="group.count > 1" class="v2-tag !py-0 !text-[0.625rem]">{{ t("notifications.countBadge", { count: group.count }) }}</span>
+                <span class="truncate text-[0.875rem] font-semibold" :class="group.unread ? 'text-ink' : ''">{{
+                  group.latest.title
+                }}</span>
+                <span v-if="group.count > 1" class="v2-tag !py-0 !text-[0.625rem]">{{
+                  t("notifications.countBadge", { count: group.count })
+                }}</span>
               </div>
               <p class="mt-0.5 truncate text-[0.6875rem] text-muted-foreground">{{ group.latest.snippet }}</p>
             </div>
@@ -237,7 +271,13 @@ onMounted(() => {
         </div>
       </section>
       <div v-if="totalPages > 1" class="mt-4 border-t border-line">
-        <PaginationBar :page="page" :total-pages="totalPages" :total="total" :unit="t('notifications.unit')" @change="goPage" />
+        <PaginationBar
+          :page="page"
+          :total-pages="totalPages"
+          :total="total"
+          :unit="t('notifications.unit')"
+          @change="goPage"
+        />
       </div>
     </template>
   </AccountShell>

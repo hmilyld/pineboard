@@ -57,26 +57,52 @@ async function load(nextPage = 1): Promise<void> {
 }
 
 onMounted(() => load());
-watch(() => [route.params.username, route.query.tab], () => load(1));
+watch(
+  () => [route.params.username, route.query.tab],
+  () => load(1),
+);
 </script>
 
 <template>
   <ErrorState v-if="error" class="v2-container mt-6" :message="error" retry @retry="load()" />
-  <AccountShell v-else-if="profile" :profile="profile" :active="tab" :is-self="auth.user?.id === profile.id" :topic-count="profile.topicCount" :reply-count="profile.replyCount" :like-count="profile.likeCount" :bookmark-count="profile.bookmarkCount">
-    <div class="v2-section-head"><h2>{{ tab === "topics" ? t("user.title") : t("user.replies") }}</h2><span>{{ t("user.total", { count: total }) }}</span></div>
+  <AccountShell
+    v-else-if="profile"
+    :profile="profile"
+    :active="tab"
+    :is-self="auth.user?.id === profile.id"
+    :topic-count="profile.topicCount"
+    :reply-count="profile.replyCount"
+    :like-count="profile.likeCount"
+    :bookmark-count="profile.bookmarkCount"
+  >
+    <div class="v2-section-head">
+      <h2>{{ tab === "topics" ? t("user.title") : t("user.replies") }}</h2>
+      <span>{{ t("user.total", { count: total }) }}</span>
+    </div>
     <div v-if="loading" class="mt-3"><LoadingRows :rows="5" /></div>
     <div v-else class="v2-panel mt-3">
       <template v-if="tab === 'replies'">
         <div v-if="replies.length">
-          <RouterLink v-for="reply in replies" :key="reply.id" :to="`/t/${reply.topic.id}`" class="block border-b border-line px-3 py-3 last:border-b-0 hover:bg-hover">
-            <p class="text-[0.65625rem] text-muted-foreground">{{ t("user.repliedIn", { title: reply.topic.title }) }} · <RelativeTime :seconds="reply.createdAt" /></p>
-            <p class="mt-1 line-clamp-2 text-[0.78125rem] leading-6">{{ reply.contentText || t("user.deletedReply") }}</p>
+          <RouterLink
+            v-for="reply in replies"
+            :key="reply.id"
+            :to="`/t/${reply.topic.id}`"
+            class="block border-b border-line px-3 py-3 last:border-b-0 hover:bg-hover"
+          >
+            <p class="text-[0.65625rem] text-muted-foreground">
+              {{ t("user.repliedIn", { title: reply.topic.title }) }} · <RelativeTime :seconds="reply.createdAt" />
+            </p>
+            <p class="mt-1 line-clamp-2 text-[0.78125rem] leading-6">
+              {{ reply.contentText || t("user.deletedReply") }}
+            </p>
           </RouterLink>
         </div>
         <EmptyState v-else :message="t('user.noReplies')" />
       </template>
       <TopicList v-else :topics="topics" :empty="t('user.noTopics')" />
-      <div v-if="totalPages > 1" class="border-t border-line px-3"><PaginationBar :page="page" :total-pages="totalPages" :total="total" @change="load" /></div>
+      <div v-if="totalPages > 1" class="border-t border-line px-3">
+        <PaginationBar :page="page" :total-pages="totalPages" :total="total" @change="load" />
+      </div>
     </div>
   </AccountShell>
   <AccountSkeleton v-else />

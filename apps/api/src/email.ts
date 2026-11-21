@@ -174,7 +174,11 @@ export function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
-export function verificationEmail(name: string, url: string, ttlMinutes = 60): { subject: string; html: string; text: string } {
+export function verificationEmail(
+  name: string,
+  url: string,
+  ttlMinutes = 60,
+): { subject: string; html: string; text: string } {
   const safeName = escapeHtml(name);
   return {
     subject: "验证你的邮箱",
@@ -202,7 +206,11 @@ export function mentionEmail(
   };
 }
 
-export function resetPasswordEmail(name: string, url: string, ttlMinutes = 30): { subject: string; html: string; text: string } {
+export function resetPasswordEmail(
+  name: string,
+  url: string,
+  ttlMinutes = 30,
+): { subject: string; html: string; text: string } {
   const safeName = escapeHtml(name);
   return {
     subject: "重置密码",

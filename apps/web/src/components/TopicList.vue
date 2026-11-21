@@ -11,7 +11,9 @@ defineProps<{ topics: TopicSummary[]; empty?: string }>();
   <div>
     <div v-if="topics.length">
       <div class="v2-thead">
-        <span>{{ t("stats.topics") }}</span><span class="text-right">{{ t("stats.replies") }}</span><span class="text-right">{{ t("topic.viewsHead") }}</span><span class="text-right">{{ t("topicSort.latest-long") }}</span>
+        <span>{{ t("stats.topics") }}</span><span class="text-right">{{ t("stats.replies") }}</span
+        ><span class="text-right">{{ t("topic.viewsHead") }}</span
+        ><span class="text-right">{{ t("topicSort.latest-long") }}</span>
       </div>
       <TopicRow v-for="topic in topics" :key="topic.id" :topic="topic" />
     </div>

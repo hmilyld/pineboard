@@ -38,7 +38,11 @@ function makeClient() {
     }
     const text = await response.text();
     let body;
-    try { body = text ? JSON.parse(text) : null; } catch { body = { raw: text }; }
+    try {
+      body = text ? JSON.parse(text) : null;
+    } catch {
+      body = { raw: text };
+    }
     return { status: response.status, body };
   }
   return { request };
@@ -47,7 +51,11 @@ async function outbox(email, category, timeout = 3000) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
     const handle = db();
-    const row = handle.prepare("SELECT payload_json FROM dev_email_outbox WHERE to_email = ? AND category = ? ORDER BY created_at DESC LIMIT 1").get(email, category);
+    const row = handle
+      .prepare(
+        "SELECT payload_json FROM dev_email_outbox WHERE to_email = ? AND category = ? ORDER BY created_at DESC LIMIT 1",
+      )
+      .get(email, category);
     handle.close();
     if (row) return JSON.parse(row.payload_json);
     await new Promise((r) => setTimeout(r, 50));
@@ -71,10 +79,12 @@ async function digest(admin) {
   return admin.request("/api/admin/emails/digest", { method: "POST" });
 }
 
-
 async function patchSettings(client, patch) {
   const current = await client.request("/api/admin/settings");
-  return client.request("/api/admin/settings", { method: "PATCH", json: { version: current.body?.data?.version, patch } });
+  return client.request("/api/admin/settings", {
+    method: "PATCH",
+    json: { version: current.body?.data?.version, patch },
+  });
 }
 
 const admin = makeClient();
@@ -86,10 +96,10 @@ await admin.request("/api/dev/reset", { method: "POST" });
 await signup(admin, "admin@example.test", "Admin", `adm${Date.now().toString(36)}`.slice(0, 18));
 await verify(admin, "admin@example.test");
 const config = await patchSettings(admin, {
-    mail: { enabled: true, digestWindowMinutes: 5, userDailyCap: 10, dailyBudget: 80 },
-    security: { postMinIntervalSeconds: 0 },
-    account: { registrationOpen: true },
-  },);
+  mail: { enabled: true, digestWindowMinutes: 5, userDailyCap: 10, dailyBudget: 80 },
+  security: { postMinIntervalSeconds: 0 },
+  account: { registrationOpen: true },
+});
 assert("admin mail config", config.status === 200, config.body);
 
 const authorEmail = `p4a-${Date.now()}@example.test`;
@@ -128,27 +138,56 @@ const mentionReply = await replier.request(`/api/topics/${topicId}/posts`, {
 assert("mention reply created", mentionReply.status === 201, mentionReply.body);
 
 const authorNotifications = await author.request("/api/me/notifications");
-assert("author receives topic_reply", authorNotifications.body.data.items.some((n) => n.type === "topic_reply"), authorNotifications.body);
+assert(
+  "author receives topic_reply",
+  authorNotifications.body.data.items.some((n) => n.type === "topic_reply"),
+  authorNotifications.body,
+);
 assert("unread count", authorNotifications.body.data.unread >= 1, authorNotifications.body.data.unread);
 const mentionNotifications = await mentioned.request("/api/me/notifications");
-assert("mentioned user receives mention", mentionNotifications.body.data.items.some((n) => n.type === "mention"), mentionNotifications.body);
+assert(
+  "mentioned user receives mention",
+  mentionNotifications.body.data.items.some((n) => n.type === "mention"),
+  mentionNotifications.body,
+);
 const mentionMail = await outbox(mentionedEmail, "mention", 5000);
-assert("mention email is delivered directly", Boolean(mentionMail?.subject?.includes("提到了你")), mentionMail?.subject);
+assert(
+  "mention email is delivered directly",
+  Boolean(mentionMail?.subject?.includes("提到了你")),
+  mentionMail?.subject,
+);
 const markRead = await author.request("/api/me/notifications/read", { method: "POST", json: { all: true } });
 const afterRead = await author.request("/api/me/notifications");
 assert("mark all read", markRead.status === 200 && afterRead.body.data.unread === 0, afterRead.body);
 
 const prefs = await author.request("/api/me/preferences");
-assert("preferences defaults", prefs.body.data.email.topic_reply === true && prefs.body.data.email.post_reply === false && prefs.body.data.email.moderation === true, prefs.body);
-const prefPatch = await author.request("/api/me/preferences", { method: "PATCH", json: { email: { post_reply: true, moderation: false } } });
-assert("preferences patch forces moderation on", prefPatch.body.data.email.post_reply === true && prefPatch.body.data.email.moderation === true, prefPatch.body);
+assert(
+  "preferences defaults",
+  prefs.body.data.email.topic_reply === true &&
+    prefs.body.data.email.post_reply === false &&
+    prefs.body.data.email.moderation === true,
+  prefs.body,
+);
+const prefPatch = await author.request("/api/me/preferences", {
+  method: "PATCH",
+  json: { email: { post_reply: true, moderation: false } },
+});
+assert(
+  "preferences patch forces moderation on",
+  prefPatch.body.data.email.post_reply === true && prefPatch.body.data.email.moderation === true,
+  prefPatch.body,
+);
 
 const digestResult = await digest(admin);
 assert("digest runs", digestResult.status === 200, digestResult.body);
 await new Promise((r) => setTimeout(r, 300));
 const digestMail = await outbox(authorEmail, "digest");
 assert("digest email written to dev outbox", Boolean(digestMail?.subject?.includes("新通知")), digestMail?.subject);
-assert("digest email has unsubscribe link", Boolean(digestMail?.text?.includes("/unsubscribe?token=")), digestMail?.text?.slice(0, 300));
+assert(
+  "digest email has unsubscribe link",
+  Boolean(digestMail?.text?.includes("/unsubscribe?token=")),
+  digestMail?.text?.slice(0, 300),
+);
 
 const token = digestMail.text.match(/\/unsubscribe\?token=([A-Za-z0-9_-]+)/)?.[1];
 assert("unsubscribe token extracted", Boolean(token), token);

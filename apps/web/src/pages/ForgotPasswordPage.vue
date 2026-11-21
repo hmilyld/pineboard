@@ -53,7 +53,18 @@ async function submit(): Promise<void> {
     <form v-else class="space-y-4" @submit.prevent="submit">
       <div>
         <label :class="labelClass" for="forgot-email">{{ t("auth.email") }}</label>
-        <input id="forgot-email" v-model="email" name="email" type="email" spellcheck="false" autocapitalize="none" enterkeyhint="next" :class="inputClass" autocomplete="email" :placeholder="t('auth.emailPlaceholder')" />
+        <input
+          id="forgot-email"
+          v-model="email"
+          name="email"
+          type="email"
+          spellcheck="false"
+          autocapitalize="none"
+          enterkeyhint="next"
+          :class="inputClass"
+          autocomplete="email"
+          :placeholder="t('auth.emailPlaceholder')"
+        />
       </div>
       <p v-if="error" ref="errorEl" tabindex="-1" :class="alertErrorClass" role="alert">{{ error }}</p>
       <Button class="w-full" type="submit" :disabled="submitting">

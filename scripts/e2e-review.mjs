@@ -23,7 +23,9 @@ function db() {
 function client() {
   let cookie = "";
   return {
-    get cookie() { return cookie; },
+    get cookie() {
+      return cookie;
+    },
     async request(path, options = {}) {
       const headers = new Headers(options.headers ?? {});
       headers.set("origin", BASE);
@@ -45,7 +47,11 @@ function client() {
       }
       const text = await response.text();
       let body;
-      try { body = text ? JSON.parse(text) : null; } catch { body = { raw: text }; }
+      try {
+        body = text ? JSON.parse(text) : null;
+      } catch {
+        body = { raw: text };
+      }
       return { status: response.status, body };
     },
   };
@@ -55,7 +61,11 @@ async function outbox(email, category, timeout = 4000) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
     const handle = db();
-    const row = handle.prepare("SELECT payload_json FROM dev_email_outbox WHERE to_email = ? AND category = ? ORDER BY created_at DESC LIMIT 1").get(email, category);
+    const row = handle
+      .prepare(
+        "SELECT payload_json FROM dev_email_outbox WHERE to_email = ? AND category = ? ORDER BY created_at DESC LIMIT 1",
+      )
+      .get(email, category);
     handle.close();
     if (row) return JSON.parse(row.payload_json);
     await new Promise((r) => setTimeout(r, 100));
@@ -67,7 +77,15 @@ async function signUpAndVerify(email) {
   const c = client();
   const password = await derivePassword("Str0ng-Pass-1492!", email);
   const signup = await c.request("/api/auth/sign-up/email", {
-    json: { email, password, name: email.split("@")[0], username: email.split("@")[0].slice(0, 18).replace(/[^a-z0-9]/g, "") },
+    json: {
+      email,
+      password,
+      name: email.split("@")[0],
+      username: email
+        .split("@")[0]
+        .slice(0, 18)
+        .replace(/[^a-z0-9]/g, ""),
+    },
     headers: { "x-turnstile-token": TURNSTILE },
   });
   if (signup.status !== 200) throw new Error(`signup failed: ${JSON.stringify(signup.body).slice(0, 300)}`);
@@ -83,7 +101,7 @@ async function makeAdmin(email) {
   for (let attempt = 0; attempt < 40; attempt++) {
     try {
       const handle = db();
-      handle.prepare('UPDATE "user" SET role = \'admin\' WHERE email = ?').run(email);
+      handle.prepare("UPDATE \"user\" SET role = 'admin' WHERE email = ?").run(email);
       handle.close();
       return;
     } catch {
@@ -132,7 +150,11 @@ const noTokenEdit = await author.request(`/api/topics/${cleanId}`, {
   method: "PATCH",
   json: { version: 1, title: "改了标题", contentMd: "改过的内容", reason: "补充" },
 });
-assert("edit-gate: PATCH without token is captcha_failed", noTokenEdit.status === 400 && noTokenEdit.body?.error?.code === "captcha_failed", noTokenEdit.body);
+assert(
+  "edit-gate: PATCH without token is captcha_failed",
+  noTokenEdit.status === 400 && noTokenEdit.body?.error?.code === "captcha_failed",
+  noTokenEdit.body,
+);
 
 const withTokenEdit = await author.request(`/api/topics/${cleanId}`, {
   method: "PATCH",
@@ -147,7 +169,11 @@ const dirtyEdit = await author.request(`/api/topics/${cleanId}`, {
   json: { version: 2, contentMd: "现在改成代开发票的广告内容", reason: "偷偷改" },
   headers: { "x-turnstile-token": TURNSTILE },
 });
-assert("edit-gate: editing into a keyword diverts to review", dirtyEdit.status === 200 && dirtyEdit.body?.data?.pending === true, dirtyEdit.body);
+assert(
+  "edit-gate: editing into a keyword diverts to review",
+  dirtyEdit.status === 200 && dirtyEdit.body?.data?.pending === true,
+  dirtyEdit.body,
+);
 
 const hidden = await author.request(`/api/topics/${cleanId}`);
 assert("edit-gate: diverted topic is not publicly readable", hidden.status === 404, hidden.body);
@@ -157,14 +183,22 @@ const flaggedTopic = await author.request("/api/topics", {
   json: { categoryId, title: "低价代开发票 全网最低", contentMd: "有需要的联系我", tagIds: [] },
   headers: { "x-turnstile-token": TURNSTILE },
 });
-assert("queue: flagged topic is pending", flaggedTopic.status === 201 && flaggedTopic.body?.data?.pending === true, flaggedTopic.body);
+assert(
+  "queue: flagged topic is pending",
+  flaggedTopic.status === 201 && flaggedTopic.body?.data?.pending === true,
+  flaggedTopic.body,
+);
 const flaggedTopicId = flaggedTopic.body?.data?.id;
 
 const queue = await admin.request("/api/mod/pending");
 const queueIds = (queue.body?.data?.items ?? []).map((item) => item.id);
 assert("queue: pending list includes the flagged topic", queueIds.includes(flaggedTopicId), queue.body);
 const queueItem = (queue.body?.data?.items ?? []).find((item) => item.id === flaggedTopicId);
-assert("queue: pending item carries matched keywords", Array.isArray(queueItem?.keywords) && queueItem.keywords.includes("代开发票"), queueItem);
+assert(
+  "queue: pending item carries matched keywords",
+  Array.isArray(queueItem?.keywords) && queueItem.keywords.includes("代开发票"),
+  queueItem,
+);
 
 // --- 4. Flagged reply does not bump counters --------------------------------
 const normalTopic = await author.request("/api/topics", {
@@ -178,9 +212,17 @@ const flaggedReply = await author.request(`/api/topics/${normalId}/posts`, {
   json: { contentMd: "这里可以玩网络赌博哦" },
   headers: { "x-turnstile-token": TURNSTILE },
 });
-assert("reply: flagged reply is pending", flaggedReply.status === 201 && flaggedReply.body?.data?.pending === true, flaggedReply.body);
+assert(
+  "reply: flagged reply is pending",
+  flaggedReply.status === 201 && flaggedReply.body?.data?.pending === true,
+  flaggedReply.body,
+);
 const after = await author.request(`/api/topics/${normalId}`);
-assert("reply: pending reply does not change reply_count", before.body?.data?.topic?.replyCount === after.body?.data?.topic?.replyCount, { before: before.body?.data?.topic?.replyCount, after: after.body?.data?.topic?.replyCount });
+assert(
+  "reply: pending reply does not change reply_count",
+  before.body?.data?.topic?.replyCount === after.body?.data?.topic?.replyCount,
+  { before: before.body?.data?.topic?.replyCount, after: after.body?.data?.topic?.replyCount },
+);
 
 const posts = await author.request(`/api/topics/${normalId}/posts?page=1`);
 const visibleContents = (posts.body?.data?.items ?? []).map((p) => p.contentMd);
@@ -192,21 +234,39 @@ assert("review: approve succeeds", approve.status === 200 && approve.body?.data?
 const nowVisible = await author.request(`/api/topics/${flaggedTopicId}`);
 assert("review: approved topic becomes readable", nowVisible.status === 200, nowVisible.status);
 const afterApprove = await admin.request("/api/mod/pending");
-assert("review: approved topic leaves the queue", !(afterApprove.body?.data?.items ?? []).some((i) => i.id === flaggedTopicId), afterApprove.body);
+assert(
+  "review: approved topic leaves the queue",
+  !(afterApprove.body?.data?.items ?? []).some((i) => i.id === flaggedTopicId),
+  afterApprove.body,
+);
 
 // --- 6. Reject the flagged reply -------------------------------------------
 const pendingReplyId = (await admin.request("/api/mod/pending")).body?.data?.items?.find((i) => i.kind === "post")?.id;
-const reject = await admin.request(`/api/mod/posts/${pendingReplyId}/review`, { json: { action: "reject", reason: "违规" } });
+const reject = await admin.request(`/api/mod/posts/${pendingReplyId}/review`, {
+  json: { action: "reject", reason: "违规" },
+});
 assert("review: reject succeeds", reject.status === 200 && reject.body?.data?.status === "rejected", reject.body);
 const notRestored = await admin.request(`/api/topics/${normalId}/posts?page=1`);
-assert("review: rejected reply stays hidden", !(notRestored.body?.data?.items ?? []).some((p) => p.contentMd.includes("网络赌博")), notRestored.body);
+assert(
+  "review: rejected reply stays hidden",
+  !(notRestored.body?.data?.items ?? []).some((p) => p.contentMd.includes("网络赌博")),
+  notRestored.body,
+);
 
 // --- 7. Non-moderators cannot use the queue --------------------------------
 const stranger = await signUpAndVerify(`rev-stranger-${stamp}@example.test`);
 const forbidden = await stranger.request("/api/mod/pending");
-assert("authz: ordinary user cannot read the queue", forbidden.status === 403 || forbidden.status === 401, forbidden.status);
+assert(
+  "authz: ordinary user cannot read the queue",
+  forbidden.status === 403 || forbidden.status === 401,
+  forbidden.status,
+);
 const strangerApprove = await stranger.request(`/api/mod/topics/${cleanId}/review`, { json: { action: "approve" } });
-assert("authz: ordinary user cannot approve", strangerApprove.status === 403 || strangerApprove.status === 401, strangerApprove.status);
+assert(
+  "authz: ordinary user cannot approve",
+  strangerApprove.status === 403 || strangerApprove.status === 401,
+  strangerApprove.status,
+);
 
 // --- 8. Disabling screening restores direct publishing ---------------------
 await patchSettings(admin, { security: { sensitiveWordsEnabled: false } });
@@ -214,7 +274,11 @@ const direct = await author.request("/api/topics", {
   json: { categoryId, title: "禁用检测后仍可发代开发票", contentMd: "内容", tagIds: [] },
   headers: { "x-turnstile-token": TURNSTILE },
 });
-assert("toggle: disabling screening publishes directly", direct.status === 201 && !direct.body?.data?.pending, direct.body);
+assert(
+  "toggle: disabling screening publishes directly",
+  direct.status === 201 && !direct.body?.data?.pending,
+  direct.body,
+);
 await patchSettings(admin, { security: { sensitiveWordsEnabled: true } });
 
 // --- 9. Empty dictionary never diverts ------------------------------------
@@ -223,7 +287,11 @@ const emptyDict = await author.request("/api/topics", {
   json: { categoryId, title: "空词库代开发票", contentMd: "内容", tagIds: [] },
   headers: { "x-turnstile-token": TURNSTILE },
 });
-assert("toggle: empty dictionary publishes directly", emptyDict.status === 201 && !emptyDict.body?.data?.pending, emptyDict.body);
+assert(
+  "toggle: empty dictionary publishes directly",
+  emptyDict.status === 201 && !emptyDict.body?.data?.pending,
+  emptyDict.body,
+);
 await patchSettings(admin, { security: { sensitiveWords: words } });
 
 const failed = results.filter((r) => !r.pass);

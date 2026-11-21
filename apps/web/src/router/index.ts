@@ -11,7 +11,8 @@ import AdminUsersPage from "@/pages/AdminUsersPage.vue";
 import AdminLayout from "@/components/AdminLayout.vue";
 import AdminMaintenancePage from "@/pages/AdminMaintenancePage.vue";
 import AdminOverviewPage from "@/pages/AdminOverviewPage.vue";
-import ErrorPage from "@/pages/ErrorPage.vue";import AdminSettingsPage from "@/pages/AdminSettingsPage.vue";
+import ErrorPage from "@/pages/ErrorPage.vue";
+import AdminSettingsPage from "@/pages/AdminSettingsPage.vue";
 import CategoryPage from "@/pages/CategoryPage.vue";
 import EditTopicPage from "@/pages/EditTopicPage.vue";
 import HistoryPage from "@/pages/HistoryPage.vue";
@@ -75,9 +76,19 @@ export const router = createRouter({
         { path: "users", name: "admin-users", component: AdminUsersPage, meta: { requiresAdmin: true } },
         { path: "nav", name: "admin-nav", component: AdminNavPage, meta: { requiresAdmin: true } },
         { path: "settings", name: "admin-settings", component: AdminSettingsPage, meta: { requiresAdmin: true } },
-        { path: "integrations", name: "admin-integrations", component: AdminIntegrationsPage, meta: { requiresAdmin: true } },
+        {
+          path: "integrations",
+          name: "admin-integrations",
+          component: AdminIntegrationsPage,
+          meta: { requiresAdmin: true },
+        },
         { path: "emails", name: "admin-emails", component: AdminEmailsPage, meta: { requiresAdmin: true } },
-        { path: "maintenance", name: "admin-maintenance", component: AdminMaintenancePage, meta: { requiresAdmin: true } },
+        {
+          path: "maintenance",
+          name: "admin-maintenance",
+          component: AdminMaintenancePage,
+          meta: { requiresAdmin: true },
+        },
         { path: "audit", name: "admin-audit", component: AdminAuditPage, meta: { requiresAdmin: true } },
       ],
     },

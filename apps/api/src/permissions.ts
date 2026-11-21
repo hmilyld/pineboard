@@ -2,8 +2,7 @@ import type { AppConfig } from "@pineboard/shared";
 import type { SessionUser } from "./env";
 
 export type PermissionDecision =
-  | { allowed: true }
-  | { allowed: false; code: "forbidden" | "edit_window_expired" | "edit_locked"; message: string };
+  { allowed: true } | { allowed: false; code: "forbidden" | "edit_window_expired" | "edit_locked"; message: string };
 
 export async function isCategoryModerator(
   db: D1Database,
@@ -53,8 +52,7 @@ export async function canEditContent(input: {
   if (config.edit.lockAfterReply && input.isFirst && input.topic.replyCount > 0) {
     return { allowed: false, code: "edit_locked", message: "主题已有回复，不能再编辑" };
   }
-  const minutes =
-    user.role === "moderator" ? config.edit.windowModeratorMinutes : config.edit.windowUserMinutes;
+  const minutes = user.role === "moderator" ? config.edit.windowModeratorMinutes : config.edit.windowUserMinutes;
   if (windowExpired(input.post.createdAt, minutes)) {
     return { allowed: false, code: "edit_window_expired", message: "编辑窗口已过" };
   }

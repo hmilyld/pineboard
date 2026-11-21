@@ -62,7 +62,8 @@ async function parseBody(response: Response): Promise<unknown> {
 
 function throwApiError(response: Response, body: unknown): never {
   if (body && typeof body === "object" && "ok" in body && (body as { ok: boolean }).ok === false) {
-    const error = (body as unknown as { error: { code: string; message: string; fields?: Record<string, string[]> } }).error;
+    const error = (body as unknown as { error: { code: string; message: string; fields?: Record<string, string[]> } })
+      .error;
     throw new ApiClientError(error.code, error.message, response.status, error.fields);
   }
   if (body && typeof body === "object" && "message" in body) {
@@ -141,7 +142,13 @@ export const api = {
     return data.user ? meSchema.parse(data) : null;
   },
 
-  meSummary(): Promise<{ topicCount: number; replyCount: number; likeCount: number; bookmarkCount: number; unreadCount: number }> {
+  meSummary(): Promise<{
+    topicCount: number;
+    replyCount: number;
+    likeCount: number;
+    bookmarkCount: number;
+    unreadCount: number;
+  }> {
     return request("/api/me/summary");
   },
 
@@ -237,7 +244,6 @@ export const api = {
     if (!response.ok) throwApiError(response, body);
   },
 
-
   categories(): Promise<Category[]> {
     return request("/api/categories");
   },
@@ -258,7 +264,16 @@ export const api = {
     return request("/api/site/stats");
   },
 
-  topics(params: { category?: string; tag?: string; sort?: TopicSort; page?: number; perPage?: number; digest?: boolean } = {}): Promise<TopicList> {
+  topics(
+    params: {
+      category?: string;
+      tag?: string;
+      sort?: TopicSort;
+      page?: number;
+      perPage?: number;
+      digest?: boolean;
+    } = {},
+  ): Promise<TopicList> {
     const query = new URLSearchParams();
     if (params.category) query.set("category", params.category);
     if (params.tag) query.set("tag", params.tag);
@@ -273,7 +288,10 @@ export const api = {
     return request(`/api/topics/${encodeURIComponent(id)}`);
   },
 
-  posts(topicId: string, params: { page?: number; perPage?: number; onlyOp?: boolean; after?: number } = {}): Promise<PostPage> {
+  posts(
+    topicId: string,
+    params: { page?: number; perPage?: number; onlyOp?: boolean; after?: number } = {},
+  ): Promise<PostPage> {
     const query = new URLSearchParams();
     if (params.page !== undefined) query.set("page", String(params.page));
     if (params.after !== undefined) query.set("after", String(params.after));
@@ -282,7 +300,10 @@ export const api = {
     return request(`/api/topics/${encodeURIComponent(topicId)}/posts?${query.toString()}`);
   },
 
-  createTopic(input: CreateTopicInput, turnstileToken: string): Promise<{ id: string; postId: string; pending?: boolean }> {
+  createTopic(
+    input: CreateTopicInput,
+    turnstileToken: string,
+  ): Promise<{ id: string; postId: string; pending?: boolean }> {
     return request("/api/topics", {
       method: "POST",
       body: JSON.stringify(input),
@@ -290,7 +311,11 @@ export const api = {
     });
   },
 
-  createReply(topicId: string, input: CreatePostInput, turnstileToken: string): Promise<{ id: string; floor: number; pending?: boolean }> {
+  createReply(
+    topicId: string,
+    input: CreatePostInput,
+    turnstileToken: string,
+  ): Promise<{ id: string; floor: number; pending?: boolean }> {
     return request(`/api/topics/${encodeURIComponent(topicId)}/posts`, {
       method: "POST",
       body: JSON.stringify(input),
@@ -318,7 +343,19 @@ export const api = {
     return request(`/api/topics/${encodeURIComponent(id)}/view`, { method: "POST" });
   },
 
-  user(username: string): Promise<{ id: string; username: string; name: string; bio: string | null; avatarKey: string | null; role: string; createdAt: number; topicCount: number; replyCount: number; likeCount: number; bookmarkCount: number }> {
+  user(username: string): Promise<{
+    id: string;
+    username: string;
+    name: string;
+    bio: string | null;
+    avatarKey: string | null;
+    role: string;
+    createdAt: number;
+    topicCount: number;
+    replyCount: number;
+    likeCount: number;
+    bookmarkCount: number;
+  }> {
     return request(`/api/users/${encodeURIComponent(username)}`);
   },
 
@@ -326,7 +363,16 @@ export const api = {
     return request(`/api/users/${encodeURIComponent(username)}/topics?page=${page}`);
   },
 
-  userReplies(username: string, page = 1): Promise<{ items: Array<Record<string, unknown>>; page: number; perPage: number; total: number; totalPages: number }> {
+  userReplies(
+    username: string,
+    page = 1,
+  ): Promise<{
+    items: Array<Record<string, unknown>>;
+    page: number;
+    perPage: number;
+    total: number;
+    totalPages: number;
+  }> {
     return request(`/api/users/${encodeURIComponent(username)}/replies?page=${page}`);
   },
 
@@ -334,14 +380,19 @@ export const api = {
     return request(`/api/me/topics?page=${page}`);
   },
 
-  myReplies(page = 1): Promise<{ items: Array<Record<string, unknown>>; page: number; perPage: number; total: number; totalPages: number }> {
+  myReplies(page = 1): Promise<{
+    items: Array<Record<string, unknown>>;
+    page: number;
+    perPage: number;
+    total: number;
+    totalPages: number;
+  }> {
     return request(`/api/me/replies?page=${page}`);
   },
 
   myBookmarks(page = 1): Promise<TopicList> {
     return request(`/api/me/bookmarks?page=${page}`);
   },
-
 
   editTopic(id: string, input: EditPostInput, turnstileToken: string): Promise<{ version: number }> {
     return request(`/api/topics/${encodeURIComponent(id)}`, {
@@ -393,10 +444,24 @@ export const api = {
     return request(`/api/mod/posts/${encodeURIComponent(id)}/restore`, { method: "POST" });
   },
 
-
   notifications(params: { page?: number; perPage?: number; unread?: boolean } = {}): Promise<{
-    items: Array<{ id: string; type: string; title: string; snippet: string; topicId: string; postId: string | null; postFloor: number | null; readAt: number | null; createdAt: number; actor: { id: string; name: string; username: string | null } | null }>;
-    unread: number; total: number; page: number; perPage: number; totalPages: number;
+    items: Array<{
+      id: string;
+      type: string;
+      title: string;
+      snippet: string;
+      topicId: string;
+      postId: string | null;
+      postFloor: number | null;
+      readAt: number | null;
+      createdAt: number;
+      actor: { id: string; name: string; username: string | null } | null;
+    }>;
+    unread: number;
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
   }> {
     const query = new URLSearchParams();
     if (params.page) query.set("page", String(params.page));
@@ -452,17 +517,24 @@ export const api = {
     return request("/api/admin/maintenance/cleanup", { method: "POST" });
   },
 
-
   search(q: string, page = 1, sort: SearchSort = "relevance"): Promise<SearchResponse> {
     const query = new URLSearchParams({ q, page: String(page), sort });
     return request(`/api/search?${query.toString()}`);
   },
 
-  report(input: { targetType: "topic" | "post"; targetId: string; reasonCode: string; detail?: string }): Promise<{ reported: boolean }> {
+  report(input: {
+    targetType: "topic" | "post";
+    targetId: string;
+    reasonCode: string;
+    detail?: string;
+  }): Promise<{ reported: boolean }> {
     return request("/api/reports", { method: "POST", body: JSON.stringify(input) });
   },
 
-  modReports(status = "pending", page = 1): Promise<{
+  modReports(
+    status = "pending",
+    page = 1,
+  ): Promise<{
     items: Array<Record<string, unknown>>;
     page: number;
     perPage: number;
@@ -472,8 +544,14 @@ export const api = {
     return request(`/api/mod/reports?status=${encodeURIComponent(status)}&page=${page}`);
   },
 
-  resolveReport(id: string, input: { status: "resolved" | "dismissed"; resolutionNote?: string }): Promise<{ status: string }> {
-    return request(`/api/mod/reports/${encodeURIComponent(id)}/resolve`, { method: "POST", body: JSON.stringify(input) });
+  resolveReport(
+    id: string,
+    input: { status: "resolved" | "dismissed"; resolutionNote?: string },
+  ): Promise<{ status: string }> {
+    return request(`/api/mod/reports/${encodeURIComponent(id)}/resolve`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
   },
 
   reindexSearch(): Promise<{ posts: number; batches: number }> {
@@ -508,7 +586,10 @@ export const api = {
     return request("/api/admin/settings");
   },
 
-  async updateAdminSettings(patch: DeepPartial<AppConfig>, version: string): Promise<{ config: AppConfig; version: string }> {
+  async updateAdminSettings(
+    patch: DeepPartial<AppConfig>,
+    version: string,
+  ): Promise<{ config: AppConfig; version: string }> {
     return request("/api/admin/settings", { method: "PATCH", body: JSON.stringify({ patch, version }) });
   },
 
@@ -516,7 +597,11 @@ export const api = {
     return request("/api/mod/pending");
   },
 
-  decideReview(kind: "topic" | "post", id: string, input: ReviewDecisionInput): Promise<{ id: string; status: string }> {
+  decideReview(
+    kind: "topic" | "post",
+    id: string,
+    input: ReviewDecisionInput,
+  ): Promise<{ id: string; status: string }> {
     return request(`/api/mod/${kind === "topic" ? "topics" : "posts"}/${encodeURIComponent(id)}/review`, {
       method: "POST",
       body: JSON.stringify(input),
@@ -604,7 +689,10 @@ export const api = {
   },
 
   suspendAdminUser(id: string, reason = ""): Promise<{ status: string }> {
-    return request(`/api/admin/users/${encodeURIComponent(id)}/suspend`, { method: "POST", body: JSON.stringify({ reason }) });
+    return request(`/api/admin/users/${encodeURIComponent(id)}/suspend`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    });
   },
 
   unsuspendAdminUser(id: string): Promise<{ status: string }> {
@@ -651,19 +739,24 @@ export const api = {
     return request("/api/admin/integrations");
   },
 
-  updateAdminIntegrations(patch: {
-    integration?: {
-      cloudflare?: Partial<AdminIntegrations["effective"]["cloudflare"]>;
-    };
-    secrets?: Partial<Record<string, string | null>>;
-  }, version: string): Promise<AdminIntegrations> {
+  updateAdminIntegrations(
+    patch: {
+      integration?: {
+        cloudflare?: Partial<AdminIntegrations["effective"]["cloudflare"]>;
+      };
+      secrets?: Partial<Record<string, string | null>>;
+    },
+    version: string,
+  ): Promise<AdminIntegrations> {
     return request("/api/admin/integrations", {
       method: "PATCH",
       body: JSON.stringify({ ...patch, version: Number(version) }),
     });
   },
 
-  testIntegration(service: "resend" | "turnstile" | "cloudflare"): Promise<{ service: string; ok: boolean; message: string; status?: number; detail?: string }> {
+  testIntegration(
+    service: "resend" | "turnstile" | "cloudflare",
+  ): Promise<{ service: string; ok: boolean; message: string; status?: number; detail?: string }> {
     return request("/api/admin/integrations/test", { method: "POST", body: JSON.stringify({ service }) });
   },
 };

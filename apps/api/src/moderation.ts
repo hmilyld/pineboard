@@ -35,8 +35,9 @@ moderationRoutes.post("/api/mod/topics/:id/pin", requireModerator, async (c) => 
   const order = parsed.data.pinOrder ?? topic.pin_order;
   const ts = now();
   const results = await c.env.DB.batch([
-    c.env.DB.prepare("UPDATE topics SET pin_level = ?, pin_order = ?, updated_at = ? WHERE id = ? AND status = 'published'")
-      .bind(parsed.data.pinLevel, order, ts, topic.id),
+    c.env.DB.prepare(
+      "UPDATE topics SET pin_level = ?, pin_order = ?, updated_at = ? WHERE id = ? AND status = 'published'",
+    ).bind(parsed.data.pinLevel, order, ts, topic.id),
     c.env.DB.prepare(
       `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
        SELECT ?, ?, 'topic.pin', 'topic', ?, ?, NULL, ?
@@ -46,7 +47,6 @@ moderationRoutes.post("/api/mod/topics/:id/pin", requireModerator, async (c) => 
   if (Number(results[0]?.meta.changes ?? 0) === 0) return c.json(fail("conflict", "主题状态已变化，请刷新"), 409);
   return c.json(ok({ pinLevel: parsed.data.pinLevel, pinOrder: order }));
 });
-
 
 moderationRoutes.post("/api/mod/topics/:id/digest", requireModerator, async (c) => {
   const user = c.get("user")!;
@@ -59,8 +59,11 @@ moderationRoutes.post("/api/mod/topics/:id/digest", requireModerator, async (c) 
   if (!parsed.success) return c.json(fail("validation_error", "精华参数不合法"), 400);
   const ts = now();
   const results = await c.env.DB.batch([
-    c.env.DB.prepare("UPDATE topics SET is_digest = ?, updated_at = ? WHERE id = ? AND status = 'published'")
-      .bind(parsed.data.isDigest ? 1 : 0, ts, topic.id),
+    c.env.DB.prepare("UPDATE topics SET is_digest = ?, updated_at = ? WHERE id = ? AND status = 'published'").bind(
+      parsed.data.isDigest ? 1 : 0,
+      ts,
+      topic.id,
+    ),
     c.env.DB.prepare(
       `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
        SELECT ?, ?, 'topic.digest', 'topic', ?, ?, NULL, ?
@@ -82,8 +85,11 @@ moderationRoutes.post("/api/mod/topics/:id/lock", requireModerator, async (c) =>
   if (!parsed.success) return c.json(fail("validation_error", "锁定参数不合法"), 400);
   const ts = now();
   const results = await c.env.DB.batch([
-    c.env.DB.prepare("UPDATE topics SET is_locked = ?, updated_at = ? WHERE id = ? AND status = 'published'")
-      .bind(parsed.data.locked ? 1 : 0, ts, topic.id),
+    c.env.DB.prepare("UPDATE topics SET is_locked = ?, updated_at = ? WHERE id = ? AND status = 'published'").bind(
+      parsed.data.locked ? 1 : 0,
+      ts,
+      topic.id,
+    ),
     c.env.DB.prepare(
       `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
        SELECT ?, ?, 'topic.lock', 'topic', ?, ?, NULL, ?
@@ -101,7 +107,8 @@ moderationRoutes.post("/api/mod/topics/:id/move", requireModerator, async (c) =>
   const parsed = moveTopicSchema.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json(fail("validation_error", "移动参数不合法"), 400);
   const target = await c.env.DB.prepare("SELECT id, slug, name FROM categories WHERE id = ? AND is_visible = 1")
-    .bind(parsed.data.categoryId).first<{ id: string; slug: string; name: string }>();
+    .bind(parsed.data.categoryId)
+    .first<{ id: string; slug: string; name: string }>();
   if (!target) return c.json(fail("not_found", "目标版块不存在"), 404);
   if (user.role !== "admin") {
     const sourceOk = await isCategoryModerator(c.env.DB, user, topic.category_id);
@@ -111,10 +118,14 @@ moderationRoutes.post("/api/mod/topics/:id/move", requireModerator, async (c) =>
   const ts = now();
   const updated = await c.env.DB.prepare(
     "UPDATE topics SET category_id = ?, updated_at = ? WHERE id = ? AND status = 'published'",
-  ).bind(target.id, ts, topic.id).run();
+  )
+    .bind(target.id, ts, topic.id)
+    .run();
   if (Number(updated.meta.changes ?? 0) === 0) return c.json(fail("conflict", "主题状态已变化，请刷新"), 409);
   await c.env.DB.batch([
-    c.env.DB.prepare("UPDATE reports SET category_id = ? WHERE status = 'pending' AND target_type = 'topic' AND target_id = ?").bind(target.id, topic.id),
+    c.env.DB.prepare(
+      "UPDATE reports SET category_id = ? WHERE status = 'pending' AND target_type = 'topic' AND target_id = ?",
+    ).bind(target.id, topic.id),
     c.env.DB.prepare(
       `UPDATE reports SET category_id = ? WHERE status = 'pending' AND target_type = 'post'
         AND target_id IN (SELECT id FROM posts WHERE topic_id = ?)`,
@@ -135,18 +146,24 @@ moderationRoutes.get("/api/mod/audit", requireAdmin, async (c) => {
             u.name AS actor_name, u.username AS actor_username
        FROM audit_logs a LEFT JOIN user u ON u.id = a.actor_id
       ORDER BY a.created_at DESC LIMIT ?`,
-  ).bind(limit).all<Record<string, unknown>>();
-  return c.json(ok(rows.results.map((row) => ({
-    id: String(row.id),
-    actorId: (row.actor_id as string | null) ?? null,
-    actorName: (row.actor_name as string | null) ?? null,
-    actorUsername: (row.actor_username as string | null) ?? null,
-    action: String(row.action),
-    targetType: (row.target_type as string | null) ?? null,
-    targetId: (row.target_id as string | null) ?? null,
-    meta: row.meta_json ? JSON.parse(String(row.meta_json)) : null,
-    createdAt: Number(row.created_at),
-  }))));
+  )
+    .bind(limit)
+    .all<Record<string, unknown>>();
+  return c.json(
+    ok(
+      rows.results.map((row) => ({
+        id: String(row.id),
+        actorId: (row.actor_id as string | null) ?? null,
+        actorName: (row.actor_name as string | null) ?? null,
+        actorUsername: (row.actor_username as string | null) ?? null,
+        action: String(row.action),
+        targetType: (row.target_type as string | null) ?? null,
+        targetId: (row.target_id as string | null) ?? null,
+        meta: row.meta_json ? JSON.parse(String(row.meta_json)) : null,
+        createdAt: Number(row.created_at),
+      })),
+    ),
+  );
 });
 
 // Admin-only restore for a soft-deleted post (and the topic's posts deleted with it).
@@ -158,11 +175,20 @@ moderationRoutes.post("/api/mod/posts/:id/restore", requireAdmin, async (c) => {
             (SELECT t.deleted_at FROM topics t WHERE t.id = p.topic_id) AS topic_deleted_at,
             (SELECT t.status FROM topics t WHERE t.id = p.topic_id) AS topic_status
        FROM posts p WHERE p.id = ?`,
-  ).bind(c.req.param("id")).first<{
-    id: string; topic_id: string; is_first: number; version: number; title: string | null;
-    content_md: string; status: string; topic_title: string | null; topic_deleted_at: number | null;
-    topic_status: string;
-  }>();
+  )
+    .bind(c.req.param("id"))
+    .first<{
+      id: string;
+      topic_id: string;
+      is_first: number;
+      version: number;
+      title: string | null;
+      content_md: string;
+      status: string;
+      topic_title: string | null;
+      topic_deleted_at: number | null;
+      topic_status: string;
+    }>();
   if (!post) return c.json(fail("not_found", "内容不存在"), 404);
   if (post.status !== "deleted") return c.json(fail("conflict", "内容未被删除"), 409);
   if (!Number(post.is_first) && post.topic_status !== "published") {
@@ -171,7 +197,16 @@ moderationRoutes.post("/api/mod/posts/:id/restore", requireAdmin, async (c) => {
   const ts = now();
   const posts = await c.env.DB.prepare(
     `SELECT id, title, content_md, is_first, status, deleted_at FROM posts WHERE topic_id = ? ORDER BY floor`,
-  ).bind(post.topic_id).all<{ id: string; title: string | null; content_md: string; is_first: number; status: string; deleted_at: number | null }>();
+  )
+    .bind(post.topic_id)
+    .all<{
+      id: string;
+      title: string | null;
+      content_md: string;
+      is_first: number;
+      status: string;
+      deleted_at: number | null;
+    }>();
 
   const restoreIds = new Set<string>([post.id]);
   if (Number(post.is_first) && post.topic_deleted_at != null) {

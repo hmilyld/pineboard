@@ -15,7 +15,10 @@ function ask(question, fallback = "") {
   return rl.question(fallback ? `${question} [${fallback}]: ` : `${question}: `).then((v) => v.trim() || fallback);
 }
 function normalizeDomain(value) {
-  const raw = value.replace(/^https?:\/\//i, "").replace(/\/.*$/, "").trim();
+  const raw = value
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/.*$/, "")
+    .trim();
   if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(raw)) throw new Error(`域名格式不正确：${value}`);
   return raw;
 }
@@ -30,15 +33,15 @@ const r2Default = current.r2_buckets?.[0]?.bucket_name ?? "pineboard-assets";
 console.log("Pineboard 初始化向导");
 console.log("只生成本地 wrangler.site.jsonc 和 .dev.vars，不修改任何 tracked 文件。\n");
 try {
-  const worker = flag("worker") ?? await ask("Worker 名称", workerDefault);
-  const domain = normalizeDomain(flag("domain") ?? await ask("站点域名（不带 https://）", "forum.example.com"));
+  const worker = flag("worker") ?? (await ask("Worker 名称", workerDefault));
+  const domain = normalizeDomain(flag("domain") ?? (await ask("站点域名（不带 https://）", "forum.example.com")));
   const siteUrl = `https://${domain}`;
-  const cdnInput = flag("cdn") ?? await ask("CDN 域名（可留空；不建议默认开启）", "");
+  const cdnInput = flag("cdn") ?? (await ask("CDN 域名（可留空；不建议默认开启）", ""));
   const cdnUrl = cdnInput.trim() ? `https://${normalizeDomain(cdnInput)}` : "";
-  const d1Name = flag("d1-name") ?? await ask("D1 database 名称", d1Default);
-  const d1Id = flag("database-id") ?? await ask("D1 database_id");
-  const r2Name = flag("r2-name") ?? await ask("R2 bucket 名称", r2Default);
-  const adminEmail = flag("admin-email") ?? await ask("首个管理员邮箱（可留空）", "");
+  const d1Name = flag("d1-name") ?? (await ask("D1 database 名称", d1Default));
+  const d1Id = flag("database-id") ?? (await ask("D1 database_id"));
+  const r2Name = flag("r2-name") ?? (await ask("R2 bucket 名称", r2Default));
+  const adminEmail = flag("admin-email") ?? (await ask("首个管理员邮箱（可留空）", ""));
   if (!dryRun) {
     renderWranglerConfig({
       WORKER_NAME: worker,
@@ -80,7 +83,9 @@ DEV_RESET_TOKEN=${secret().slice(0, 32)}
     }
   }
   console.log(`\n${dryRun ? "预演完成（未写入）" : "已生成 wrangler.site.jsonc 和 .dev.vars"}`);
-  console.log(`Worker: ${worker}\nSite:   ${siteUrl}\nD1:     ${d1Name} (${d1Id})\nR2:     ${r2Name}\nCDN:    ${cdnUrl || "未配置（/files）"}`);
+  console.log(
+    `Worker: ${worker}\nSite:   ${siteUrl}\nD1:     ${d1Name} (${d1Id})\nR2:     ${r2Name}\nCDN:    ${cdnUrl || "未配置（/files）"}`,
+  );
   console.log("\n接下来：");
   console.log("  1. pnpm install");
   console.log("  2. pnpm exec wrangler secret put BETTER_AUTH_SECRET");

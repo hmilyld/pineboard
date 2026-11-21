@@ -97,9 +97,9 @@ async function decide(c: Context<AppEnv>, kind: "topic" | "post") {
   let targetTopicId = id;
 
   if (kind === "topic") {
-    const topic = await c.env.DB.prepare(
-      "SELECT id, category_id, status, author_id FROM topics WHERE id = ?",
-    ).bind(id).first<{ id: string; category_id: string; status: string; author_id: string }>();
+    const topic = await c.env.DB.prepare("SELECT id, category_id, status, author_id FROM topics WHERE id = ?")
+      .bind(id)
+      .first<{ id: string; category_id: string; status: string; author_id: string }>();
     if (!topic) return c.json(fail("not_found", "内容不存在"), 404);
     categoryId = topic.category_id;
     targetAuthorId = topic.author_id;
@@ -108,7 +108,9 @@ async function decide(c: Context<AppEnv>, kind: "topic" | "post") {
     const post = await c.env.DB.prepare(
       `SELECT p.id, p.topic_id, p.status, p.author_id, t.category_id AS category_id
          FROM posts p JOIN topics t ON t.id = p.topic_id WHERE p.id = ?`,
-    ).bind(id).first<{ id: string; topic_id: string; status: string; author_id: string; category_id: string }>();
+    )
+      .bind(id)
+      .first<{ id: string; topic_id: string; status: string; author_id: string; category_id: string }>();
     if (!post) return c.json(fail("not_found", "内容不存在"), 404);
     categoryId = post.category_id;
     targetAuthorId = post.author_id;

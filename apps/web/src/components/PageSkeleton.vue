@@ -33,7 +33,11 @@ withDefaults(
             <div class="h-2.5 w-1/2 animate-pulse rounded-sm bg-muted" />
             <div class="v2-thread mt-2">
               <div v-for="i in 3" :key="i" class="v2-post">
-                <div class="v2-rail"><div class="v2-avatar animate-pulse" /><div class="h-2.5 w-12 animate-pulse bg-muted" /><div class="mt-2 h-2 w-10 animate-pulse bg-muted" /></div>
+                <div class="v2-rail">
+                  <div class="v2-avatar animate-pulse" />
+                  <div class="h-2.5 w-12 animate-pulse bg-muted" />
+                  <div class="mt-2 h-2 w-10 animate-pulse bg-muted" />
+                </div>
                 <div class="v2-post-body space-y-2.5 py-4">
                   <div class="h-3 w-full animate-pulse rounded-sm bg-muted" />
                   <div class="h-3 w-11/12 animate-pulse rounded-sm bg-muted" />
@@ -50,13 +54,19 @@ withDefaults(
             <div class="h-[58px] animate-pulse rounded-[6px] bg-muted" />
             <div class="h-64 animate-pulse rounded-[6px] bg-muted/70" />
             <div class="h-10 w-2/3 animate-pulse rounded-sm bg-muted" />
-            <div class="flex gap-2"><div class="h-8 w-24 animate-pulse bg-muted" /><div class="h-8 w-20 animate-pulse bg-muted" /></div>
+            <div class="flex gap-2">
+              <div class="h-8 w-24 animate-pulse bg-muted" />
+              <div class="h-8 w-20 animate-pulse bg-muted" />
+            </div>
           </div>
         </template>
 
         <template v-else>
           <div class="v2-panel mt-3">
-            <div class="v2-bar"><div class="h-3 w-24 animate-pulse bg-muted" /><div class="ml-auto h-3 w-16 animate-pulse bg-muted" /></div>
+            <div class="v2-bar">
+              <div class="h-3 w-24 animate-pulse bg-muted" />
+              <div class="ml-auto h-3 w-16 animate-pulse bg-muted" />
+            </div>
             <div v-for="i in rows" :key="i" class="v2-row" style="--c: var(--line)">
               <div class="space-y-2 py-3">
                 <div class="h-3.5 w-2/3 animate-pulse rounded-sm bg-[var(--hover)]" />

@@ -93,14 +93,18 @@ export const en: Widened<typeof zhCN> = {
     search: "Search",
     "not-found-title": "Page not found",
     "not-found-heading": "This path leads nowhere.",
-    "not-found-text": "The link may have expired, or the content moved. Head back home and start from the category index.",
+    "not-found-text":
+      "The link may have expired, or the content moved. Head back home and start from the category index.",
     "not-found-home": "Back to home",
     "forbidden-title": "You cannot view this page",
-    "forbidden-text": "Your session is not sufficient, or this category is not public. Try signing in with another account.",
+    "forbidden-text":
+      "Your session is not sufficient, or this category is not public. Try signing in with another account.",
     "gone-title": "This topic was deleted",
-    "gone-text": "The author or a moderator removed this content. You can still browse other topics from the home page.",
+    "gone-text":
+      "The author or a moderator removed this content. You can still browse other topics from the home page.",
     "server-title": "Something went wrong on our side",
-    "server-text": "Try refreshing in a moment. If it keeps happening, contact the administrator with what you were doing.",
+    "server-text":
+      "Try refreshing in a moment. If it keeps happening, contact the administrator with what you were doing.",
     refresh: "Refresh",
     goSearch: "Search",
     login: "Sign in",
@@ -387,8 +391,8 @@ export const en: Widened<typeof zhCN> = {
     intro: "This only controls email digests. Everything starts off; only checked types are sent.",
     save: "Save preferences",
     saved: "Preferences saved.",
-    "topic_reply": "Replies to your topic",
-    "post_reply": "Replies to your reply",
+    topic_reply: "Replies to your topic",
+    post_reply: "Replies to your reply",
     mention: "Mentions",
     moderation: "Moderation updates",
   },
@@ -396,7 +400,8 @@ export const en: Widened<typeof zhCN> = {
   security: {
     title: "Account & data",
     subtitle: "Export or delete",
-    intro: "Deletion has a 7-day grace period you can cancel here. Afterwards your name, email, avatar and bio are anonymized; posted content stays.",
+    intro:
+      "Deletion has a 7-day grace period you can cancel here. Afterwards your name, email, avatar and bio are anonymized; posted content stays.",
     deletionPending: "The account is in its deletion grace period and can still be restored.",
     cancelDeletion: "Cancel deletion",
     cancelling: "Cancelling…",
@@ -420,13 +425,15 @@ export const en: Widened<typeof zhCN> = {
     exportFailed: "Export failed",
     summaryFailed: "Could not load the account summary",
     deleteTitle: "Delete account",
-    deleteHint: "The account enters a 7-day grace period you can cancel here. Your profile is then anonymized; content stays.",
+    deleteHint:
+      "The account enters a 7-day grace period you can cancel here. Your profile is then anonymized; content stays.",
     deleteConfirmLabel: "Confirm with your password",
     deletePasswordPlaceholder: "Enter your current password",
     deleteButton: "Request deletion",
     passwordRequired: "Please enter your password",
     deleteConfirmTitle: "Delete account",
-    deleteConfirmBody: "Delete this account? It enters a 7-day grace period you can cancel; afterwards your name and email are anonymized and content stays.",
+    deleteConfirmBody:
+      "Delete this account? It enters a 7-day grace period you can cancel; afterwards your name and email are anonymized and content stays.",
     deleteConfirmAction: "Request deletion",
     deleteStarted: "The account entered its grace period and all sessions were revoked.",
     deleteFailed: "Deletion failed",
@@ -464,7 +471,8 @@ export const en: Widened<typeof zhCN> = {
 
   newTopic: {
     title: "New topic",
-    pendingReview: "Submitted. It matched a sensitive keyword and is waiting for a moderator; it will appear once approved.",
+    pendingReview:
+      "Submitted. It matched a sensitive keyword and is waiting for a moderator; it will appear once approved.",
     draftSaved: "Draft autosaved · {time}",
     draftLocal: "Drafts are stored on this device",
     verifyBanner: "Verify your email before posting. Verification is required to publish topics and replies.",
@@ -490,14 +498,16 @@ export const en: Widened<typeof zhCN> = {
     cancel: "Cancel",
     publishFailed: "Publishing failed. Please try again.",
     loadFailed: "Could not load categories and tags",
-    footerHint: "You can still edit after publishing; whether you may edit once replies exist depends on the site rules.",
+    footerHint:
+      "You can still edit after publishing; whether you may edit once replies exist depends on the site rules.",
   },
 
   editTopic: {
     title: "Edit topic",
     cancel: "Cancel",
     titleRequired: "Title and body cannot be empty",
-    notEditable: "Not editable: the edit window may have closed, the topic already has replies, or you lack permission.",
+    notEditable:
+      "Not editable: the edit window may have closed, the topic already has replies, or you lack permission.",
     titleLabel: "Title",
     reasonLabel: "Reason for the edit (optional)",
     reasonPlaceholder: "Summarize this change",
@@ -539,10 +549,10 @@ export const en: Widened<typeof zhCN> = {
     submit: "Submit report",
     submitting: "Submitting…",
     failed: "Could not submit the report",
-    "spam": "Spam",
-    "abuse": "Abuse or harassment",
-    "illegal": "Illegal content",
-    "off_topic": "Off topic",
+    spam: "Spam",
+    abuse: "Abuse or harassment",
+    illegal: "Illegal content",
+    off_topic: "Off topic",
     other: "Other",
   },
 
@@ -671,7 +681,8 @@ export const en: Widened<typeof zhCN> = {
       runDigest: "Run digest now",
       running: "Running…",
       runFailed: "The run failed",
-      digestDone: "Digest finished: {users} users, sent {sent} / skipped {skipped} / failed {failed}, {remaining} left.",
+      digestDone:
+        "Digest finished: {users} users, sent {sent} / skipped {skipped} / failed {failed}, {remaining} left.",
       categoryVerification: "Verification",
       categoryReset: "Password reset",
       categoryDigest: "Notification digest",
@@ -804,7 +815,8 @@ export const en: Widened<typeof zhCN> = {
       statusMerged: "Merged",
     },
     categories: {
-      subtitle: "Maintain category names, colours, visibility and order; categories that still hold topics cannot be deleted.",
+      subtitle:
+        "Maintain category names, colours, visibility and order; categories that still hold topics cannot be deleted.",
       create: "New category",
       editTitle: "Edit “{name}”",
       namePlaceholder: "e.g. Tools & productivity",
@@ -817,7 +829,8 @@ export const en: Widened<typeof zhCN> = {
       moderatorLabel: "Moderators: {names}",
       moderatorPanel: "Moderators of “{name}”",
       moderatorPanelLabel: "Moderators",
-      moderatorHint: "Moderators can only pin, lock, move and handle reports inside this category; adding a member promotes them to the moderator role, and removing their last category demotes them back.",
+      moderatorHint:
+        "Moderators can only pin, lock, move and handle reports inside this category; adding a member promotes them to the moderator role, and removing their last category demotes them back.",
       noModerators: "No moderators yet.",
       moderatorPlaceholder: "Username or email",
       addModerator: "Add moderator",
@@ -839,7 +852,8 @@ export const en: Widened<typeof zhCN> = {
       loadFailed: "Could not load categories",
     },
     navPage: {
-      subtitle: "Maintain the top navigation labels, order and visibility; a “Categories” item renders as the category dropdown.",
+      subtitle:
+        "Maintain the top navigation labels, order and visibility; a “Categories” item renders as the category dropdown.",
       create: "New navigation item",
       editTitle: "Edit “{label}”",
       labelPlaceholder: "e.g. Guides",
@@ -852,7 +866,8 @@ export const en: Widened<typeof zhCN> = {
       href: "Link",
       hrefPlaceholder: "/tags or https://example.com",
       categoriesNote: "A category dropdown reads the visible categories automatically, so no link is needed.",
-      dropdownNote: "A custom dropdown is only a group: save it first, then add plain links and pick the group as their parent. Children follow their parent's visibility.",
+      dropdownNote:
+        "A custom dropdown is only a group: save it first, then add plain links and pick the group as their parent. Children follow their parent's visibility.",
       newTab: "Open in a new window",
       save: "Save item",
       listTitle: "Top navigation",
@@ -873,7 +888,8 @@ export const en: Widened<typeof zhCN> = {
       loadFailed: "Could not load the navigation",
     },
     integrations: {
-      subtitle: "Maintain Cloudflare / R2 / Turnstile / Resend. Secrets are stored encrypted; reads only report their status.",
+      subtitle:
+        "Maintain Cloudflare / R2 / Turnstile / Resend. Secrets are stored encrypted; reads only report their status.",
       configured: "{done} of {total} configured",
       cloudflareTitle: "Cloudflare essentials",
       checkConfig: "Check config",
@@ -899,10 +915,12 @@ export const en: Widened<typeof zhCN> = {
       cleared: "Cleared {label}.",
       clearFailed: "Could not clear",
       testFailed: "Test failed",
-      saved: "Integration settings saved. Database secrets take precedence over Worker variables and apply within about 30 seconds.",
+      saved:
+        "Integration settings saved. Database secrets take precedence over Worker variables and apply within about 30 seconds.",
       save: "Save integrations",
       reload: "Reload",
-      footer: "Secrets are only written to the database and never echoed back; leaving a field empty keeps the current value.",
+      footer:
+        "Secrets are only written to the database and never echoed back; leaving a field empty keeps the current value.",
       secretKeepPlaceholder: "Leave empty to keep",
       secretPastePlaceholder: "Paste the secret",
       hintResendKey: "Starts with re_; used for verification, reset and mention emails",
@@ -914,9 +932,11 @@ export const en: Widened<typeof zhCN> = {
     },
     settings: {
       languageTitle: "Interface language",
-      languageHint: "Pick one language and the whole site — public pages and this console — uses it. User content such as topics, replies, category and tag names is never translated.",
+      languageHint:
+        "Pick one language and the whole site — public pages and this console — uses it. User content such as topics, replies, category and tag names is never translated.",
       languageLabel: "Interface language",
-      languageNote: "Takes effect after saving: security-related settings within about 5 seconds, the rest within about 45; visitors see the new language after a refresh.",
+      languageNote:
+        "Takes effect after saving: security-related settings within about 5 seconds, the rest within about 45; visitors see the new language after a refresh.",
       languageZh: "中文",
       languageEn: "English",
       title: "Site settings",
@@ -940,7 +960,8 @@ export const en: Widened<typeof zhCN> = {
       announcementText: "Announcement copy",
       announcementPlaceholder: "Please include your environment and reproduction steps.",
       announcementHref: "Link (optional)",
-      seoHint: "The title template supports {title} and {siteName}; an empty homepage title falls back to the site name.",
+      seoHint:
+        "The title template supports {title} and {siteName}; an empty homepage title falls back to the site name.",
       titleTemplate: "Title template",
       homeTitle: "Homepage title",
       homeTitlePlaceholder: "Leave empty to use the site name",
@@ -962,7 +983,8 @@ export const en: Widened<typeof zhCN> = {
       reindexing: "Rebuilding…",
       reindexDone: "Search index rebuilt: {posts} posts in {batches} batches.",
       reindexFailed: "Rebuild failed",
-      saved: "Saved, config version {version}. Security switches apply within about 5 seconds, the rest within about 45.",
+      saved:
+        "Saved, config version {version}. Security switches apply within about 5 seconds, the rest within about 45.",
       versionConflict: "Someone else changed the settings. Refresh and try again.",
       loadFailed: "Could not load the settings",
     },

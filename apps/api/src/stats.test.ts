@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { adminOverviewSchema, postPageSchema, searchSortSchema, siteConfigSchema, tagDetailSchema } from "@pineboard/shared";
+import {
+  adminOverviewSchema,
+  postPageSchema,
+  searchSortSchema,
+  siteConfigSchema,
+  tagDetailSchema,
+} from "@pineboard/shared";
 import { startOfDaySeconds } from "./stats";
 
 describe("v2 site stats boundaries", () => {
@@ -32,16 +38,26 @@ describe("v2 site stats boundaries", () => {
 
   it("validates tag detail stats", () => {
     const parsed = tagDetailSchema.parse({
-      id: "t", slug: "s", name: "n", color: "#fff", usageCount: 1,
-      description: "d", stats: { topics: 1, todayTopics: 0, replies: 2 },
+      id: "t",
+      slug: "s",
+      name: "n",
+      color: "#fff",
+      usageCount: 1,
+      description: "d",
+      stats: { topics: 1, todayTopics: 0, replies: 2 },
     });
     expect(parsed.stats.replies).toBe(2);
   });
 
   it("validates admin overview shape", () => {
     const parsed = adminOverviewSchema.parse({
-      todayPosts: 1, pendingReports: 0, newMembersWeek: 2, emailFailures: 0,
-      configVersion: "1", lastDeployAt: null, pendingReportItems: [],
+      todayPosts: 1,
+      pendingReports: 0,
+      newMembersWeek: 2,
+      emailFailures: 0,
+      configVersion: "1",
+      lastDeployAt: null,
+      pendingReportItems: [],
     });
     expect(parsed.pendingReportItems).toEqual([]);
   });

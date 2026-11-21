@@ -51,12 +51,29 @@ async function submit(): Promise<void> {
     <form class="space-y-4" @submit.prevent="submit">
       <div>
         <label class="v2-auth-label" for="login-email">{{ t("auth.email") }}</label>
-        <input id="login-email" v-model="email" name="email" type="email" spellcheck="false" autocapitalize="none" enterkeyhint="next" autocomplete="email" :placeholder="t('auth.emailPlaceholder')" class="v2-input" />
+        <input
+          id="login-email"
+          v-model="email"
+          name="email"
+          type="email"
+          spellcheck="false"
+          autocapitalize="none"
+          enterkeyhint="next"
+          autocomplete="email"
+          :placeholder="t('auth.emailPlaceholder')"
+          class="v2-input"
+        />
       </div>
       <div>
         <div class="flex items-center justify-between">
           <label class="v2-auth-label" for="login-password">{{ t("auth.password") }}</label>
-          <button type="button" class="text-[0.65625rem] text-muted-foreground hover:text-ink" @click="showPassword = !showPassword">{{ showPassword ? t("auth.passwordHide") : t("auth.passwordShow") }}</button>
+          <button
+            type="button"
+            class="text-[0.65625rem] text-muted-foreground hover:text-ink"
+            @click="showPassword = !showPassword"
+          >
+            {{ showPassword ? t("auth.passwordHide") : t("auth.passwordShow") }}
+          </button>
         </div>
         <input
           id="login-password"
@@ -74,7 +91,14 @@ async function submit(): Promise<void> {
       </button>
     </form>
 
-    <div class="mt-2 flex justify-end"><RouterLink to="/forgot-password" class="text-[0.65625rem] text-muted-foreground hover:text-ink">{{ t("auth.forgotPassword") }}</RouterLink></div>
-    <p class="mt-6 text-center text-[0.71875rem] text-muted-foreground">{{ t("auth.noAccount") }} <RouterLink to="/register" class="text-ink underline underline-offset-2">{{ t("auth.createOne") }}</RouterLink></p>
+    <div class="mt-2 flex justify-end">
+      <RouterLink to="/forgot-password" class="text-[0.65625rem] text-muted-foreground hover:text-ink">{{
+        t("auth.forgotPassword")
+      }}</RouterLink>
+    </div>
+    <p class="mt-6 text-center text-[0.71875rem] text-muted-foreground">
+      {{ t("auth.noAccount") }}
+      <RouterLink to="/register" class="text-ink underline underline-offset-2">{{ t("auth.createOne") }}</RouterLink>
+    </p>
   </AuthShell>
 </template>

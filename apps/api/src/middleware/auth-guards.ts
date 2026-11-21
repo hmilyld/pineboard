@@ -71,7 +71,10 @@ export const signupGuard: MiddlewareHandler<AppEnv> = async (c, next) => {
   }
   if (username.length < config.account.usernameMin || username.length > config.account.usernameMax) {
     c.header("cache-control", "no-store");
-    return c.json(fieldError(`用户名长度需在 ${config.account.usernameMin}–${config.account.usernameMax} 位之间`, "username"), 400);
+    return c.json(
+      fieldError(`用户名长度需在 ${config.account.usernameMin}–${config.account.usernameMax} 位之间`, "username"),
+      400,
+    );
   }
   if (RESERVED_USERNAMES.has(username)) {
     c.header("cache-control", "no-store");
@@ -99,10 +102,7 @@ export const signupGuard: MiddlewareHandler<AppEnv> = async (c, next) => {
 
   if (config.feature.turnstile) {
     const token = c.req.header("x-turnstile-token") ?? c.req.header("cf-turnstile-response");
-    const expectedHostnames = [
-      new URL(config.site.url).hostname,
-      new URL(c.env.SITE_URL).hostname,
-    ].filter(Boolean);
+    const expectedHostnames = [new URL(config.site.url).hostname, new URL(c.env.SITE_URL).hostname].filter(Boolean);
     const integration = await getEffectiveIntegrations(c.env);
     if (!integration.cloudflare.turnstileSiteKey) {
       await next();

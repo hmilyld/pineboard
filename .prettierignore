@@ -7,3 +7,4 @@ spikes
 docs
 **/*.md
 apps/web/public
+*.jsonc

@@ -11,9 +11,18 @@ import { formatDate } from "@/lib/time";
 import { useConfigStore } from "@/stores/config";
 
 type Report = {
-  id: string; reporter: { name: string; username: string | null }; targetType: string; targetId: string;
-  topicId: string; postId: string | null; targetTitle: string; targetSnippet: string;
-  reasonCode: string; detail: string; status: string; createdAt: number;
+  id: string;
+  reporter: { name: string; username: string | null };
+  targetType: string;
+  targetId: string;
+  topicId: string;
+  postId: string | null;
+  targetTitle: string;
+  targetSnippet: string;
+  reasonCode: string;
+  detail: string;
+  status: string;
+  createdAt: number;
 };
 const config = useConfigStore();
 const reports = ref<Report[]>([]);
@@ -71,8 +80,13 @@ onMounted(() => load(1));
 <template>
   <div>
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
-      <div><h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.reports") }}</h1><p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.reports.subtitle") }}</p></div>
-      <RouterLink to="/" class="text-[0.71875rem] text-muted-foreground hover:text-ink">{{ t("admin.shell.backToForum") }}</RouterLink>
+      <div>
+        <h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.reports") }}</h1>
+        <p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.reports.subtitle") }}</p>
+      </div>
+      <RouterLink to="/" class="text-[0.71875rem] text-muted-foreground hover:text-ink">{{
+        t("admin.shell.backToForum")
+      }}</RouterLink>
     </div>
 
     <p v-if="message" :class="[alertInfoClass, 'mt-6']">{{ message }}</p>
@@ -84,8 +98,12 @@ onMounted(() => load(1));
     <div v-else class="mt-3 space-y-3">
       <article v-for="report in reports" :key="report.id" :class="cardClass">
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span class="bg-destructive/10 px-1.5 py-0.5 text-destructive">{{ reasonLabels[report.reasonCode] ?? report.reasonCode }}</span>
-          <span>{{ report.targetType === "topic" ? t("admin.reports.targetTopic") : t("admin.reports.targetPost") }}</span>
+          <span class="bg-destructive/10 px-1.5 py-0.5 text-destructive">{{
+            reasonLabels[report.reasonCode] ?? report.reasonCode
+          }}</span>
+          <span>{{
+            report.targetType === "topic" ? t("admin.reports.targetTopic") : t("admin.reports.targetPost")
+          }}</span>
           <span>{{ report.reporter.name }}</span>
           <span>{{ formatDate(report.createdAt) }}</span>
         </div>
@@ -93,15 +111,38 @@ onMounted(() => load(1));
           <RouterLink :to="`/t/${report.topicId}`" class="hover:underline">{{ report.targetTitle }}</RouterLink>
         </h2>
         <p class="mt-1 line-clamp-3 text-xs leading-5 text-muted-foreground">{{ report.targetSnippet }}</p>
-        <p v-if="report.detail" class="mt-2 bg-hover p-2.5 text-[0.6875rem] leading-6 text-muted-foreground">{{ t("admin.reports.detail", { detail: report.detail }) }}</p>
-        <input v-model="notes[report.id]" class="v2-input mt-2 h-8" :placeholder="t('admin.reports.notePlaceholder')" maxlength="500" :aria-label="t('admin.reports.noteLabel')" />
+        <p v-if="report.detail" class="mt-2 bg-hover p-2.5 text-[0.6875rem] leading-6 text-muted-foreground">
+          {{ t("admin.reports.detail", { detail: report.detail }) }}
+        </p>
+        <input
+          v-model="notes[report.id]"
+          class="v2-input mt-2 h-8"
+          :placeholder="t('admin.reports.notePlaceholder')"
+          maxlength="500"
+          :aria-label="t('admin.reports.noteLabel')"
+        />
         <div class="mt-3 flex gap-2">
-          <Button size="sm" :disabled="busy === report.id" @click="resolve(report, 'resolved')">{{ t("admin.reports.markResolved") }}</Button>
-          <Button size="sm" variant="outline" :disabled="busy === report.id" @click="resolve(report, 'dismissed')">{{ t("admin.reports.markDismissed") }}</Button>
-          <RouterLink :to="`/t/${report.topicId}`" class="ml-auto self-center text-xs text-muted-foreground hover:text-foreground">{{ t("admin.reports.viewContent") }}</RouterLink>
+          <Button size="sm" :disabled="busy === report.id" @click="resolve(report, 'resolved')">{{
+            t("admin.reports.markResolved")
+          }}</Button>
+          <Button size="sm" variant="outline" :disabled="busy === report.id" @click="resolve(report, 'dismissed')">{{
+            t("admin.reports.markDismissed")
+          }}</Button>
+          <RouterLink
+            :to="`/t/${report.topicId}`"
+            class="ml-auto self-center text-xs text-muted-foreground hover:text-foreground"
+            >{{ t("admin.reports.viewContent") }}</RouterLink
+          >
         </div>
       </article>
-      <PaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" :unit="t('admin.reports.unit')" @change="load" />
+      <PaginationBar
+        v-if="totalPages > 1"
+        :page="page"
+        :total-pages="totalPages"
+        :total="total"
+        :unit="t('admin.reports.unit')"
+        @change="load"
+      />
     </div>
   </div>
 </template>

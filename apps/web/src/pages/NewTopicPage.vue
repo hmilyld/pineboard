@@ -36,7 +36,11 @@ let completed = false;
 
 const turnstileEnabled = computed(() => Boolean(config.config?.feature.turnstile && config.turnstileSiteKey));
 const canPublish = computed(() => Boolean(auth.user && auth.permissions?.canWrite));
-const draftLabel = computed(() => (draftAt.value ? new Intl.DateTimeFormat(intlLocale(), { hour: "2-digit", minute: "2-digit" }).format(new Date(draftAt.value)) : ""));
+const draftLabel = computed(() =>
+  draftAt.value
+    ? new Intl.DateTimeFormat(intlLocale(), { hour: "2-digit", minute: "2-digit" }).format(new Date(draftAt.value))
+    : "",
+);
 
 function toggleTag(id: string): void {
   if (form.tagIds.includes(id)) form.tagIds = form.tagIds.filter((tag) => tag !== id);
@@ -47,7 +51,13 @@ function restoreDraft(): void {
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
     if (!raw) return;
-    const draft = JSON.parse(raw) as { categoryId?: string; title?: string; contentMd?: string; tagIds?: string[]; savedAt?: number };
+    const draft = JSON.parse(raw) as {
+      categoryId?: string;
+      title?: string;
+      contentMd?: string;
+      tagIds?: string[];
+      savedAt?: number;
+    };
     form.categoryId = draft.categoryId || form.categoryId;
     form.title = draft.title ?? "";
     form.contentMd = draft.contentMd ?? "";
@@ -146,7 +156,9 @@ onMounted(async () => {
       try {
         const draft = JSON.parse(raw) as { title?: string; contentMd?: string };
         draftAvailable.value = Boolean(draft.title?.trim() || draft.contentMd?.trim());
-      } catch { /* ignore corrupt draft */ }
+      } catch {
+        /* ignore corrupt draft */
+      }
     }
   } catch (cause) {
     error.value = config.describeError(cause, "newTopic.loadFailed");
@@ -167,7 +179,9 @@ onBeforeUnmount(() => {
     <div v-else class="v2-container">
       <div class="flex items-end justify-between gap-4">
         <h1 class="text-[1.25rem] font-bold leading-[1.3]">{{ t("newTopic.title") }}</h1>
-        <span class="text-[0.65625rem] text-muted-foreground">{{ draftAt ? t("newTopic.draftSaved", { time: draftLabel }) : t("newTopic.draftLocal") }}</span>
+        <span class="text-[0.65625rem] text-muted-foreground">{{
+          draftAt ? t("newTopic.draftSaved", { time: draftLabel }) : t("newTopic.draftLocal")
+        }}</span>
       </div>
 
       <section v-if="!canPublish" class="mt-4 border border-line bg-surface p-5">
@@ -175,35 +189,100 @@ onBeforeUnmount(() => {
           {{ t("newTopic.verifyBanner") }}
         </div>
         <h2 class="mt-4 text-[0.9375rem] font-semibold">{{ t("newTopic.verifyHeading") }}</h2>
-        <p class="mt-1 text-[0.71875rem] leading-6 text-muted-foreground">{{ t("newTopic.verifyBody", { email: auth.user?.email ?? "" }) }}</p>
+        <p class="mt-1 text-[0.71875rem] leading-6 text-muted-foreground">
+          {{ t("newTopic.verifyBody", { email: auth.user?.email ?? "" }) }}
+        </p>
         <p v-if="sent" class="mt-2 text-[0.6875rem] text-[var(--amber)]">{{ t("newTopic.verifySent") }}</p>
-        <div class="mt-3 flex gap-2"><button type="button" class="v2-btn solid" :disabled="resending" @click="resend">{{ resending ? t("common.sending") : t("newTopic.resend") }}</button><RouterLink to="/" class="v2-btn">{{ t("newTopic.backHome") }}</RouterLink></div>
+        <div class="mt-3 flex gap-2">
+          <button type="button" class="v2-btn solid" :disabled="resending" @click="resend">
+            {{ resending ? t("common.sending") : t("newTopic.resend") }}</button><RouterLink to="/" class="v2-btn">{{
+            t("newTopic.backHome")
+          }}</RouterLink>
+        </div>
       </section>
 
       <template v-else>
-        <div v-if="draftAvailable" class="mt-3 flex items-center gap-3 border border-line bg-surface px-3 py-2 text-[0.6875rem] text-muted-foreground">
-          {{ t("newTopic.draftFound") }}<button type="button" class="text-pine underline underline-offset-2" @click="restoreDraft">{{ t("newTopic.restoreDraft") }}</button><button type="button" class="ml-auto hover:text-ink" @click="clearDraft">{{ t("newTopic.clearDraft") }}</button>
+        <div
+          v-if="draftAvailable"
+          class="mt-3 flex items-center gap-3 border border-line bg-surface px-3 py-2 text-[0.6875rem] text-muted-foreground"
+        >
+          {{ t("newTopic.draftFound")
+          }}<button type="button" class="text-pine underline underline-offset-2" @click="restoreDraft">
+            {{ t("newTopic.restoreDraft") }}</button
+          ><button type="button" class="ml-auto hover:text-ink" @click="clearDraft">
+            {{ t("newTopic.clearDraft") }}
+          </button>
         </div>
 
-        <form class="mt-4" @submit.prevent="submit" @keydown.ctrl.enter.prevent="submit" @keydown.meta.enter.prevent="submit">
+        <form
+          class="mt-4"
+          @submit.prevent="submit"
+          @keydown.ctrl.enter.prevent="submit"
+          @keydown.meta.enter.prevent="submit"
+        >
           <div class="flex flex-wrap items-center gap-2 text-[0.65625rem] text-muted-foreground">
             <span>{{ t("newTopic.postTo") }}</span>
-            <button v-for="category in categories" :key="category.id" type="button" class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[0.71875rem]" :class="form.categoryId === category.id ? 'border-pine bg-pine-soft text-ink' : 'border-line text-muted-foreground'" @click="form.categoryId = category.id">
-              <i class="size-1.5 rounded-full" :class="categoryClass(category.slug)" :style="{ ...categoryStyle(category.color), background: 'var(--c)' }" />{{ category.name }}
+            <button
+              v-for="category in categories"
+              :key="category.id"
+              type="button"
+              class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[0.71875rem]"
+              :class="
+                form.categoryId === category.id
+                  ? 'border-pine bg-pine-soft text-ink'
+                  : 'border-line text-muted-foreground'
+              "
+              @click="form.categoryId = category.id"
+            >
+              <i
+                class="size-1.5 rounded-full"
+                :class="categoryClass(category.slug)"
+                :style="{ ...categoryStyle(category.color), background: 'var(--c)' }"
+              />{{ category.name }}
             </button>
           </div>
           <p v-if="fields.categoryId" class="mt-1 text-[0.6875rem] text-[var(--orange)]">{{ fields.categoryId[0] }}</p>
 
           <div class="mt-3 overflow-hidden rounded-[6px] border border-line bg-surface">
             <div class="flex h-[58px] items-center border-b border-line px-3">
-              <input v-model="form.title" name="title" class="min-w-0 flex-1 border-0 bg-transparent text-[1.1875rem] font-semibold outline-none placeholder:text-muted-foreground/60" maxlength="120" :placeholder="t('newTopic.titlePlaceholder')" :aria-label="t('newTopic.titleLabel')" />
+              <input
+                v-model="form.title"
+                name="title"
+                class="min-w-0 flex-1 border-0 bg-transparent text-[1.1875rem] font-semibold outline-none placeholder:text-muted-foreground/60"
+                maxlength="120"
+                :placeholder="t('newTopic.titlePlaceholder')"
+                :aria-label="t('newTopic.titleLabel')"
+              />
               <span class="num text-[0.65625rem] text-muted-foreground">{{ form.title.length }}/120</span>
             </div>
-            <MarkdownEditor v-model="form.contentMd" flat :rows="12" :height="252" :placeholder="t('newTopic.contentPlaceholder')" />
+            <MarkdownEditor
+              v-model="form.contentMd"
+              flat
+              :rows="12"
+              :height="252"
+              :placeholder="t('newTopic.contentPlaceholder')"
+            />
             <div class="border-t border-line px-3 py-2">
-              <div class="flex items-center gap-2 text-[0.65625rem] text-muted-foreground"><span>{{ t("newTopic.tags") }} {{ t("newTopic.tagsMax") }}</span><span class="ml-auto num">{{ form.tagIds.length }} / 5</span></div>
+              <div class="flex items-center gap-2 text-[0.65625rem] text-muted-foreground">
+                <span>{{ t("newTopic.tags") }} {{ t("newTopic.tagsMax") }}</span
+                ><span class="ml-auto num">{{ form.tagIds.length }} / 5</span>
+              </div>
               <div class="mt-1.5 flex flex-wrap gap-1.5">
-                <button v-for="tag in tags" :key="tag.id" type="button" class="h-[26px] rounded-full border px-2.5 text-[0.6875rem]" :class="form.tagIds.includes(tag.id) ? 'border-pine bg-pine-soft text-ink' : 'border-line text-muted-foreground'" :disabled="!form.tagIds.includes(tag.id) && form.tagIds.length >= 5" @click="toggleTag(tag.id)">#{{ tag.name }}</button>
+                <button
+                  v-for="tag in tags"
+                  :key="tag.id"
+                  type="button"
+                  class="h-[26px] rounded-full border px-2.5 text-[0.6875rem]"
+                  :class="
+                    form.tagIds.includes(tag.id)
+                      ? 'border-pine bg-pine-soft text-ink'
+                      : 'border-line text-muted-foreground'
+                  "
+                  :disabled="!form.tagIds.includes(tag.id) && form.tagIds.length >= 5"
+                  @click="toggleTag(tag.id)"
+                >
+                  #{{ tag.name }}
+                </button>
               </div>
             </div>
           </div>
@@ -211,7 +290,14 @@ onBeforeUnmount(() => {
           <p v-if="fields.contentMd" class="mt-1 text-[0.6875rem] text-[var(--orange)]">{{ fields.contentMd[0] }}</p>
 
           <div v-if="turnstileEnabled" class="mt-2">
-            <TurnstileWidget ref="widget" :site-key="config.turnstileSiteKey" action="topic_create" @token="token = $event" @expired="token = ''" @error="error = $event" />
+            <TurnstileWidget
+              ref="widget"
+              :site-key="config.turnstileSiteKey"
+              action="topic_create"
+              @token="token = $event"
+              @expired="token = ''"
+              @error="error = $event"
+            />
           </div>
 
           <p v-if="error" class="v2-alert mt-3" role="alert">{{ error }}</p>
@@ -219,7 +305,9 @@ onBeforeUnmount(() => {
             <span class="text-[0.625rem] leading-5 text-muted-foreground">{{ t("newTopic.footerHint") }}</span>
             <span class="ml-auto" />
             <RouterLink to="/" class="v2-btn">{{ t("newTopic.cancel") }}</RouterLink>
-            <button type="submit" class="v2-btn solid" :disabled="submitting">{{ submitting ? t("newTopic.publishing") : t("newTopic.publish") }}</button>
+            <button type="submit" class="v2-btn solid" :disabled="submitting">
+              {{ submitting ? t("newTopic.publishing") : t("newTopic.publish") }}
+            </button>
           </div>
         </form>
       </template>

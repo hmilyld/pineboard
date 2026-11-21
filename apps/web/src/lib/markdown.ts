@@ -8,8 +8,7 @@ const md = new MarkdownIt({
 });
 
 const defaultLinkOpen =
-  md.renderer.rules.link_open ??
-  ((tokens, index, options, _env, self) => self.renderToken(tokens, index, options));
+  md.renderer.rules.link_open ?? ((tokens, index, options, _env, self) => self.renderToken(tokens, index, options));
 
 md.renderer.rules.link_open = (tokens, index, options, env, self) => {
   const token = tokens[index];
@@ -21,8 +20,7 @@ md.renderer.rules.link_open = (tokens, index, options, env, self) => {
 };
 
 const defaultImage =
-  md.renderer.rules.image ??
-  ((tokens, index, options, _env, self) => self.renderToken(tokens, index, options));
+  md.renderer.rules.image ?? ((tokens, index, options, _env, self) => self.renderToken(tokens, index, options));
 
 md.renderer.rules.image = (tokens, index, options, env, self) => {
   const token = tokens[index];

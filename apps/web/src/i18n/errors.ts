@@ -17,7 +17,10 @@ const MESSAGES: Record<ErrorCode, { "zh-CN": string; en: string }> = {
   edit_window_expired: { "zh-CN": "编辑窗口已过", en: "The edit window has closed" },
   edit_locked: { "zh-CN": "该内容不能再编辑", en: "This content can no longer be edited" },
   captcha_failed: { "zh-CN": "人机验证失败，请重试", en: "Verification failed. Please try again." },
-  captcha_unavailable: { "zh-CN": "人机验证暂时不可用，请稍后重试", en: "Verification is unavailable. Please try again later." },
+  captcha_unavailable: {
+    "zh-CN": "人机验证暂时不可用，请稍后重试",
+    en: "Verification is unavailable. Please try again later.",
+  },
   rate_limited: { "zh-CN": "操作过于频繁，请稍后再试", en: "Too many requests. Please slow down." },
   conflict: { "zh-CN": "状态已变化，请刷新后重试", en: "The state changed elsewhere. Refresh and try again." },
   maintenance: { "zh-CN": "站点维护中，请稍后再试", en: "The site is under maintenance. Please try again later." },

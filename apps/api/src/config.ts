@@ -142,9 +142,7 @@ export async function writeConfigPatch(
   const merged = mergeDeep(current.config, patch);
   const parsed = configSchema.safeParse(merged);
   if (!parsed.success) {
-    const error = new Error(
-      parsed.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; "),
-    );
+    const error = new Error(parsed.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; "));
     error.name = "ConfigValidationError";
     throw error;
   }
@@ -168,17 +166,23 @@ export async function writeConfigPatch(
 
   let bumped = await env.DB.prepare(
     "UPDATE settings SET version = version + 1, updated_at = ? WHERE key = '__config_version' AND version = ?",
-  ).bind(now, expected).run();
+  )
+    .bind(now, expected)
+    .run();
   if (Number(bumped.meta.changes ?? 0) === 0) {
     const exists = await env.DB.prepare("SELECT 1 AS ok FROM settings WHERE key = '__config_version'").first();
     if (!exists) {
       await env.DB.prepare(
         `INSERT OR IGNORE INTO settings (key, value_json, group_name, updated_at, version)
          VALUES ('__config_version', '{}', 'meta', ?, ?)`,
-      ).bind(now, expected).run();
+      )
+        .bind(now, expected)
+        .run();
       bumped = await env.DB.prepare(
         "UPDATE settings SET version = version + 1, updated_at = ? WHERE key = '__config_version' AND version = ?",
-      ).bind(now, expected).run();
+      )
+        .bind(now, expected)
+        .run();
     }
   }
   if (Number(bumped.meta.changes ?? 0) === 0) {

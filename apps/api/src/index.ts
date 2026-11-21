@@ -10,7 +10,13 @@ export default {
     if (event.cron === "*/5 * * * *") {
       ctx.waitUntil(
         runEmailDigest(env).catch((error) => {
-          console.error(JSON.stringify({ level: "error", job: "digest", message: error instanceof Error ? error.message : String(error) }));
+          console.error(
+            JSON.stringify({
+              level: "error",
+              job: "digest",
+              message: error instanceof Error ? error.message : String(error),
+            }),
+          );
         }),
       );
       return;
@@ -18,7 +24,13 @@ export default {
     if (event.cron === "15 3 * * *") {
       ctx.waitUntil(
         runDailyMaintenance(env).catch((error) => {
-          console.error(JSON.stringify({ level: "error", job: "daily", message: error instanceof Error ? error.message : String(error) }));
+          console.error(
+            JSON.stringify({
+              level: "error",
+              job: "daily",
+              message: error instanceof Error ? error.message : String(error),
+            }),
+          );
         }),
       );
     }

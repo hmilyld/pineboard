@@ -16,8 +16,7 @@ function matcherFor(words: readonly string[]): SensitiveMatcher {
 }
 
 export type KeywordVerdict =
-  | { flagged: false }
-  | { flagged: true; words: string[]; hits: SensitiveMatchResult["hits"] };
+  { flagged: false } | { flagged: true; words: string[]; hits: SensitiveMatchResult["hits"] };
 
 /**
  * Screen user content before it is written. Returns the matched words so the

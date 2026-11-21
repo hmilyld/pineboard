@@ -41,12 +41,14 @@ async function load(nextPage = page.value, nextSort: TopicSort = sort.value): Pr
   page.value = Number.isFinite(nextPage) && nextPage > 0 ? Math.floor(nextPage) : 1;
   sort.value = nextSort;
   try {
-    const [categoryData, topicData, tagData, siteData] = await withSkeletonDelay(Promise.all([
-      api.categories(),
-      api.topics({ sort: nextSort, page: page.value, perPage: perPage.value }),
-      api.tags(),
-      api.siteStats(),
-    ]));
+    const [categoryData, topicData, tagData, siteData] = await withSkeletonDelay(
+      Promise.all([
+        api.categories(),
+        api.topics({ sort: nextSort, page: page.value, perPage: perPage.value }),
+        api.tags(),
+        api.siteStats(),
+      ]),
+    );
     if (seq !== loadSeq) return;
     categories.value = categoryData;
     topics.value = topicData.items;
@@ -103,7 +105,16 @@ watch(
         <section class="v2-panel min-w-0">
           <div class="v2-bar">
             <div class="flex items-center gap-3" role="tablist" :aria-label="t('topicSort.label')">
-              <button v-for="option in sortOptions" :key="option[0]" type="button" class="v2-tab" :data-active="sort === option[0]" role="tab" :aria-selected="sort === option[0]" @click="load(1, option[0])">
+              <button
+                v-for="option in sortOptions"
+                :key="option[0]"
+                type="button"
+                class="v2-tab"
+                :data-active="sort === option[0]"
+                role="tab"
+                :aria-selected="sort === option[0]"
+                @click="load(1, option[0])"
+              >
                 {{ option[1] }}
               </button>
             </div>
@@ -119,13 +130,26 @@ watch(
 
         <aside class="v2-side">
           <button type="button" class="v2-side-toggle" :aria-expanded="sideOpen" @click="sideOpen = !sideOpen">
-            {{ t("stats.siteInfo") }} <span class="ml-auto text-[0.6875rem] text-muted-foreground">{{ sideOpen ? t("stats.collapse") : t("stats.expand") }}</span>
+            {{ t("stats.siteInfo") }}
+            <span class="ml-auto text-[0.6875rem] text-muted-foreground">{{
+              sideOpen ? t("stats.collapse") : t("stats.expand")
+            }}</span>
           </button>
           <div class="v2-side-body" :class="{ '!block': sideOpen }">
             <section class="v2-mod">
               <h3>{{ t("page.categories") }}</h3>
-              <RouterLink v-for="category in categories" :key="category.id" :to="`/c/${category.slug}`" class="v2-catrow" :class="categoryClass(category.slug)" :style="categoryStyle(category.color)">
-                <span class="v2-catname"><i /><b>{{ category.name }}</b><span>{{ category.topicCount ?? 0 }}</span></span>
+              <RouterLink
+                v-for="category in categories"
+                :key="category.id"
+                :to="`/c/${category.slug}`"
+                class="v2-catrow"
+                :class="categoryClass(category.slug)"
+                :style="categoryStyle(category.color)"
+              >
+                <span class="v2-catname"
+                  ><i /><b>{{ category.name }}</b
+                  ><span>{{ category.topicCount ?? 0 }}</span></span
+                >
                 <span class="v2-catlast">{{ category.recentTopic?.title ?? t("stats.noTopics") }}</span>
               </RouterLink>
             </section>
@@ -133,17 +157,27 @@ watch(
             <section class="v2-mod">
               <h3>{{ t("stats.siteInfo") }}</h3>
               <div class="v2-stats">
-                <div class="v2-st"><b>{{ stats?.todayPosts ?? 0 }}</b><span>{{ t("stats.todayPosts") }}</span></div>
-                <div class="v2-st"><b>{{ stats?.topics ?? 0 }}</b><span>{{ t("stats.topics") }}</span></div>
-                <div class="v2-st"><b>{{ stats?.replies ?? 0 }}</b><span>{{ t("stats.replies") }}</span></div>
-                <div class="v2-st"><b>{{ stats?.members ?? 0 }}</b><span>{{ t("stats.members") }}</span></div>
+                <div class="v2-st">
+                  <b>{{ stats?.todayPosts ?? 0 }}</b><span>{{ t("stats.todayPosts") }}</span>
+                </div>
+                <div class="v2-st">
+                  <b>{{ stats?.topics ?? 0 }}</b><span>{{ t("stats.topics") }}</span>
+                </div>
+                <div class="v2-st">
+                  <b>{{ stats?.replies ?? 0 }}</b><span>{{ t("stats.replies") }}</span>
+                </div>
+                <div class="v2-st">
+                  <b>{{ stats?.members ?? 0 }}</b><span>{{ t("stats.members") }}</span>
+                </div>
               </div>
             </section>
 
             <section v-if="tags.length" class="v2-mod">
               <h3>{{ t("stats.hotTags") }}</h3>
               <div class="v2-tags">
-                <RouterLink v-for="tag in tags" :key="tag.id" :to="`/tag/${tag.slug}`" class="v2-tag">#{{ tag.name }}</RouterLink>
+                <RouterLink v-for="tag in tags" :key="tag.id" :to="`/tag/${tag.slug}`" class="v2-tag"
+                  >#{{ tag.name }}</RouterLink
+                >
               </div>
             </section>
           </div>

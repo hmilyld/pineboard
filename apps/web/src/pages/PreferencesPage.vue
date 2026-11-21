@@ -9,7 +9,14 @@ import { useAuthStore } from "@/stores/auth";
 import { useConfigStore } from "@/stores/config";
 import { alertErrorClass, alertInfoClass } from "@/lib/ui";
 
-const profile = computed(() => ({ id: auth.user?.id ?? "", name: auth.user?.name ?? "", username: auth.user?.username ?? null, role: auth.user?.role ?? "user", bio: auth.user?.bio ?? null, createdAt: auth.user?.createdAt ?? 0 }));
+const profile = computed(() => ({
+  id: auth.user?.id ?? "",
+  name: auth.user?.name ?? "",
+  username: auth.user?.username ?? null,
+  role: auth.user?.role ?? "user",
+  bio: auth.user?.bio ?? null,
+  createdAt: auth.user?.createdAt ?? 0,
+}));
 const auth = useAuthStore();
 const configStore = useConfigStore();
 const labels = computed<Record<string, string>>(() => ({
@@ -58,8 +65,21 @@ onMounted(load);
 
 <template>
   <AccountSkeleton v-if="!auth.user || loading" />
-  <AccountShell v-else-if="auth.user" :profile="profile" active="preferences" :topic-count="summary.topicCount" :reply-count="summary.replyCount" :like-count="summary.likeCount" :bookmark-count="summary.bookmarkCount" :notification-count="summary.unreadCount" is-self>
-    <div class="v2-section-head"><h2>{{ t("preferences.title") }}</h2><span>{{ t("preferences.subtitle") }}</span></div>
+  <AccountShell
+    v-else-if="auth.user"
+    :profile="profile"
+    active="preferences"
+    :topic-count="summary.topicCount"
+    :reply-count="summary.replyCount"
+    :like-count="summary.likeCount"
+    :bookmark-count="summary.bookmarkCount"
+    :notification-count="summary.unreadCount"
+    is-self
+  >
+    <div class="v2-section-head">
+      <h2>{{ t("preferences.title") }}</h2>
+      <span>{{ t("preferences.subtitle") }}</span>
+    </div>
     <p class="mb-3 text-[0.71875rem] text-muted-foreground">{{ t("preferences.intro") }}</p>
     <p v-if="error" :class="[alertErrorClass, 'mb-3']" role="alert">{{ error }}</p>
     <p v-if="saved" :class="[alertInfoClass, 'mb-3']">{{ saved }}</p>
@@ -70,7 +90,9 @@ onMounted(load);
           <span class="font-medium">{{ label }}</span>
         </label>
       </div>
-      <div class="mt-5"><Button :disabled="saving" @click="save">{{ saving ? t("common.saving") : t("preferences.save") }}</Button></div>
+      <div class="mt-5">
+        <Button :disabled="saving" @click="save">{{ saving ? t("common.saving") : t("preferences.save") }}</Button>
+      </div>
     </section>
   </AccountShell>
 </template>

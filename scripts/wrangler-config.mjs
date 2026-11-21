@@ -11,7 +11,9 @@ function required(name, value) {
 export function renderWranglerConfig(values = process.env, output = "wrangler.site.jsonc") {
   const template = JSON.parse(readFileSync(`${ROOT}/wrangler.jsonc`, "utf8"));
   const workerName = required("WORKER_NAME", values.WORKER_NAME);
-  const domain = required("DOMAIN", values.DOMAIN).replace(/^https?:\/\//i, "").replace(/\/.*$/, "");
+  const domain = required("DOMAIN", values.DOMAIN)
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/.*$/, "");
   const siteUrl = required("SITE_URL", values.SITE_URL).replace(/\/$/, "");
   const d1Name = required("D1_DATABASE_NAME", values.D1_DATABASE_NAME);
   const d1Id = required("D1_DATABASE_ID", values.D1_DATABASE_ID);

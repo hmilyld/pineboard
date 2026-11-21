@@ -1,13 +1,7 @@
 import { z } from "zod";
 
 /** Kept here (not in upload.ts) so Node-based e2e can import this module directly. */
-export const UPLOAD_IMAGE_MIME = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "image/avif",
-] as const;
+export const UPLOAD_IMAGE_MIME = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"] as const;
 
 export const UPLOAD_ARCHIVE_MIME = [
   "application/zip",
@@ -43,7 +37,6 @@ export const DEFAULT_LOCALE: Locale = "zh-CN";
 export function isSupportedLocale(value: unknown): value is Locale {
   return typeof value === "string" && (SUPPORTED_LOCALES as readonly string[]).includes(value);
 }
-
 
 /** Error codes are part of the public API contract (docs/02). */
 export const ERROR_CODES = [
@@ -91,11 +84,7 @@ export function ok<T>(data: T, meta?: ApiMeta): ApiSuccess<T> {
   return meta === undefined ? { ok: true, data } : { ok: true, data, meta };
 }
 
-export function fail(
-  code: ErrorCode,
-  message: string,
-  fields?: Record<string, string[]>,
-): ApiFailure {
+export function fail(code: ErrorCode, message: string, fields?: Record<string, string[]>): ApiFailure {
   return {
     ok: false,
     error: fields === undefined ? { code, message } : { code, message, fields },
@@ -261,10 +250,9 @@ export const themeConfigSchema = z.object({
   tokens: z
     .record(
       z.string().regex(/^--[a-z0-9-]+$/),
-      z.string().refine(
-        (value) => !/(url\s*\(|expression|@import|javascript:)/i.test(value),
-        "unsafe theme token value",
-      ),
+      z
+        .string()
+        .refine((value) => !/(url\s*\(|expression|@import|javascript:)/i.test(value), "unsafe theme token value"),
     )
     .default({}),
   darkMode: z.enum(["system", "light", "dark"]).default("system"),
@@ -286,9 +274,7 @@ export const configSchema = z.object({
 
 export type AppConfig = z.infer<typeof configSchema>;
 export type ConfigGroup = keyof AppConfig;
-export type DeepPartial<T> = T extends object
-  ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : T;
+export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
 
 export const configGroupSchemas = {
   site: siteConfigSchema,
@@ -437,7 +423,10 @@ export function parseConfigOverrides(raw: Record<string, unknown>): {
       // The per-group schemas are structurally equivalent to the full schema.
       (config as Record<ConfigGroup, unknown>)[group] = parsed.data;
     } else {
-      errors.push({ group, message: parsed.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ") });
+      errors.push({
+        group,
+        message: parsed.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; "),
+      });
     }
   }
   return { config, errors };
@@ -569,26 +558,16 @@ export const DERIVED_PASSWORD_RE = /^v1\$[A-Za-z0-9+/=]{43,}$/;
 export async function derivePassword(email: string, password: string): Promise<string> {
   const encoder = new TextEncoder();
   const salt = encoder.encode(`forum:v1:${email.trim().toLowerCase()}`);
-  const key = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, [
-    "deriveBits",
-  ]);
-  const bits = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", hash: "SHA-256", salt, iterations: 310_000 },
-    key,
-    256,
-  );
+  const key = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt, iterations: 310_000 }, key, 256);
   return "v1$" + btoa(String.fromCharCode(...new Uint8Array(bits)));
 }
 
 export async function hmacB64(pepper: string, value: string): Promise<string> {
   const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(pepper),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
+  const key = await crypto.subtle.importKey("raw", encoder.encode(pepper), { name: "HMAC", hash: "SHA-256" }, false, [
+    "sign",
+  ]);
   const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
   return btoa(String.fromCharCode(...new Uint8Array(signature)));
 }

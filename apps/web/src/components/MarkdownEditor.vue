@@ -15,12 +15,15 @@ import { api, ApiClientError } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
 import { useConfigStore } from "@/stores/config";
 
-const props = withDefaults(defineProps<{ modelValue: string; placeholder?: string; rows?: number; flat?: boolean; height?: number }>(), {
-  placeholder: undefined,
-  rows: 10,
-  flat: false,
-  height: undefined,
-});
+const props = withDefaults(
+  defineProps<{ modelValue: string; placeholder?: string; rows?: number; flat?: boolean; height?: number }>(),
+  {
+    placeholder: undefined,
+    rows: 10,
+    flat: false,
+    height: undefined,
+  },
+);
 const emit = defineEmits<{ "update:modelValue": [string] }>();
 const auth = useAuthStore();
 const config = useConfigStore();
@@ -49,7 +52,9 @@ const ARCHIVE_BY_EXT: Record<string, string> = {
   "7z": "application/x-7z-compressed",
 };
 const IMAGE_ACCEPT = [...Object.values(UPLOAD_IMAGE_EXT), "jpeg"].map((ext) => `.${ext}`).join(",");
-const ARCHIVE_ACCEPT = Object.keys(ARCHIVE_BY_EXT).map((ext) => `.${ext}`).join(",");
+const ARCHIVE_ACCEPT = Object.keys(ARCHIVE_BY_EXT)
+  .map((ext) => `.${ext}`)
+  .join(",");
 
 function update(event: Event): void {
   emit("update:modelValue", (event.target as HTMLTextAreaElement).value);
@@ -167,8 +172,18 @@ async function upload(file: File, kind: UploadKind): Promise<void> {
       insertResult(result, file, kind);
       return;
     }
-    if (!response.ok) throw new ApiClientError("upload_failed", t("composer.uploadFailed", { status: response.status }), response.status);
-    const result = await api.completeUpload({ key: signed.key, kind, size: file.size, contentType: signed.contentType });
+    if (!response.ok)
+      throw new ApiClientError(
+        "upload_failed",
+        t("composer.uploadFailed", { status: response.status }),
+        response.status,
+      );
+    const result = await api.completeUpload({
+      key: signed.key,
+      kind,
+      size: file.size,
+      contentType: signed.contentType,
+    });
     insertResult(result, file, kind);
   } catch (cause) {
     uploadError.value = config.describeError(cause, "composer.uploadFailedRetry");
@@ -188,22 +203,80 @@ function onPick(kind: UploadKind, event: Event): void {
 <template>
   <div :class="flat ? '' : 'overflow-hidden rounded-[6px] border border-line bg-surface'">
     <div class="flex min-h-8 items-center gap-2 border-b border-line px-3 text-[0.71875rem]">
-      <button type="button" class="v2-tab" :data-active="tab === 'write'" @click="tab = 'write'">{{ t("composer.write") }}</button>
-      <button type="button" class="v2-tab" :data-active="tab === 'preview'" @click="tab = 'preview'">{{ t("composer.preview") }}</button>
+      <button type="button" class="v2-tab" :data-active="tab === 'write'" @click="tab = 'write'">
+        {{ t("composer.write") }}
+      </button>
+      <button type="button" class="v2-tab" :data-active="tab === 'preview'" @click="tab = 'preview'">
+        {{ t("composer.preview") }}
+      </button>
       <span class="mx-1 h-3 w-px bg-line" />
       <div v-if="tab === 'write'" class="flex items-center gap-0.5 text-muted-foreground">
-        <button type="button" class="grid size-6 place-items-center rounded-[2px] font-semibold hover:bg-hover hover:text-ink" :aria-label="t('composer.bold')" :title="t('composer.bold')" @click="wrap('**', '**')">B</button>
-        <button type="button" class="grid size-6 place-items-center rounded-[2px] italic hover:bg-hover hover:text-ink" :aria-label="t('composer.italic')" :title="t('composer.italic')" @click="wrap('_', '_')">I</button>
-        <button type="button" class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :aria-label="t('composer.quote')" :title="t('composer.quoteTitle')" @click="wrap('> ')">›</button>
-        <button type="button" class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :aria-label="t('composer.code')" :title="t('composer.codeTitle')" @click="wrap('`', '`')">`</button>
-        <button type="button" class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :aria-label="t('composer.link')" :title="t('composer.linkTitle')" @click="wrap('[', '](https://)')">↗</button>
+        <button
+          type="button"
+          class="grid size-6 place-items-center rounded-[2px] font-semibold hover:bg-hover hover:text-ink"
+          :aria-label="t('composer.bold')"
+          :title="t('composer.bold')"
+          @click="wrap('**', '**')"
+        >
+          B
+        </button>
+        <button
+          type="button"
+          class="grid size-6 place-items-center rounded-[2px] italic hover:bg-hover hover:text-ink"
+          :aria-label="t('composer.italic')"
+          :title="t('composer.italic')"
+          @click="wrap('_', '_')"
+        >
+          I
+        </button>
+        <button
+          type="button"
+          class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink"
+          :aria-label="t('composer.quote')"
+          :title="t('composer.quoteTitle')"
+          @click="wrap('> ')"
+        >
+          ›
+        </button>
+        <button
+          type="button"
+          class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink"
+          :aria-label="t('composer.code')"
+          :title="t('composer.codeTitle')"
+          @click="wrap('`', '`')"
+        >
+          `
+        </button>
+        <button
+          type="button"
+          class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink"
+          :aria-label="t('composer.link')"
+          :title="t('composer.linkTitle')"
+          @click="wrap('[', '](https://)')"
+        >
+          ↗
+        </button>
         <template v-if="uploadsEnabled">
           <span class="mx-1 h-3 w-px bg-line" />
-          <button type="button" class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :disabled="uploading !== null" :aria-label="t('composer.uploadImage')" :title="t('composer.uploadImageTitle')" @click="imageInput?.click()">
+          <button
+            type="button"
+            class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink"
+            :disabled="uploading !== null"
+            :aria-label="t('composer.uploadImage')"
+            :title="t('composer.uploadImageTitle')"
+            @click="imageInput?.click()"
+          >
             <Loader2 v-if="uploading === 'image'" :size="13" class="animate-spin" />
             <ImagePlus v-else :size="13" />
           </button>
-          <button type="button" class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink" :disabled="uploading !== null" :aria-label="t('composer.uploadArchive')" :title="t('composer.uploadArchiveTitle')" @click="archiveInput?.click()">
+          <button
+            type="button"
+            class="grid size-6 place-items-center rounded-[2px] hover:bg-hover hover:text-ink"
+            :disabled="uploading !== null"
+            :aria-label="t('composer.uploadArchive')"
+            :title="t('composer.uploadArchiveTitle')"
+            @click="archiveInput?.click()"
+          >
             <Loader2 v-if="uploading === 'attachment'" :size="13" class="animate-spin" />
             <Paperclip v-else :size="13" />
           </button>
@@ -228,7 +301,13 @@ function onPick(kind: UploadKind, event: Event): void {
     </div>
 
     <input ref="imageInput" type="file" class="hidden" :accept="IMAGE_ACCEPT" @change="onPick('image', $event)" />
-    <input ref="archiveInput" type="file" class="hidden" :accept="ARCHIVE_ACCEPT" @change="onPick('attachment', $event)" />
+    <input
+      ref="archiveInput"
+      type="file"
+      class="hidden"
+      :accept="ARCHIVE_ACCEPT"
+      @change="onPick('attachment', $event)"
+    />
 
     <div class="flex items-center border-t border-line px-3 py-1.5 text-[0.65625rem] text-muted-foreground">
       <span>{{ t("composer.chars", { count: modelValue.length }) }}</span>

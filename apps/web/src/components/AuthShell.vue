@@ -13,7 +13,10 @@ const stats = ref<SiteStats | null>(null);
 
 onMounted(() => {
   void config.load();
-  void api.siteStats().then((data) => (stats.value = data)).catch(() => undefined);
+  void api
+    .siteStats()
+    .then((data) => (stats.value = data))
+    .catch(() => undefined);
 });
 </script>
 
@@ -29,14 +32,24 @@ onMounted(() => {
           </div>
         </div>
         <div class="my-auto py-10">
-          <p class="max-w-[15em] text-[1.5rem] font-semibold leading-[1.5] tracking-[-0.02em]">{{ t("auth.headline") }}<br />{{ t("auth.headlineBreak") }}</p>
-          <p class="mt-4 max-w-[28em] text-[0.6875rem] leading-[1.85] text-white/65">{{ config.config?.site.description || t("auth.shellDescription") }}</p>
+          <p class="max-w-[15em] text-[1.5rem] font-semibold leading-[1.5] tracking-[-0.02em]">
+            {{ t("auth.headline") }}<br />{{ t("auth.headlineBreak") }}
+          </p>
+          <p class="mt-4 max-w-[28em] text-[0.6875rem] leading-[1.85] text-white/65">
+            {{ config.config?.site.description || t("auth.shellDescription") }}
+          </p>
         </div>
         <div class="flex items-end justify-between gap-4">
           <div class="v2-auth-stats">
-            <div class="v2-auth-stat"><b>{{ stats?.topics ?? "—" }}</b><span>{{ t("auth.shellStatsTopics") }}</span></div>
-            <div class="v2-auth-stat"><b>{{ stats?.members ?? "—" }}</b><span>{{ t("auth.shellStatsMembers") }}</span></div>
-            <div class="v2-auth-stat"><b>{{ stats?.todayPosts ?? "—" }}</b><span>{{ t("auth.shellStatsToday") }}</span></div>
+            <div class="v2-auth-stat">
+              <b>{{ stats?.topics ?? "—" }}</b><span>{{ t("auth.shellStatsTopics") }}</span>
+            </div>
+            <div class="v2-auth-stat">
+              <b>{{ stats?.members ?? "—" }}</b><span>{{ t("auth.shellStatsMembers") }}</span>
+            </div>
+            <div class="v2-auth-stat">
+              <b>{{ stats?.todayPosts ?? "—" }}</b><span>{{ t("auth.shellStatsToday") }}</span>
+            </div>
           </div>
           <p class="text-[0.625rem] text-white/45">Cloudflare Workers</p>
         </div>
@@ -44,14 +57,18 @@ onMounted(() => {
 
       <section class="v2-auth-form">
         <div class="v2-auth-form-inner">
-          <RouterLink to="/" class="ml-auto block w-fit text-[0.65625rem] text-muted-foreground hover:text-ink">← {{ t("auth.backHome") }}</RouterLink>
+          <RouterLink to="/" class="ml-auto block w-fit text-[0.65625rem] text-muted-foreground hover:text-ink"
+            >← {{ t("auth.backHome") }}</RouterLink
+          >
           <div class="mt-8 flex items-center gap-2 lg:hidden">
             <BrandMark :size="22" show-name name-class="text-[1rem]" />
           </div>
           <h1 class="mt-4 text-[1.375rem]">{{ title }}</h1>
           <p v-if="subtitle" class="v2-auth-sub">{{ subtitle }}</p>
           <div class="mt-6"><slot /></div>
-          <div class="mt-6 border-t border-line pt-4 text-[0.6875rem] text-muted-foreground"><slot name="footer" /></div>
+          <div class="mt-6 border-t border-line pt-4 text-[0.6875rem] text-muted-foreground">
+            <slot name="footer" />
+          </div>
         </div>
       </section>
     </div>

@@ -32,7 +32,9 @@ export async function reindexAllPosts(env: Bindings): Promise<{ posts: number; b
          JOIN posts fp ON fp.topic_id = t.id AND fp.is_first = 1
         WHERE p.status = 'published' AND t.status = 'published'
         ORDER BY p.created_at, p.id LIMIT ? OFFSET ?`,
-    ).bind(chunk, offset).all<{ id: string; topic_id: string; is_first: number; content_md: string; first_title: string }>();
+    )
+      .bind(chunk, offset)
+      .all<{ id: string; topic_id: string; is_first: number; content_md: string; first_title: string }>();
     if (!rows.results.length) break;
     const statements = rows.results.map((row) =>
       ftsInsertStatement(env.DB, {

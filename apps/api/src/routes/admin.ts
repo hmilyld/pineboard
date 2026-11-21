@@ -16,7 +16,9 @@ adminRoutes.get("/api/admin/overview", requireAdmin, async (c) => {
        (SELECT COUNT(*) FROM reports WHERE status = 'pending') AS pending_reports,
        (SELECT COUNT(*) FROM user WHERE status = 'active' AND created_at >= ?) AS new_members,
        (SELECT COUNT(*) FROM email_logs WHERE status = 'failed' AND created_at >= ?) AS email_failures`,
-  ).bind(weekAgo, weekAgo).first<{ pending_reports: number; new_members: number; email_failures: number }>();
+  )
+    .bind(weekAgo, weekAgo)
+    .first<{ pending_reports: number; new_members: number; email_failures: number }>();
 
   const reportRows = await c.env.DB.prepare(
     `SELECT r.id, r.reason_code, r.target_type, r.target_id, r.created_at, u.name AS reporter_name
@@ -27,15 +29,17 @@ adminRoutes.get("/api/admin/overview", requireAdmin, async (c) => {
   for (const row of reportRows.results) {
     let targetTitle = "内容已不存在";
     if (row.target_type === "topic") {
-      const target = await c.env.DB.prepare(
-        "SELECT title FROM posts WHERE topic_id = ? AND is_first = 1 LIMIT 1",
-      ).bind(row.target_id).first<{ title: string }>();
+      const target = await c.env.DB.prepare("SELECT title FROM posts WHERE topic_id = ? AND is_first = 1 LIMIT 1")
+        .bind(row.target_id)
+        .first<{ title: string }>();
       if (target) targetTitle = target.title;
     } else {
       const target = await c.env.DB.prepare(
         `SELECT (SELECT fp.title FROM posts fp WHERE fp.topic_id = p.topic_id AND fp.is_first = 1 LIMIT 1) AS title
            FROM posts p WHERE p.id = ?`,
-      ).bind(row.target_id).first<{ title: string | null }>();
+      )
+        .bind(row.target_id)
+        .first<{ title: string | null }>();
       if (target?.title) targetTitle = target.title;
     }
     pendingReportItems.push({
@@ -62,7 +66,8 @@ adminRoutes.get("/api/admin/overview", requireAdmin, async (c) => {
     }
   }
   const deployRaw = c.env.CF_VERSION_METADATA?.timestamp;
-  const lastDeployAt = deployRaw && Number.isFinite(Date.parse(deployRaw)) ? Math.floor(Date.parse(deployRaw) / 1000) : null;
+  const lastDeployAt =
+    deployRaw && Number.isFinite(Date.parse(deployRaw)) ? Math.floor(Date.parse(deployRaw) / 1000) : null;
   const data: AdminOverview = {
     todayPosts: stats.todayPosts,
     pendingReports: Number(counts?.pending_reports ?? 0),

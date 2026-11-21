@@ -2,11 +2,14 @@
 import { computed } from "vue";
 import { t } from "@/i18n";
 
-const props = withDefaults(defineProps<{ page: number; totalPages: number; total?: number; compact?: boolean; unit?: string }>(), {
-  total: undefined,
-  compact: false,
-  unit: undefined,
-});
+const props = withDefaults(
+  defineProps<{ page: number; totalPages: number; total?: number; compact?: boolean; unit?: string }>(),
+  {
+    total: undefined,
+    compact: false,
+    unit: undefined,
+  },
+);
 const emit = defineEmits<{ change: [number] }>();
 
 const pages = computed<Array<number | "…">>(() => {
@@ -36,9 +39,13 @@ function go(page: number): void {
     <button type="button" :disabled="page <= 1" :aria-label="t('pager.prev')" @click="go(page - 1)">‹</button>
     <template v-for="(item, index) in pages" :key="`${item}-${index}`">
       <span v-if="item === '…'" class="px-1 text-muted-foreground">…</span>
-      <button v-else type="button" :aria-current="item === page ? 'page' : undefined" @click="go(item)">{{ item }}</button>
+      <button v-else type="button" :aria-current="item === page ? 'page' : undefined" @click="go(item)">
+        {{ item }}
+      </button>
     </template>
     <button type="button" :disabled="page >= totalPages" :aria-label="t('pager.next')" @click="go(page + 1)">›</button>
-    <span v-if="total !== undefined" class="ml-3 text-[0.65625rem] text-muted-foreground">{{ t("pager.total", { total, unit: unitLabel }) }}</span>
+    <span v-if="total !== undefined" class="ml-3 text-[0.65625rem] text-muted-foreground">{{
+      t("pager.total", { total, unit: unitLabel })
+    }}</span>
   </nav>
 </template>

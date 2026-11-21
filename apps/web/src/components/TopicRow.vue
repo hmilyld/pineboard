@@ -9,10 +9,17 @@ defineProps<{ topic: TopicSummary }>();
 </script>
 
 <template>
-  <RouterLink :to="`/t/${topic.id}`" class="v2-row" :class="categoryClass(topic.category.slug)" :style="categoryStyle(topic.category.color)">
+  <RouterLink
+    :to="`/t/${topic.id}`"
+    class="v2-row"
+    :class="categoryClass(topic.category.slug)"
+    :style="categoryStyle(topic.category.color)"
+  >
     <div class="min-w-0">
       <div class="v2-title">
-        <span v-if="topic.pinLevel > 0" class="v2-flag pin">{{ topic.pinLevel === 2 ? t("topic.pinGlobal") : t("topic.pinCategory") }}</span>
+        <span v-if="topic.pinLevel > 0" class="v2-flag pin">{{
+          topic.pinLevel === 2 ? t("topic.pinGlobal") : t("topic.pinCategory")
+        }}</span>
         <span v-if="topic.isDigest" class="v2-flag good">{{ t("topic.digest") }}</span>
         {{ topic.title }}
       </div>

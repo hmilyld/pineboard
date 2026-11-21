@@ -24,7 +24,9 @@ const navRows = computed(() => {
     rows.push({ ...parent, depth: 0 });
     for (const child of ordered.filter((item) => item.parentId === parent.id)) rows.push({ ...child, depth: 1 });
   }
-  for (const orphan of ordered.filter((item) => item.parentId && !topLevel.some((parent) => parent.id === item.parentId))) {
+  for (const orphan of ordered.filter(
+    (item) => item.parentId && !topLevel.some((parent) => parent.id === item.parentId),
+  )) {
     rows.push({ ...orphan, depth: 1 });
   }
   return rows;
@@ -160,12 +162,17 @@ async function move(item: NavItem, direction: -1 | 1): Promise<void> {
 
 async function remove(item: NavItem): Promise<void> {
   const childCount = items.value.filter((entry) => entry.parentId === item.id).length;
-  if (!(await confirmDialog({
-    title: t("admin.navPage.deleteTitle"),
-    message: childCount ? t("admin.navPage.deleteWithChildren", { label: item.label, count: childCount }) : t("admin.navPage.deleteBody", { label: item.label }),
-    confirmLabel: t("admin.common.delete"),
-    danger: true,
-  }))) return;
+  if (
+    !(await confirmDialog({
+      title: t("admin.navPage.deleteTitle"),
+      message: childCount
+        ? t("admin.navPage.deleteWithChildren", { label: item.label, count: childCount })
+        : t("admin.navPage.deleteBody", { label: item.label }),
+      confirmLabel: t("admin.common.delete"),
+      danger: true,
+    }))
+  )
+    return;
   busy.value = `delete:${item.id}`;
   error.value = "";
   saved.value = "";
@@ -190,7 +197,9 @@ onMounted(load);
         <h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.nav") }}</h1>
         <p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.navPage.subtitle") }}</p>
       </div>
-      <button type="button" class="v2-btn solid sm" @click="openCreate"><Plus :size="13" /> {{ t("admin.navPage.create") }}</button>
+      <button type="button" class="v2-btn solid sm" @click="openCreate">
+        <Plus :size="13" /> {{ t("admin.navPage.create") }}
+      </button>
     </div>
 
     <p v-if="error" :class="[alertErrorClass, 'mt-4']" role="alert">{{ error }}</p>
@@ -199,13 +208,26 @@ onMounted(load);
     <section v-if="formOpen" class="v2-admin-panel mt-4">
       <div class="v2-admin-panel-head">
         <span>{{ editing ? t("admin.navPage.editTitle", { label: editing.label }) : t("admin.navPage.create") }}</span>
-        <button type="button" class="text-muted-foreground hover:text-ink" :aria-label="t('admin.common.close')" @click="formOpen = false"><X :size="15" /></button>
+        <button
+          type="button"
+          class="text-muted-foreground hover:text-ink"
+          :aria-label="t('admin.common.close')"
+          @click="formOpen = false"
+        >
+          <X :size="15" />
+        </button>
       </div>
       <form class="p-4" @submit.prevent="save">
         <div class="grid gap-3 sm:grid-cols-2">
           <div>
             <label :class="labelClass" for="nav-label">{{ t("admin.common.name") }}</label>
-            <input id="nav-label" v-model="form.label" :class="inputClass" maxlength="20" :placeholder="t('admin.navPage.labelPlaceholder')" />
+            <input
+              id="nav-label"
+              v-model="form.label"
+              :class="inputClass"
+              maxlength="20"
+              :placeholder="t('admin.navPage.labelPlaceholder')"
+            />
           </div>
           <div>
             <label :class="labelClass" for="nav-kind">{{ t("admin.navPage.kind") }}</label>
@@ -219,24 +241,46 @@ onMounted(load);
             <label :class="labelClass" for="nav-parent">{{ t("admin.navPage.parent") }}</label>
             <select id="nav-parent" v-model="form.parentId" :class="inputClass">
               <option :value="null">{{ t("admin.navPage.noParent") }}</option>
-              <option v-for="parent in items.filter((entry) => entry.kind === 'dropdown' && !entry.parentId && entry.id !== editing?.id)" :key="parent.id" :value="parent.id">{{ parent.label }}</option>
+              <option
+                v-for="parent in items.filter(
+                  (entry) => entry.kind === 'dropdown' && !entry.parentId && entry.id !== editing?.id,
+                )"
+                :key="parent.id"
+                :value="parent.id"
+              >
+                {{ parent.label }}
+              </option>
             </select>
           </div>
           <div v-if="form.kind === 'link'" class="sm:col-span-2">
             <label :class="labelClass" for="nav-href">{{ t("admin.navPage.href") }}</label>
-            <input id="nav-href" v-model="form.href" :class="inputClass" maxlength="300" :placeholder="t('admin.navPage.hrefPlaceholder')" />
+            <input
+              id="nav-href"
+              v-model="form.href"
+              :class="inputClass"
+              maxlength="300"
+              :placeholder="t('admin.navPage.hrefPlaceholder')"
+            />
           </div>
           <div v-else class="sm:col-span-2">
             <p v-if="form.kind === 'categories'" class="v2-note">{{ t("admin.navPage.categoriesNote") }}</p>
             <p v-else class="v2-note">{{ t("admin.navPage.dropdownNote") }}</p>
           </div>
           <div class="flex items-end gap-4 pb-2">
-            <label class="flex items-center gap-2 text-[0.75rem]"><input v-model="form.isVisible" type="checkbox" class="size-4 accent-brand" /> {{ t("admin.common.show") }}</label>
-            <label v-if="form.kind === 'link'" class="flex items-center gap-2 text-[0.75rem]"><input v-model="form.openInNewTab" type="checkbox" class="size-4 accent-brand" /> {{ t("admin.navPage.newTab") }}</label>
+            <label class="flex items-center gap-2 text-[0.75rem]"
+              ><input v-model="form.isVisible" type="checkbox" class="size-4 accent-brand" />
+              {{ t("admin.common.show") }}</label
+            >
+            <label v-if="form.kind === 'link'" class="flex items-center gap-2 text-[0.75rem]"
+              ><input v-model="form.openInNewTab" type="checkbox" class="size-4 accent-brand" />
+              {{ t("admin.navPage.newTab") }}</label
+            >
           </div>
         </div>
         <div class="mt-4 flex items-center gap-2">
-          <button type="submit" class="v2-btn solid sm" :disabled="busy === 'save'">{{ busy === "save" ? t("admin.common.saving") : t("admin.navPage.save") }}</button>
+          <button type="submit" class="v2-btn solid sm" :disabled="busy === 'save'">
+            {{ busy === "save" ? t("admin.common.saving") : t("admin.navPage.save") }}
+          </button>
           <button type="button" class="v2-btn sm" @click="formOpen = false">{{ t("admin.common.cancel") }}</button>
         </div>
       </form>
@@ -245,34 +289,87 @@ onMounted(load);
     <div v-if="loading" class="v2-admin-panel mt-4 p-4">
       <div v-for="i in 4" :key="i" class="flex items-center gap-3 border-b border-line py-3 last:border-b-0">
         <div class="size-2.5 animate-pulse rounded-full bg-muted" />
-        <div class="flex-1 space-y-2"><div class="h-3 w-1/4 animate-pulse bg-muted" /><div class="h-2.5 w-1/2 animate-pulse bg-muted" /></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-3 w-1/4 animate-pulse bg-muted" />
+          <div class="h-2.5 w-1/2 animate-pulse bg-muted" />
+        </div>
       </div>
     </div>
 
     <section v-else class="v2-admin-panel mt-4">
-      <div class="v2-admin-panel-head"><span>{{ t("admin.navPage.listTitle") }}</span><span class="text-[0.65625rem] font-normal text-muted-foreground">{{ t("admin.navPage.itemCount", { count: navRows.length }) }}</span></div>
-      <div v-if="!items.length" class="p-6 text-center text-[0.71875rem] text-muted-foreground">{{ t("admin.navPage.empty") }}</div>
+      <div class="v2-admin-panel-head">
+        <span>{{ t("admin.navPage.listTitle") }}</span><span
+          class="text-[0.65625rem] font-normal text-muted-foreground"
+          >{{ t("admin.navPage.itemCount", { count: navRows.length }) }}</span
+        >
+      </div>
+      <div v-if="!items.length" class="p-6 text-center text-[0.71875rem] text-muted-foreground">
+        {{ t("admin.navPage.empty") }}
+      </div>
       <div v-for="(item, index) in navRows" :key="item.id" class="v2-admin-row" :class="{ 'pl-8': item.depth > 0 }">
         <div class="flex min-w-0 items-center gap-3">
-          <span class="grid size-6 flex-none place-items-center rounded-[3px] bg-pine/10 text-[0.625rem] font-semibold text-pine">{{ item.kind === "categories" ? "▾" : item.kind === "dropdown" ? "▾" : "↗" }}</span>
+          <span
+            class="grid size-6 flex-none place-items-center rounded-[3px] bg-pine/10 text-[0.625rem] font-semibold text-pine"
+            >{{ item.kind === "categories" ? "▾" : item.kind === "dropdown" ? "▾" : "↗" }}</span
+          >
           <div class="min-w-0">
             <p class="flex flex-wrap items-center gap-2 text-[0.78125rem] font-semibold">
               {{ item.label }}
-              <span class="text-[0.625rem] font-normal text-muted-foreground">{{ item.kind === "categories" ? t("admin.navPage.kindCategories") : item.kind === "dropdown" ? t("admin.navPage.kindDropdown") : item.href }}</span>
+              <span class="text-[0.625rem] font-normal text-muted-foreground">{{
+                item.kind === "categories"
+                  ? t("admin.navPage.kindCategories")
+                  : item.kind === "dropdown"
+                    ? t("admin.navPage.kindDropdown")
+                    : item.href
+              }}</span>
               <span v-if="!item.isVisible" class="v2-flag">{{ t("admin.tags.statusHidden") }}</span>
             </p>
-            <p v-if="item.kind === 'link'" class="mt-0.5 text-[0.65625rem] text-muted-foreground">{{ item.openInNewTab ? t("admin.navPage.opensNewTab") : t("admin.navPage.opensHere") }}</p>
+            <p v-if="item.kind === 'link'" class="mt-0.5 text-[0.65625rem] text-muted-foreground">
+              {{ item.openInNewTab ? t("admin.navPage.opensNewTab") : t("admin.navPage.opensHere") }}
+            </p>
           </div>
         </div>
         <div class="flex flex-none items-center gap-1">
-          <button type="button" class="v2-btn sm" :disabled="index === 0 || busy === 'reorder'" :aria-label="t('admin.common.moveUp')" @click="move(item, -1)"><ArrowUp :size="13" /></button>
-          <button type="button" class="v2-btn sm" :disabled="index === items.length - 1 || busy === 'reorder'" :aria-label="t('admin.common.moveDown')" @click="move(item, 1)"><ArrowDown :size="13" /></button>
-          <button type="button" class="v2-btn sm" :disabled="busy === `visible:${item.id}`" :aria-label="item.isVisible ? t('admin.common.hide') : t('admin.common.show')" @click="toggleVisible(item)">
+          <button
+            type="button"
+            class="v2-btn sm"
+            :disabled="index === 0 || busy === 'reorder'"
+            :aria-label="t('admin.common.moveUp')"
+            @click="move(item, -1)"
+          >
+            <ArrowUp :size="13" />
+          </button>
+          <button
+            type="button"
+            class="v2-btn sm"
+            :disabled="index === items.length - 1 || busy === 'reorder'"
+            :aria-label="t('admin.common.moveDown')"
+            @click="move(item, 1)"
+          >
+            <ArrowDown :size="13" />
+          </button>
+          <button
+            type="button"
+            class="v2-btn sm"
+            :disabled="busy === `visible:${item.id}`"
+            :aria-label="item.isVisible ? t('admin.common.hide') : t('admin.common.show')"
+            @click="toggleVisible(item)"
+          >
             <Eye v-if="item.isVisible" :size="13" />
             <EyeOff v-else :size="13" />
           </button>
-          <button type="button" class="v2-btn sm" :aria-label="t('admin.common.edit')" @click="openEdit(item)"><Pencil :size="13" /></button>
-          <button type="button" class="v2-btn sm danger" :disabled="busy === `delete:${item.id}`" :aria-label="t('admin.common.delete')" @click="remove(item)"><Trash2 :size="13" /></button>
+          <button type="button" class="v2-btn sm" :aria-label="t('admin.common.edit')" @click="openEdit(item)">
+            <Pencil :size="13" />
+          </button>
+          <button
+            type="button"
+            class="v2-btn sm danger"
+            :disabled="busy === `delete:${item.id}`"
+            :aria-label="t('admin.common.delete')"
+            @click="remove(item)"
+          >
+            <Trash2 :size="13" />
+          </button>
         </div>
       </div>
     </section>

@@ -58,7 +58,9 @@ const moveCategory = ref("");
 const modBusy = ref(false);
 
 const postIds = computed(() => new Set(replies.value.map((post) => post.id)));
-const topLevel = computed(() => replies.value.filter((post) => !post.parentPostId || !postIds.value.has(post.parentPostId)));
+const topLevel = computed(() =>
+  replies.value.filter((post) => !post.parentPostId || !postIds.value.has(post.parentPostId)),
+);
 const children = computed(() => {
   const map = new Map<string, Post[]>();
   for (const post of replies.value) {
@@ -140,7 +142,11 @@ async function saveReplyEdit(): Promise<void> {
 }
 
 async function loadPosts(): Promise<void> {
-  const data = await api.posts(topicId.value, { page: page.value, perPage: config.config?.seo.postsPerPage ?? 20, onlyOp: onlyOp.value });
+  const data = await api.posts(topicId.value, {
+    page: page.value,
+    perPage: config.config?.seo.postsPerPage ?? 20,
+    onlyOp: onlyOp.value,
+  });
   replies.value = data.items;
   page.value = data.page;
   totalPages.value = data.totalPages;
@@ -231,7 +237,11 @@ async function submitReply(): Promise<void> {
   }
   submitting.value = true;
   try {
-    const created = await api.createReply(topicId.value, { contentMd: replyContent.value, parentPostId: replyTo.value?.id }, token.value);
+    const created = await api.createReply(
+      topicId.value,
+      { contentMd: replyContent.value, parentPostId: replyTo.value?.id },
+      token.value,
+    );
     replyContent.value = "";
     replyTo.value = null;
     widget.value?.reset();
@@ -294,12 +304,15 @@ async function toggleBookmark(): Promise<void> {
 }
 
 async function removeTopic(): Promise<void> {
-  if (!(await confirmDialog({
-    title: t("topic.deleteTopicConfirmTitle"),
-    message: t("topic.deleteTopicConfirmBody"),
-    confirmLabel: t("topic.confirmDelete"),
-    danger: true,
-  }))) return;
+  if (
+    !(await confirmDialog({
+      title: t("topic.deleteTopicConfirmTitle"),
+      message: t("topic.deleteTopicConfirmBody"),
+      confirmLabel: t("topic.confirmDelete"),
+      danger: true,
+    }))
+  )
+    return;
   try {
     await api.deleteTopic(topicId.value);
     await router.push("/");
@@ -310,12 +323,15 @@ async function removeTopic(): Promise<void> {
 
 async function removePost(post: Post): Promise<void> {
   if (post.isFirst) return removeTopic();
-  if (!(await confirmDialog({
-    title: t("topic.deleteReplyConfirmTitle"),
-    message: t("topic.deleteReplyConfirmBody"),
-    confirmLabel: t("topic.confirmDelete"),
-    danger: true,
-  }))) return;
+  if (
+    !(await confirmDialog({
+      title: t("topic.deleteReplyConfirmTitle"),
+      message: t("topic.deleteReplyConfirmBody"),
+      confirmLabel: t("topic.confirmDelete"),
+      danger: true,
+    }))
+  )
+    return;
   try {
     await api.deletePost(post.id);
     await load();
@@ -400,17 +416,34 @@ watch([() => route.query.page, () => route.query.onlyOp], () => {
         <div>
           <div class="min-w-0">
             <div id="topic-top" class="scroll-mt-32">
-              <nav class="v2-crumb" :class="categoryClass(detail.topic.category.slug)" :style="categoryStyle(detail.topic.category.color)">
-                <RouterLink to="/">{{ t("page.home") }}</RouterLink><span class="sep">/</span><i /><RouterLink :to="`/c/${detail.topic.category.slug}`" class="v2-catlink">{{ detail.topic.category.name }}</RouterLink>
+              <nav
+                class="v2-crumb"
+                :class="categoryClass(detail.topic.category.slug)"
+                :style="categoryStyle(detail.topic.category.color)"
+              >
+                <RouterLink to="/">{{ t("page.home") }}</RouterLink><span class="sep">/</span><i /><RouterLink
+                  :to="`/c/${detail.topic.category.slug}`"
+                  class="v2-catlink"
+                  >{{ detail.topic.category.name }}</RouterLink
+                >
               </nav>
 
-              <header class="v2-topic-head mt-2" :class="categoryClass(detail.topic.category.slug)" :style="categoryStyle(detail.topic.category.color)">
+              <header
+                class="v2-topic-head mt-2"
+                :class="categoryClass(detail.topic.category.slug)"
+                :style="categoryStyle(detail.topic.category.color)"
+              >
                 <div class="min-w-0 flex-1">
                   <h1>{{ detail.topic.title }}</h1>
                   <div class="v2-tmeta">
-                    <RouterLink v-if="detail.topic.author.username" :to="`/u/${detail.topic.author.username}`"><b>{{ detail.topic.author.name }}</b></RouterLink>
+                    <RouterLink v-if="detail.topic.author.username" :to="`/u/${detail.topic.author.username}`"
+                      ><b>{{ detail.topic.author.name }}</b></RouterLink
+                    >
                     <span class="v2-dot" />
-                    <span><RelativeTime :seconds="detail.topic.createdAt" /></span><span class="v2-dot" /><span>{{ t("topic.replyCount", { count: detail.topic.replyCount }) }}</span><span class="v2-dot" /><span>{{ t("topic.viewCount", { count: detail.topic.viewCount }) }}</span>
+                    <span><RelativeTime :seconds="detail.topic.createdAt" /></span><span class="v2-dot" /><span>{{
+                      t("topic.replyCount", { count: detail.topic.replyCount })
+                    }}</span
+                    ><span class="v2-dot" /><span>{{ t("topic.viewCount", { count: detail.topic.viewCount }) }}</span>
                     <span v-if="detail.topic.isLocked" class="text-[var(--orange)]">{{ t("topic.locked") }}</span>
                   </div>
                   <div v-if="detail.topic.tags.length" class="mt-2"><TagChips :tags="detail.topic.tags" /></div>
@@ -419,39 +452,71 @@ watch([() => route.query.page, () => route.query.onlyOp], () => {
                   <button type="button" class="v2-switch" role="switch" :aria-checked="onlyOp" @click="toggleOnlyOp">
                     <span class="v2-switch-track" aria-hidden="true" />{{ t("topic.onlyOp") }}
                   </button>
-                  <button v-if="auth.user" type="button" class="v2-btn sm" @click="toggleBookmark">{{ detail.viewer.bookmarked ? t("topic.bookmarked") : t("topic.bookmark") }}</button>
+                  <button v-if="auth.user" type="button" class="v2-btn sm" @click="toggleBookmark">
+                    {{ detail.viewer.bookmarked ? t("topic.bookmarked") : t("topic.bookmark") }}
+                  </button>
                   <details v-if="auth.user" class="v2-actions-menu">
                     <summary class="v2-btn sm" :aria-label="t('topic.actions')"><MoreHorizontal :size="14" /></summary>
                     <div class="v2-dropdown">
-                      <RouterLink v-if="detail.viewer.canEdit" :to="`/t/${detail.topic.id}/edit`"><Pencil :size="13" />{{ t("topic.editTopic") }}</RouterLink>
-                      <button v-if="detail.viewer.canViewHistory" type="button" @click="openHistory(detail.firstPost)"><History :size="13" />{{ t("topic.revisions") }}</button>
+                      <RouterLink v-if="detail.viewer.canEdit" :to="`/t/${detail.topic.id}/edit`"
+                        ><Pencil :size="13" />{{ t("topic.editTopic") }}</RouterLink
+                      >
+                      <button v-if="detail.viewer.canViewHistory" type="button" @click="openHistory(detail.firstPost)">
+                        <History :size="13" />{{ t("topic.revisions") }}
+                      </button>
                       <span class="v2-dropdown-sep" />
-                      <button v-if="detail.viewer.canDelete" type="button" class="danger" @click="removeTopic"><Trash2 :size="13" />{{ t("topic.deleteTopic") }}</button>
+                      <button v-if="detail.viewer.canDelete" type="button" class="danger" @click="removeTopic">
+                        <Trash2 :size="13" />{{ t("topic.deleteTopic") }}
+                      </button>
                     </div>
                   </details>
                 </div>
               </header>
             </div>
 
-            <div v-if="actionError" class="fixed inset-x-4 bottom-4 z-[70] mx-auto max-w-md border border-orange/40 bg-card px-3 py-2 text-[0.71875rem] text-ink shadow-lg" role="alert">
+            <div
+              v-if="actionError"
+              class="fixed inset-x-4 bottom-4 z-[70] mx-auto max-w-md border border-orange/40 bg-card px-3 py-2 text-[0.71875rem] text-ink shadow-lg"
+              role="alert"
+            >
               <span class="mr-2">{{ actionError }}</span>
-              <button type="button" class="text-muted-foreground hover:text-ink" @click="actionError = ''">{{ t("topic.actionClose") }}</button>
+              <button type="button" class="text-muted-foreground hover:text-ink" @click="actionError = ''">
+                {{ t("topic.actionClose") }}
+              </button>
             </div>
 
             <details v-if="detail.viewer.canModerate" class="v2-panel mb-3 mt-3 p-3">
               <summary class="cursor-pointer text-[0.75rem] font-medium">{{ t("topic.moderation") }}</summary>
               <div class="v2-inline-controls mt-3 items-end text-[0.75rem]">
-                <label class="flex flex-col gap-1"><span class="text-[0.65625rem] text-muted-foreground">{{ t("topic.pinLabel") }}</span>
-                  <select :value="pinLevel" class="v2-input w-28 px-2" :disabled="modBusy" @change="setPin(Number(($event.target as HTMLSelectElement).value) as 0 | 1 | 2)">
-                    <option :value="0">{{ t("topic.noPin") }}</option><option :value="1">{{ t("topic.categoryPin") }}</option><option v-if="auth.isAdmin" :value="2">{{ t("topic.globalPin") }}</option>
+                <label class="flex flex-col gap-1"
+                  ><span class="text-[0.65625rem] text-muted-foreground">{{ t("topic.pinLabel") }}</span>
+                  <select
+                    :value="pinLevel"
+                    class="v2-input w-28 px-2"
+                    :disabled="modBusy"
+                    @change="setPin(Number(($event.target as HTMLSelectElement).value) as 0 | 1 | 2)"
+                  >
+                    <option :value="0">{{ t("topic.noPin") }}</option>
+                    <option :value="1">{{ t("topic.categoryPin") }}</option>
+                    <option v-if="auth.isAdmin" :value="2">{{ t("topic.globalPin") }}</option>
                   </select>
                 </label>
-                <button type="button" class="v2-btn sm" :disabled="modBusy" @click="toggleLock">{{ detail.topic.isLocked ? t("topic.unlock") : t("topic.lock") }}</button>
-                <button type="button" class="v2-btn sm" :disabled="modBusy" @click="toggleDigest">{{ detail.topic.isDigest ? t("topic.unfeature") : t("topic.feature") }}</button>
-                <label class="flex flex-col gap-1"><span class="text-[0.65625rem] text-muted-foreground">{{ t("topic.moveTo") }}</span>
-                  <select v-model="moveCategory" class="v2-input w-36 px-2"><option value="">{{ t("topic.chooseCategory") }}</option><option v-for="item in categories" :key="item.id" :value="item.id">{{ item.name }}</option></select>
+                <button type="button" class="v2-btn sm" :disabled="modBusy" @click="toggleLock">
+                  {{ detail.topic.isLocked ? t("topic.unlock") : t("topic.lock") }}
+                </button>
+                <button type="button" class="v2-btn sm" :disabled="modBusy" @click="toggleDigest">
+                  {{ detail.topic.isDigest ? t("topic.unfeature") : t("topic.feature") }}
+                </button>
+                <label class="flex flex-col gap-1"
+                  ><span class="text-[0.65625rem] text-muted-foreground">{{ t("topic.moveTo") }}</span>
+                  <select v-model="moveCategory" class="v2-input w-36 px-2">
+                    <option value="">{{ t("topic.chooseCategory") }}</option>
+                    <option v-for="item in categories" :key="item.id" :value="item.id">{{ item.name }}</option>
+                  </select>
                 </label>
-                <button type="button" class="v2-btn sm" :disabled="modBusy || !moveCategory" @click="move">{{ t("topic.move") }}</button>
+                <button type="button" class="v2-btn sm" :disabled="modBusy || !moveCategory" @click="move">
+                  {{ t("topic.move") }}
+                </button>
               </div>
             </details>
 
@@ -461,48 +526,146 @@ watch([() => route.query.page, () => route.query.onlyOp], () => {
             </div>
 
             <div class="v2-thread">
-              <PostItem :post="detail.firstPost" :can-reply="detail.viewer.canReply" :can-edit="detail.viewer.canEdit" :can-delete="detail.viewer.canDelete" :can-view-history="detail.viewer.canViewHistory" :highlight="highlightFloor === detail.firstPost.floor" @like="toggleLike" @reply="replyToPost" @quote="quote" @delete="removePost" @edit="startEdit" @history="openHistory" />
+              <PostItem
+                :post="detail.firstPost"
+                :can-reply="detail.viewer.canReply"
+                :can-edit="detail.viewer.canEdit"
+                :can-delete="detail.viewer.canDelete"
+                :can-view-history="detail.viewer.canViewHistory"
+                :highlight="highlightFloor === detail.firstPost.floor"
+                @like="toggleLike"
+                @reply="replyToPost"
+                @quote="quote"
+                @delete="removePost"
+                @edit="startEdit"
+                @history="openHistory"
+              />
               <template v-for="post in topLevel" :key="post.id">
-                <PostItem :post="post" :can-reply="detail.viewer.canReply" :can-edit="canEdit(post)" :can-delete="canDelete(post)" :can-view-history="detail.viewer.canViewHistory" :highlight="highlightFloor === post.floor" @like="toggleLike" @reply="replyToPost" @quote="quote" @delete="removePost" @edit="startEdit" @history="openHistory" />
-                <PostItem v-for="child in children.get(post.id) ?? []" :key="child.id" :post="child" nested :can-reply="false" :can-edit="canEdit(child)" :can-delete="canDelete(child)" :can-view-history="detail.viewer.canViewHistory" :highlight="highlightFloor === child.floor" @like="toggleLike" @reply="replyToPost" @quote="quote" @delete="removePost" @edit="startEdit" @history="openHistory" />
+                <PostItem
+                  :post="post"
+                  :can-reply="detail.viewer.canReply"
+                  :can-edit="canEdit(post)"
+                  :can-delete="canDelete(post)"
+                  :can-view-history="detail.viewer.canViewHistory"
+                  :highlight="highlightFloor === post.floor"
+                  @like="toggleLike"
+                  @reply="replyToPost"
+                  @quote="quote"
+                  @delete="removePost"
+                  @edit="startEdit"
+                  @history="openHistory"
+                />
+                <PostItem
+                  v-for="child in children.get(post.id) ?? []"
+                  :key="child.id"
+                  :post="child"
+                  nested
+                  :can-reply="false"
+                  :can-edit="canEdit(child)"
+                  :can-delete="canDelete(child)"
+                  :can-view-history="detail.viewer.canViewHistory"
+                  :highlight="highlightFloor === child.floor"
+                  @like="toggleLike"
+                  @reply="replyToPost"
+                  @quote="quote"
+                  @delete="removePost"
+                  @edit="startEdit"
+                  @history="openHistory"
+                />
               </template>
             </div>
 
             <div class="flex items-center justify-center border-t border-line py-3">
-              <PaginationBar :page="page" :total-pages="totalPages" :total="total" :unit="t('topic.floors')" @change="goPage" />
+              <PaginationBar
+                :page="page"
+                :total-pages="totalPages"
+                :total="total"
+                :unit="t('topic.floors')"
+                @change="goPage"
+              />
             </div>
 
             <section v-if="editingReply" id="reply-edit" class="v2-editor">
-              <div class="v2-ed-head">{{ t("topic.editHead", { floor: editingReply.floor }) }}<span>{{ t("topic.version", { version: editingReply.version }) }}</span></div>
+              <div class="v2-ed-head">
+                {{ t("topic.editHead", { floor: editingReply.floor })
+                }}<span>{{ t("topic.version", { version: editingReply.version }) }}</span>
+              </div>
               <div class="p-3">
                 <MarkdownEditor v-model="editContent" :rows="6" />
-                <input v-model="editReason" class="v2-input mt-2" maxlength="200" :placeholder="t('topic.editReasonPlaceholder')" />
+                <input
+                  v-model="editReason"
+                  class="v2-input mt-2"
+                  maxlength="200"
+                  :placeholder="t('topic.editReasonPlaceholder')"
+                />
                 <div v-if="turnstileEnabled" class="mt-2">
-                  <TurnstileWidget ref="editWidget" :site-key="config.turnstileSiteKey" action="post_edit" @token="editToken = $event" @expired="editToken = ''" @error="editError = $event" />
+                  <TurnstileWidget
+                    ref="editWidget"
+                    :site-key="config.turnstileSiteKey"
+                    action="post_edit"
+                    @token="editToken = $event"
+                    @expired="editToken = ''"
+                    @error="editError = $event"
+                  />
                 </div>
                 <ErrorState v-if="editError" class="mt-2" :message="editError" />
-                <div class="mt-2 flex gap-2"><button type="button" class="v2-btn solid sm" :disabled="savingEdit" @click="saveReplyEdit">{{ savingEdit ? t("common.saving") : t("topic.saveReplyEdit") }}</button><button type="button" class="v2-btn sm" @click="cancelEdit">{{ t("common.cancel") }}</button></div>
+                <div class="mt-2 flex gap-2">
+                  <button type="button" class="v2-btn solid sm" :disabled="savingEdit" @click="saveReplyEdit">
+                    {{ savingEdit ? t("common.saving") : t("topic.saveReplyEdit") }}</button><button
+                    type="button"
+                    class="v2-btn sm"
+                    @click="cancelEdit"
+                  >
+                    {{ t("common.cancel") }}
+                  </button>
+                </div>
               </div>
             </section>
 
             <section id="reply-editor" class="v2-editor">
-              <div class="v2-ed-head">{{ t("topic.replyTitle") }}<span v-if="replyTo">{{ t("topic.replyTo", { floor: replyTo.floor }) }}</span></div>
+              <div class="v2-ed-head">
+                {{ t("topic.replyTitle")
+                }}<span v-if="replyTo">{{ t("topic.replyTo", { floor: replyTo.floor }) }}</span>
+              </div>
               <template v-if="detail.viewer.canReply">
-                <MarkdownEditor v-model="replyContent" :rows="3" :height="88" flat :placeholder="t('topic.replyPlaceholder')" />
+                <MarkdownEditor
+                  v-model="replyContent"
+                  :rows="3"
+                  :height="88"
+                  flat
+                  :placeholder="t('topic.replyPlaceholder')"
+                />
                 <div v-if="turnstileEnabled" class="px-3">
-                  <TurnstileWidget ref="widget" :site-key="config.turnstileSiteKey" action="post_create" @token="token = $event" @expired="token = ''" @error="actionError = $event" />
+                  <TurnstileWidget
+                    ref="widget"
+                    :site-key="config.turnstileSiteKey"
+                    action="post_create"
+                    @token="token = $event"
+                    @expired="token = ''"
+                    @error="actionError = $event"
+                  />
                 </div>
                 <div class="v2-ed-foot">
                   <span class="v2-hint">{{ t("topic.replyHint") }}</span>
                   <span class="ml-auto" />
-                  <button v-if="replyTo" type="button" class="v2-btn sm" @click="replyTo = null">{{ t("topic.cancelReply") }}</button>
-                  <button type="button" class="v2-btn solid sm" :disabled="submitting" @click="submitReply">{{ submitting ? t("topic.replying") : t("topic.submitReply") }}</button>
+                  <button v-if="replyTo" type="button" class="v2-btn sm" @click="replyTo = null">
+                    {{ t("topic.cancelReply") }}
+                  </button>
+                  <button type="button" class="v2-btn solid sm" :disabled="submitting" @click="submitReply">
+                    {{ submitting ? t("topic.replying") : t("topic.submitReply") }}
+                  </button>
                 </div>
               </template>
               <div v-else class="border-t border-line p-4 text-[0.75rem] text-muted-foreground">
                 <template v-if="detail.topic.isLocked">{{ t("topic.lockedNoReply") }}</template>
-                <template v-else-if="!auth.user"><RouterLink to="/login" class="text-link">{{ t("topic.loginToReply") }}</RouterLink> {{ t("topic.loginToReplySuffix") }}</template>
-                <template v-else>{{ t("topic.verifyNeeded") }} <RouterLink to="/me" class="text-link">{{ t("topic.goVerify") }}</RouterLink></template>
+                <template v-else-if="!auth.user"
+                  ><RouterLink to="/login" class="text-link">{{ t("topic.loginToReply") }}</RouterLink>
+                  {{ t("topic.loginToReplySuffix") }}</template
+                >
+                <template v-else
+                  >{{ t("topic.verifyNeeded") }}
+                  <RouterLink to="/me" class="text-link">{{ t("topic.goVerify") }}</RouterLink></template
+                >
               </div>
             </section>
           </div>

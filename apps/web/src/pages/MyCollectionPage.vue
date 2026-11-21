@@ -34,7 +34,11 @@ const kind = computed<"topics" | "replies" | "bookmarks">(() => {
   return "topics";
 });
 const title = computed(() =>
-  kind.value === "replies" ? t("account.repliesTitle") : kind.value === "bookmarks" ? t("account.bookmarksTitle") : t("account.topicsTitle"),
+  kind.value === "replies"
+    ? t("account.repliesTitle")
+    : kind.value === "bookmarks"
+      ? t("account.bookmarksTitle")
+      : t("account.topicsTitle"),
 );
 const profile = computed(() => ({
   id: auth.user?.id ?? "",
@@ -79,9 +83,20 @@ watch(kind, () => load(1));
 
 <template>
   <AccountSkeleton v-if="!auth.user || (loading && !topics.length && !replies.length)" />
-  <AccountShell v-else-if="auth.user" :profile="profile" :active="kind" :topic-count="summary.topicCount" :reply-count="summary.replyCount" :like-count="summary.likeCount" :bookmark-count="summary.bookmarkCount" :notification-count="summary.unreadCount" is-self>
+  <AccountShell
+    v-else-if="auth.user"
+    :profile="profile"
+    :active="kind"
+    :topic-count="summary.topicCount"
+    :reply-count="summary.replyCount"
+    :like-count="summary.likeCount"
+    :bookmark-count="summary.bookmarkCount"
+    :notification-count="summary.unreadCount"
+    is-self
+  >
     <div class="v2-section-head">
-      <h2>{{ title }}</h2><span>{{ t("account.totalCount", { count: total }) }}</span>
+      <h2>{{ title }}</h2>
+      <span>{{ t("account.totalCount", { count: total }) }}</span>
       <RouterLink v-if="kind === 'topics'" to="/new" class="v2-btn solid sm">{{ t("account.newTopic") }}</RouterLink>
     </div>
     <ErrorState v-if="error" :message="error" retry @retry="load(page)" />
@@ -89,15 +104,30 @@ watch(kind, () => load(1));
       <LoadingRows v-if="loading" :rows="5" />
       <template v-else-if="kind === 'replies'">
         <div v-if="replies.length">
-          <RouterLink v-for="reply in replies" :key="reply.id" :to="`/t/${reply.topic.id}`" class="block border-b border-line px-3 py-3 last:border-b-0 hover:bg-hover">
-            <p class="text-[0.65625rem] text-muted-foreground">{{ t("account.repliedIn", { title: reply.topic.title }) }} · <RelativeTime :seconds="reply.createdAt" /></p>
-            <p class="mt-1 line-clamp-2 text-[0.78125rem] leading-6 text-ink">{{ reply.contentText || t("account.deletedReply") }}</p>
+          <RouterLink
+            v-for="reply in replies"
+            :key="reply.id"
+            :to="`/t/${reply.topic.id}`"
+            class="block border-b border-line px-3 py-3 last:border-b-0 hover:bg-hover"
+          >
+            <p class="text-[0.65625rem] text-muted-foreground">
+              {{ t("account.repliedIn", { title: reply.topic.title }) }} · <RelativeTime :seconds="reply.createdAt" />
+            </p>
+            <p class="mt-1 line-clamp-2 text-[0.78125rem] leading-6 text-ink">
+              {{ reply.contentText || t("account.deletedReply") }}
+            </p>
           </RouterLink>
         </div>
         <EmptyState v-else :message="t('account.noReplies')" />
       </template>
-      <TopicList v-else :topics="topics" :empty="kind === 'bookmarks' ? t('account.noBookmarks') : t('account.noTopics')" />
-      <div v-if="totalPages > 1" class="border-t border-line px-3"><PaginationBar :page="page" :total-pages="totalPages" :total="total" @change="load" /></div>
+      <TopicList
+        v-else
+        :topics="topics"
+        :empty="kind === 'bookmarks' ? t('account.noBookmarks') : t('account.noTopics')"
+      />
+      <div v-if="totalPages > 1" class="border-t border-line px-3">
+        <PaginationBar :page="page" :total-pages="totalPages" :total="total" @change="load" />
+      </div>
     </div>
   </AccountShell>
 </template>

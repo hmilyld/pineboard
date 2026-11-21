@@ -13,14 +13,20 @@ export type TopicSort = z.infer<typeof topicSortSchema>;
 export const createTopicSchema = z.object({
   categoryId: z.string().min(1).max(64),
   title: z.string().trim().min(1, "请输入标题").max(120, "标题最多 120 字"),
-  contentMd: z.string().min(1, "请输入正文").max(32 * 1024, "正文最多 32KB"),
+  contentMd: z
+    .string()
+    .min(1, "请输入正文")
+    .max(32 * 1024, "正文最多 32KB"),
   tagIds: z.array(z.string().min(1).max(64)).max(5, "标签最多 5 个").default([]),
 });
 
 export type CreateTopicInput = z.infer<typeof createTopicSchema>;
 
 export const createPostSchema = z.object({
-  contentMd: z.string().min(1, "请输入回复内容").max(32 * 1024, "回复最多 32KB"),
+  contentMd: z
+    .string()
+    .min(1, "请输入回复内容")
+    .max(32 * 1024, "回复最多 32KB"),
   parentPostId: z.string().min(1).max(64).optional(),
 });
 
@@ -207,7 +213,11 @@ export const editPostSchema = z
   .object({
     version: z.number().int().min(1),
     title: z.string().trim().min(1).max(120).optional(),
-    contentMd: z.string().min(1).max(32 * 1024).optional(),
+    contentMd: z
+      .string()
+      .min(1)
+      .max(32 * 1024)
+      .optional(),
     reason: z.string().trim().max(200).optional(),
   })
   .refine((value) => value.title !== undefined || value.contentMd !== undefined, {

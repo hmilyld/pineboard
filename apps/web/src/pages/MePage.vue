@@ -54,16 +54,29 @@ onMounted(() => {
 
 <template>
   <AccountSkeleton v-if="!auth.user || (loading && !topics.length)" />
-  <AccountShell v-else-if="auth.user" :profile="profile" active="topics" :topic-count="summary.topicCount" :reply-count="summary.replyCount" :like-count="summary.likeCount" :bookmark-count="summary.bookmarkCount" :notification-count="summary.unreadCount" is-self>
+  <AccountShell
+    v-else-if="auth.user"
+    :profile="profile"
+    active="topics"
+    :topic-count="summary.topicCount"
+    :reply-count="summary.replyCount"
+    :like-count="summary.likeCount"
+    :bookmark-count="summary.bookmarkCount"
+    :notification-count="summary.unreadCount"
+    is-self
+  >
     <div class="v2-section-head">
-      <h2>{{ t("account.myTopics") }}</h2><span>{{ t("account.totalCount", { count: summary.topicCount }) }}</span>
+      <h2>{{ t("account.myTopics") }}</h2>
+      <span>{{ t("account.totalCount", { count: summary.topicCount }) }}</span>
       <RouterLink to="/new" class="v2-btn solid sm">{{ t("account.newTopic") }}</RouterLink>
     </div>
     <ErrorState v-if="error" :message="error" retry @retry="load()" />
     <div v-else class="v2-panel">
       <LoadingRows v-if="loading" :rows="5" />
       <TopicList v-else :topics="topics" :empty="t('account.noTopics')" />
-      <div v-if="totalPages > 1" class="border-t border-line px-3"><PaginationBar :page="page" :total-pages="totalPages" @change="load" /></div>
+      <div v-if="totalPages > 1" class="border-t border-line px-3">
+        <PaginationBar :page="page" :total-pages="totalPages" @change="load" />
+      </div>
     </div>
   </AccountShell>
 </template>

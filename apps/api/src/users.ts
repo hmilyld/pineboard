@@ -6,23 +6,43 @@ import { requireAuth } from "./middleware/guards";
 
 type JoinRow = Record<string, unknown>;
 
-async function userByUsername(db: D1Database, username: string): Promise<{ id: string; username: string; name: string; bio: string | null; avatar_key: string | null; role: string; created_at: number } | null> {
+async function userByUsername(
+  db: D1Database,
+  username: string,
+): Promise<{
+  id: string;
+  username: string;
+  name: string;
+  bio: string | null;
+  avatar_key: string | null;
+  role: string;
+  created_at: number;
+} | null> {
   return await db
-    .prepare("SELECT id, username, name, bio, avatar_key, role, created_at FROM user WHERE username = ? AND status = 'active'")
+    .prepare(
+      "SELECT id, username, name, bio, avatar_key, role, created_at FROM user WHERE username = ? AND status = 'active'",
+    )
     .bind(username.toLowerCase())
     .first();
 }
 
 async function topicsByAuthor(db: D1Database, authorId: string, page: number, perPage: number) {
   const totalRow = await db
-    .prepare("SELECT COUNT(*) AS total FROM topics t JOIN categories c ON c.id = t.category_id WHERE t.author_id = ? AND t.status = 'published' AND c.is_visible = 1")
+    .prepare(
+      "SELECT COUNT(*) AS total FROM topics t JOIN categories c ON c.id = t.category_id WHERE t.author_id = ? AND t.status = 'published' AND c.is_visible = 1",
+    )
     .bind(authorId)
     .first<{ total: number }>();
   const rows = await db
-    .prepare(`${topicSelect} WHERE t.author_id = ? AND t.status = 'published' AND c.is_visible = 1 ORDER BY t.created_at DESC LIMIT ? OFFSET ?`)
+    .prepare(
+      `${topicSelect} WHERE t.author_id = ? AND t.status = 'published' AND c.is_visible = 1 ORDER BY t.created_at DESC LIMIT ? OFFSET ?`,
+    )
     .bind(authorId, perPage, (page - 1) * perPage)
     .all<JoinRow>();
-  const tags = await loadTags(db, rows.results.map((row) => String(row.id)));
+  const tags = await loadTags(
+    db,
+    rows.results.map((row) => String(row.id)),
+  );
   const total = Number(totalRow?.total ?? 0);
   return {
     items: rows.results.map((row) => mapTopic(row, tags.get(String(row.id)) ?? [])),
@@ -57,7 +77,15 @@ async function repliesByAuthor(db: D1Database, authorId: string, viewerId: strin
   return {
     items: rows.results.map((row) => ({
       ...mapPost(row),
-      topic: { id: String(row.topic_id), title: String(row.topic_title), category: { slug: String(row.category_slug), name: String(row.category_name), color: String(row.category_color ?? "#14513f") } },
+      topic: {
+        id: String(row.topic_id),
+        title: String(row.topic_title),
+        category: {
+          slug: String(row.category_slug),
+          name: String(row.category_name),
+          color: String(row.category_color ?? "#14513f"),
+        },
+      },
     })),
     page,
     perPage,
@@ -87,13 +115,25 @@ userRoutes.get("/api/users/:username", async (c) => {
          WHERE p.author_id = ? AND p.status = 'published') AS likes,
        (SELECT COUNT(*) FROM bookmarks b JOIN topics t ON t.id = b.topic_id
          WHERE t.author_id = ? AND t.status = 'published') AS bookmarks`,
-  ).bind(user.id, user.id, user.id, user.id).first<{ topics: number; replies: number; likes: number; bookmarks: number }>();
-  return c.json({ ok: true, data: {
-    id: user.id, username: user.username, name: user.name, bio: user.bio,
-    avatarKey: user.avatar_key, role: user.role, createdAt: Number(user.created_at),
-    topicCount: Number(counts?.topics ?? 0), replyCount: Number(counts?.replies ?? 0),
-    likeCount: Number(counts?.likes ?? 0), bookmarkCount: Number(counts?.bookmarks ?? 0),
-  } });
+  )
+    .bind(user.id, user.id, user.id, user.id)
+    .first<{ topics: number; replies: number; likes: number; bookmarks: number }>();
+  return c.json({
+    ok: true,
+    data: {
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      bio: user.bio,
+      avatarKey: user.avatar_key,
+      role: user.role,
+      createdAt: Number(user.created_at),
+      topicCount: Number(counts?.topics ?? 0),
+      replyCount: Number(counts?.replies ?? 0),
+      likeCount: Number(counts?.likes ?? 0),
+      bookmarkCount: Number(counts?.bookmarks ?? 0),
+    },
+  });
 });
 
 userRoutes.get("/api/users/:username/topics", async (c) => {
@@ -113,19 +153,32 @@ userRoutes.get("/api/users/:username/replies", async (c) => {
 userRoutes.get("/api/me/bookmarks", requireAuth, async (c) => {
   const user = c.get("user")!;
   const { page, perPage } = pageParams(c);
-  const totalRow = await c.env.DB.prepare("SELECT COUNT(*) AS total FROM bookmarks b JOIN topics t ON t.id = b.topic_id WHERE b.user_id = ? AND t.status = 'published'")
-    .bind(user.id).first<{ total: number }>();
+  const totalRow = await c.env.DB.prepare(
+    "SELECT COUNT(*) AS total FROM bookmarks b JOIN topics t ON t.id = b.topic_id WHERE b.user_id = ? AND t.status = 'published'",
+  )
+    .bind(user.id)
+    .first<{ total: number }>();
   const rows = await c.env.DB.prepare(
     `${topicSelect} JOIN bookmarks b ON b.topic_id = t.id
       WHERE b.user_id = ? AND t.status = 'published' AND c.is_visible = 1
       ORDER BY b.created_at DESC LIMIT ? OFFSET ?`,
-  ).bind(user.id, perPage, (page - 1) * perPage).all<JoinRow>();
-  const tags = await loadTags(c.env.DB, rows.results.map((row) => String(row.id)));
+  )
+    .bind(user.id, perPage, (page - 1) * perPage)
+    .all<JoinRow>();
+  const tags = await loadTags(
+    c.env.DB,
+    rows.results.map((row) => String(row.id)),
+  );
   const total = Number(totalRow?.total ?? 0);
-  return c.json(ok({
-    items: rows.results.map((row) => mapTopic(row, tags.get(String(row.id)) ?? [])),
-    page, perPage, total, totalPages: Math.max(1, Math.ceil(total / perPage)),
-  } satisfies { items: TopicSummary[]; page: number; perPage: number; total: number; totalPages: number }));
+  return c.json(
+    ok({
+      items: rows.results.map((row) => mapTopic(row, tags.get(String(row.id)) ?? [])),
+      page,
+      perPage,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / perPage)),
+    } satisfies { items: TopicSummary[]; page: number; perPage: number; total: number; totalPages: number }),
+  );
 });
 
 userRoutes.get("/api/me/topics", requireAuth, async (c) => {

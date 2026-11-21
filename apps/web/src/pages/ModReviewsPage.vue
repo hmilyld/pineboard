@@ -27,7 +27,13 @@ const configVersion = ref("0");
 const savingWords = ref(false);
 const wordsMessage = ref("");
 
-const wordCount = computed(() => words.value.split("\n").map((w) => w.trim()).filter(Boolean).length);
+const wordCount = computed(
+  () =>
+    words.value
+      .split("\n")
+      .map((w) => w.trim())
+      .filter(Boolean).length,
+);
 const isAdmin = computed(() => auth.isAdmin);
 
 async function load(): Promise<void> {
@@ -59,7 +65,12 @@ async function saveWords(nextWords?: string[]): Promise<void> {
   savingWords.value = true;
   wordsMessage.value = "";
   try {
-    const list = nextWords ?? words.value.split("\n").map((w) => w.trim()).filter(Boolean);
+    const list =
+      nextWords ??
+      words.value
+        .split("\n")
+        .map((w) => w.trim())
+        .filter(Boolean);
     const data = await api.updateAdminSettings(
       { security: { sensitiveWords: list, sensitiveWordsEnabled: wordsEnabled.value } },
       configVersion.value,
@@ -107,8 +118,13 @@ onMounted(async () => {
 <template>
   <div>
     <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
-      <div><h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.reviews") }}</h1><p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.reviews.subtitle") }}</p></div>
-      <RouterLink to="/" class="text-[0.71875rem] text-muted-foreground hover:text-ink">{{ t("admin.shell.backToForum") }}</RouterLink>
+      <div>
+        <h1 class="text-[1.1875rem] font-bold leading-[1.3]">{{ t("admin.nav.reviews") }}</h1>
+        <p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.reviews.subtitle") }}</p>
+      </div>
+      <RouterLink to="/" class="text-[0.71875rem] text-muted-foreground hover:text-ink">{{
+        t("admin.shell.backToForum")
+      }}</RouterLink>
     </div>
 
     <p v-if="message" :class="[alertInfoClass, 'mt-6']">{{ message }}</p>
@@ -119,17 +135,33 @@ onMounted(async () => {
     <div v-else class="mt-3 space-y-3">
       <article v-for="item in items" :key="item.id" :class="cardClass">
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span class="bg-warning/15 px-1.5 py-0.5 text-warning">{{ item.kind === "topic" ? t("admin.reports.targetTopic") : t("admin.reports.targetPost") }}</span>
+          <span class="bg-warning/15 px-1.5 py-0.5 text-warning">{{
+            item.kind === "topic" ? t("admin.reports.targetTopic") : t("admin.reports.targetPost")
+          }}</span>
           <span>{{ item.authorName }}</span>
           <span>{{ formatDate(item.createdAt) }}</span>
-          <span v-if="item.keywords.length" class="text-destructive">{{ t("admin.reviews.keywordHint", { words: item.keywords.join("、") }) }}</span>
+          <span v-if="item.keywords.length" class="text-destructive">{{
+            t("admin.reviews.keywordHint", { words: item.keywords.join("、") })
+          }}</span>
         </div>
         <h2 v-if="item.title" class="mt-2 text-sm font-medium">{{ item.title }}</h2>
-        <p class="mt-1 line-clamp-4 whitespace-pre-wrap text-xs leading-5 text-muted-foreground">{{ item.contentMd }}</p>
-        <input v-model="reasons[item.id]" class="v2-input mt-2 h-8" :placeholder="t('admin.reviews.rejectReason')" maxlength="200" :aria-label="t('admin.reviews.rejectReason')" />
+        <p class="mt-1 line-clamp-4 whitespace-pre-wrap text-xs leading-5 text-muted-foreground">
+          {{ item.contentMd }}
+        </p>
+        <input
+          v-model="reasons[item.id]"
+          class="v2-input mt-2 h-8"
+          :placeholder="t('admin.reviews.rejectReason')"
+          maxlength="200"
+          :aria-label="t('admin.reviews.rejectReason')"
+        />
         <div class="mt-3 flex gap-2">
-          <Button size="sm" :disabled="busy === item.id" @click="decide(item, 'approve')">{{ t("admin.reviews.approve") }}</Button>
-          <Button size="sm" variant="outline" :disabled="busy === item.id" @click="decide(item, 'reject')">{{ t("admin.reviews.reject") }}</Button>
+          <Button size="sm" :disabled="busy === item.id" @click="decide(item, 'approve')">{{
+            t("admin.reviews.approve")
+          }}</Button>
+          <Button size="sm" variant="outline" :disabled="busy === item.id" @click="decide(item, 'reject')">{{
+            t("admin.reviews.reject")
+          }}</Button>
         </div>
       </article>
     </div>
@@ -140,7 +172,9 @@ onMounted(async () => {
           <h2 class="text-[0.9375rem] font-bold">{{ t("admin.reviews.wordsTitle") }}</h2>
           <p class="mt-1 text-[0.65625rem] text-muted-foreground">{{ t("admin.reviews.wordsSubtitle") }}</p>
         </div>
-        <span class="num text-[0.65625rem] text-muted-foreground">{{ t("admin.reviews.wordsCount", { n: wordCount }) }}</span>
+        <span class="num text-[0.65625rem] text-muted-foreground">{{
+          t("admin.reviews.wordsCount", { n: wordCount })
+        }}</span>
       </div>
       <label class="mt-3 flex items-center gap-2 text-[0.75rem]">
         <input v-model="wordsEnabled" type="checkbox" class="size-3.5" />
@@ -148,11 +182,20 @@ onMounted(async () => {
       </label>
       <label class="mt-3 block">
         <span class="v2-label">{{ t("admin.reviews.wordsLabel") }}</span>
-        <textarea v-model="words" :class="[textareaClass, 'mt-1 min-h-[220px] font-mono text-[0.75rem]']" :placeholder="t('admin.reviews.wordsPlaceholder')" spellcheck="false" />
+        <textarea
+          v-model="words"
+          :class="[textareaClass, 'mt-1 min-h-[220px] font-mono text-[0.75rem]']"
+          :placeholder="t('admin.reviews.wordsPlaceholder')"
+          spellcheck="false"
+        />
       </label>
       <div class="mt-3 flex flex-wrap items-center gap-2">
-        <Button size="sm" :disabled="savingWords" @click="saveWords()">{{ savingWords ? t("common.saving") : t("common.save") }}</Button>
-        <Button size="sm" variant="outline" :disabled="savingWords" @click="seedDefaults">{{ t("admin.reviews.seedDefaults") }}</Button>
+        <Button size="sm" :disabled="savingWords" @click="saveWords()">{{
+          savingWords ? t("common.saving") : t("common.save")
+        }}</Button>
+        <Button size="sm" variant="outline" :disabled="savingWords" @click="seedDefaults">{{
+          t("admin.reviews.seedDefaults")
+        }}</Button>
         <span v-if="wordsMessage" class="text-[0.71875rem] text-muted-foreground">{{ wordsMessage }}</span>
       </div>
     </section>

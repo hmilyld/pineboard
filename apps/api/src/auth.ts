@@ -3,13 +3,7 @@ import { APIError } from "better-auth/api";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { drizzle } from "drizzle-orm/d1";
 import { schema } from "@pineboard/db";
-import {
-  DERIVED_PASSWORD_RE,
-  hmacB64,
-  timingSafeEqual,
-  ulid,
-  type AppConfig,
-} from "@pineboard/shared";
+import { DERIVED_PASSWORD_RE, hmacB64, timingSafeEqual, ulid, type AppConfig } from "@pineboard/shared";
 import { dispatchEmail, resetPasswordEmail, verificationEmail } from "./email";
 import type { Bindings, SessionUser } from "./env";
 

@@ -31,7 +31,12 @@ function mapResult(row: Row): SearchResult {
       name: String(row.author_name),
       avatarKey: (row.author_avatar_key as string | null) ?? null,
     },
-    category: { id: String(row.category_id), slug: String(row.category_slug), name: String(row.category_name), color: String(row.category_color ?? "#14513f") },
+    category: {
+      id: String(row.category_id),
+      slug: String(row.category_slug),
+      name: String(row.category_name),
+      color: String(row.category_color ?? "#14513f"),
+    },
     createdAt: Number(row.created_at),
   };
 }
@@ -40,13 +45,16 @@ export const searchRoutes = new Hono<AppEnv>();
 
 searchRoutes.get("/api/search", async (c) => {
   const loaded = await getSecurityConfig(c.env);
-  if (!loaded.config.feature.search) return c.json({ ok: false, error: { code: "not_found", message: "搜索未开启" } }, 404);
+  if (!loaded.config.feature.search)
+    return c.json({ ok: false, error: { code: "not_found", message: "搜索未开启" } }, 404);
   const ip = c.req.header("cf-connecting-ip") ?? c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const limit = await consumeRateLimit(c.env, `search:${await hashIp(c.env, ip)}`, 60, 60);
-  if (!limit.allowed) return c.json({ ok: false, error: { code: "rate_limited", message: "搜索过于频繁，请稍后再试" } }, 429);
+  if (!limit.allowed)
+    return c.json({ ok: false, error: { code: "rate_limited", message: "搜索过于频繁，请稍后再试" } }, 429);
   const q = (c.req.query("q") ?? "").trim().slice(0, 100);
   const sortParsed = searchSortSchema.safeParse(c.req.query("sort") ?? "relevance");
-  if (!sortParsed.success) return c.json({ ok: false, error: { code: "validation_error", message: "排序参数不合法" } }, 400);
+  if (!sortParsed.success)
+    return c.json({ ok: false, error: { code: "validation_error", message: "排序参数不合法" } }, 400);
   const sort = sortParsed.data;
   const pageRaw = Number(c.req.query("page") ?? 1);
   const perPageRaw = Number(c.req.query("perPage") ?? 20);
@@ -66,7 +74,9 @@ searchRoutes.get("/api/search", async (c) => {
     const pattern = likePattern(q);
     countRow = await c.env.DB.prepare(
       `SELECT COUNT(*) AS total ${joins} WHERE ${baseWhere} AND (p.title LIKE ? ESCAPE '\\' OR p.content_text LIKE ? ESCAPE '\\')`,
-    ).bind(pattern, pattern).first();
+    )
+      .bind(pattern, pattern)
+      .first();
     rows = await c.env.DB.prepare(
       `SELECT p.id AS post_id, p.topic_id, p.floor, p.content_text, p.created_at,
               (SELECT fp.title FROM posts fp WHERE fp.topic_id = t.id AND fp.is_first = 1 LIMIT 1) AS topic_title,
@@ -75,13 +85,17 @@ searchRoutes.get("/api/search", async (c) => {
          ${joins}
         WHERE ${baseWhere} AND (p.title LIKE ? ESCAPE '\\' OR p.content_text LIKE ? ESCAPE '\\')
         ORDER BY p.created_at DESC LIMIT ? OFFSET ?`,
-    ).bind(pattern, pattern, perPage, (page - 1) * perPage).all<Row>();
+    )
+      .bind(pattern, pattern, perPage, (page - 1) * perPage)
+      .all<Row>();
   } else {
     const phrase = ftsPhrase(tokens);
     countRow = await c.env.DB.prepare(
       `SELECT COUNT(*) AS total ${joins} JOIN post_search ON post_search.post_uid = p.id
         WHERE post_search MATCH ? AND ${baseWhere}`,
-    ).bind(phrase).first();
+    )
+      .bind(phrase)
+      .first();
     rows = await c.env.DB.prepare(
       `SELECT p.id AS post_id, p.topic_id, p.floor, p.content_text, p.created_at,
               (SELECT fp.title FROM posts fp WHERE fp.topic_id = t.id AND fp.is_first = 1 LIMIT 1) AS topic_title,
@@ -91,7 +105,9 @@ searchRoutes.get("/api/search", async (c) => {
          ${joins} JOIN post_search ON post_search.post_uid = p.id
         WHERE post_search MATCH ? AND ${baseWhere}
         ORDER BY ${sort === "latest" ? "p.created_at DESC" : "rank, p.created_at DESC"} LIMIT ? OFFSET ?`,
-    ).bind(phrase, perPage, (page - 1) * perPage).all<Row>();
+    )
+      .bind(phrase, perPage, (page - 1) * perPage)
+      .all<Row>();
   }
   const data: SearchResponse = {
     q,

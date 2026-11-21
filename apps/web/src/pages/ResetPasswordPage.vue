@@ -71,11 +71,25 @@ async function submit(): Promise<void> {
       </div>
       <div>
         <label :class="labelClass" for="reset-password">{{ t("auth.newPassword") }}</label>
-        <input id="reset-password" v-model="password" name="new-password" type="password" :class="inputClass" autocomplete="new-password" />
+        <input
+          id="reset-password"
+          v-model="password"
+          name="new-password"
+          type="password"
+          :class="inputClass"
+          autocomplete="new-password"
+        />
       </div>
       <div>
         <label :class="labelClass" for="reset-confirm">{{ t("auth.passwordConfirm") }}</label>
-        <input id="reset-confirm" v-model="confirm" name="confirm-password" type="password" :class="inputClass" autocomplete="new-password" />
+        <input
+          id="reset-confirm"
+          v-model="confirm"
+          name="confirm-password"
+          type="password"
+          :class="inputClass"
+          autocomplete="new-password"
+        />
       </div>
       <p v-if="error" ref="errorEl" tabindex="-1" :class="alertErrorClass" role="alert">{{ error }}</p>
       <Button class="w-full" type="submit" :disabled="submitting">

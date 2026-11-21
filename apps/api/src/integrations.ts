@@ -1,4 +1,9 @@
-import { ulid, type AdminIntegrations, type IntegrationSecretName, type IntegrationSecretStatus } from "@pineboard/shared";
+import {
+  ulid,
+  type AdminIntegrations,
+  type IntegrationSecretName,
+  type IntegrationSecretStatus,
+} from "@pineboard/shared";
 import { getConfig, readConfigVersion } from "./config";
 import type { Bindings } from "./env";
 
@@ -61,11 +66,7 @@ async function encryptionKey(env: Bindings): Promise<CryptoKey> {
 async function sealSecret(env: Bindings, plaintext: string): Promise<string> {
   const key = await encryptionKey(env);
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const encrypted = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    key,
-    new TextEncoder().encode(plaintext),
-  );
+  const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(plaintext));
   const sealed: SealedSecret = { v: 1, iv: bytesToBase64(iv), ct: bytesToBase64(new Uint8Array(encrypted)) };
   return JSON.stringify(sealed);
 }
@@ -178,12 +179,14 @@ export async function writeIntegrationSecrets(
   actorId: string,
   patch: Partial<Record<IntegrationSecretName, string | null>>,
 ): Promise<void> {
-  const entries = Object.entries(patch).filter((entry): entry is [IntegrationSecretName, string | null] =>
-    entry[0] in ENV_BINDING,
+  const entries = Object.entries(patch).filter(
+    (entry): entry is [IntegrationSecretName, string | null] => entry[0] in ENV_BINDING,
   );
   if (!entries.length) return;
 
-  const versionRow = await env.DB.prepare("SELECT COALESCE(MAX(version), 0) AS version FROM settings").first<{ version: number }>();
+  const versionRow = await env.DB.prepare("SELECT COALESCE(MAX(version), 0) AS version FROM settings").first<{
+    version: number;
+  }>();
   const version = Number(versionRow?.version ?? 0) + 1;
   const now = Math.floor(Date.now() / 1000);
   const statements: D1PreparedStatement[] = [];

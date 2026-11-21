@@ -1,18 +1,8 @@
-import {
-  adminIntegrationsPatchSchema,
-  fail,
-  ok,
-  type AppConfig,
-  type DeepPartial,
-} from "@pineboard/shared";
+import { adminIntegrationsPatchSchema, fail, ok, type AppConfig, type DeepPartial } from "@pineboard/shared";
 import { Hono } from "hono";
 import { writeConfigPatch } from "../config";
 import type { AppEnv } from "../env";
-import {
-  getAdminIntegrations,
-  getEffectiveIntegrations,
-  writeIntegrationSecrets,
-} from "../integrations";
+import { getAdminIntegrations, getEffectiveIntegrations, writeIntegrationSecrets } from "../integrations";
 import { requireAdmin } from "../middleware/guards";
 
 async function readJson(c: { req: { json(): Promise<unknown> } }): Promise<unknown | null> {

@@ -1,13 +1,5 @@
 import { sql } from "drizzle-orm";
-import {
-  check,
-  index,
-  integer,
-  primaryKey,
-  sqliteTable,
-  text,
-  uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+import { check, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 /**
  * Key-value settings with a per-group cache domain (docs/02). Values are JSON;
@@ -194,7 +186,6 @@ export type User = typeof user.$inferSelect;
 export type Session = typeof session.$inferSelect;
 export type Account = typeof account.$inferSelect;
 
-
 // ---------------------------------------------------------------------------
 // P2 forum content
 // ---------------------------------------------------------------------------
@@ -354,10 +345,7 @@ export const topicTags = sqliteTable(
       .notNull()
       .references(() => tags.id, { onDelete: "cascade" }),
   },
-  (table) => [
-    primaryKey({ columns: [table.topicId, table.tagId] }),
-    index("topic_tags_tag_idx").on(table.tagId),
-  ],
+  (table) => [primaryKey({ columns: [table.topicId, table.tagId] }), index("topic_tags_tag_idx").on(table.tagId)],
 );
 
 export const postLikes = sqliteTable(
@@ -391,8 +379,6 @@ export const bookmarks = sqliteTable(
   ],
 );
 
-
-
 export const postRevisions = sqliteTable(
   "post_revisions",
   {
@@ -420,8 +406,6 @@ export const postRevisions = sqliteTable(
   ],
 );
 
-
-
 export const notifications = sqliteTable(
   "notifications",
   {
@@ -447,10 +431,7 @@ export const notifications = sqliteTable(
       "notifications_type_check",
       sql`${table.type} in ('topic_reply','post_reply','mention','moderation','system')`,
     ),
-    check(
-      "notifications_email_status_check",
-      sql`${table.emailStatus} in ('pending','sent','skipped','failed')`,
-    ),
+    check("notifications_email_status_check", sql`${table.emailStatus} in ('pending','sent','skipped','failed')`),
   ],
 );
 
@@ -499,8 +480,6 @@ export const emailSuppressions = sqliteTable("email_suppressions", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 
-
-
 export const reports = sqliteTable(
   "reports",
   {
@@ -531,10 +510,7 @@ export const reports = sqliteTable(
       .where(sql`${table.status} = 'pending'`),
     check("reports_target_type_check", sql`${table.targetType} in ('topic','post')`),
     check("reports_status_check", sql`${table.status} in ('pending','resolved','dismissed')`),
-    check(
-      "reports_reason_check",
-      sql`${table.reasonCode} in ('spam','abuse','illegal','off_topic','other')`,
-    ),
+    check("reports_reason_check", sql`${table.reasonCode} in ('spam','abuse','illegal','off_topic','other')`),
   ],
 );
 

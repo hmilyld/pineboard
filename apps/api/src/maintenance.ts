@@ -26,7 +26,9 @@ export async function runDailyMaintenance(env: Bindings): Promise<{
     env.DB.prepare("DELETE FROM email_logs WHERE created_at < ?").bind(now - 180 * 86_400),
     env.DB.prepare("DELETE FROM audit_logs WHERE created_at < ?").bind(now - 365 * 86_400),
     env.DB.prepare("DELETE FROM email_unsubscribe_tokens WHERE expires_at < ? OR used_at IS NOT NULL").bind(now),
-    env.DB.prepare("UPDATE notifications SET email_status = 'pending', email_batch_key = NULL WHERE email_status = 'pending' AND email_batch_key = 'direct' AND created_at < ?").bind(now - 3600),
+    env.DB.prepare(
+      "UPDATE notifications SET email_status = 'pending', email_batch_key = NULL WHERE email_status = 'pending' AND email_batch_key = 'direct' AND created_at < ?",
+    ).bind(now - 3600),
   ]);
   const removed = {
     sessions: Number(deletes[0]?.meta.changes ?? 0),
@@ -64,11 +66,13 @@ export async function runDailyMaintenance(env: Bindings): Promise<{
   try {
     uploads = await cleanupOrphanUploads(env, config.config.upload.orphanTtlHours);
   } catch (error) {
-    console.error(JSON.stringify({
-      level: "error",
-      job: "uploads.cleanup",
-      message: error instanceof Error ? error.message : String(error),
-    }));
+    console.error(
+      JSON.stringify({
+        level: "error",
+        job: "uploads.cleanup",
+        message: error instanceof Error ? error.message : String(error),
+      }),
+    );
   }
   return { removed: { ...removed, uploads }, reconciled: true, anonymized: account.anonymized };
 }

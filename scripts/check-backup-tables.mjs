@@ -15,7 +15,9 @@ const block = backup.match(/TABLES=\(\n([\s\S]*?)\n\s*\)/)?.[1] ?? "";
 const listed = new Set(block.split(/\s+/).filter((name) => /^[a-z_]+$/i.test(name)));
 
 const ignored = new Set(["post_search", "sqlite_sequence", "_cf_KV", "d1_migrations"]);
-const missing = [...remote].filter((name) => !ignored.has(name) && !name.startsWith("post_search_") && !listed.has(name));
+const missing = [...remote].filter(
+  (name) => !ignored.has(name) && !name.startsWith("post_search_") && !listed.has(name),
+);
 const absent = [...listed].filter((name) => !remote.has(name));
 if (missing.length) {
   console.error(`backup.yml is missing tables: ${missing.join(", ")}`);

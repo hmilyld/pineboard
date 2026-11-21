@@ -155,7 +155,9 @@ async function categoryExists(db: D1Database, categoryId: string): Promise<{ slu
   return row ?? null;
 }
 
-function zodFields(error: { issues: ReadonlyArray<{ path: PropertyKey[]; message: string }> }): Record<string, string[]> {
+function zodFields(error: {
+  issues: ReadonlyArray<{ path: PropertyKey[]; message: string }>;
+}): Record<string, string[]> {
   const fields: Record<string, string[]> = {};
   for (const issue of error.issues) {
     const key = issue.path.map(String).join(".") || "body";
@@ -164,7 +166,11 @@ function zodFields(error: { issues: ReadonlyArray<{ path: PropertyKey[]; message
   return fields;
 }
 
-async function writeTurnstile(c: { env: AppEnv["Bindings"]; req: { header(name: string): string | undefined } }, config: { site: { url: string }; feature: { turnstile: boolean } }, action: string) {
+async function writeTurnstile(
+  c: { env: AppEnv["Bindings"]; req: { header(name: string): string | undefined } },
+  config: { site: { url: string }; feature: { turnstile: boolean } },
+  action: string,
+) {
   if (!config.feature.turnstile) return { ok: true as const };
   const token = c.req.header("x-turnstile-token") ?? c.req.header("cf-turnstile-response");
   const ip = c.req.header("cf-connecting-ip") ?? c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
@@ -187,12 +193,7 @@ async function postingLimits(
   action: "topic_create" | "post_create",
 ) {
   if (config.security.postMinIntervalSeconds > 0) {
-    const limit = await consumeRateLimit(
-      c.env,
-      `post:${user.id}:${action}`,
-      config.security.postMinIntervalSeconds,
-      1,
-    );
+    const limit = await consumeRateLimit(c.env, `post:${user.id}:${action}`, config.security.postMinIntervalSeconds, 1);
     if (!limit.allowed) return { ok: false as const, retryAfter: limit.retryAfter };
   }
   if (Date.now() - user.createdAt.getTime() < 24 * 60 * 60 * 1000) {
@@ -217,15 +218,32 @@ forumRoutes.get("/api/categories", async (c) => {
   const result = await c.env.DB.prepare(
     `SELECT c.id, c.slug, c.name, c.description, c.color, c.sort_order, c.is_visible, ${categoryStatsSql}
        FROM categories c WHERE c.is_visible = 1 ORDER BY c.sort_order, c.name`,
-  ).bind(today).all<JoinRow>();
-  return c.json({ ok: true, data: result.results.map((row) => ({
-    id: String(row.id), slug: String(row.slug), name: String(row.name),
-    description: String(row.description ?? ""), color: String(row.color ?? "#14513f"), sortOrder: Number(row.sort_order ?? 0),
-    isVisible: Number(row.is_visible ?? 0) === 1, topicCount: Number(row.topic_count ?? 0),
-    todayTopics: Number(row.today_topics ?? 0), replies: Number(row.replies ?? 0),
-    stats: { topics: Number(row.topic_count ?? 0), todayTopics: Number(row.today_topics ?? 0), replies: Number(row.replies ?? 0) },
-    recentTopic: row.recent_topic_id ? { id: String(row.recent_topic_id), title: String(row.recent_topic_title ?? "") } : null,
-  })) });
+  )
+    .bind(today)
+    .all<JoinRow>();
+  return c.json({
+    ok: true,
+    data: result.results.map((row) => ({
+      id: String(row.id),
+      slug: String(row.slug),
+      name: String(row.name),
+      description: String(row.description ?? ""),
+      color: String(row.color ?? "#14513f"),
+      sortOrder: Number(row.sort_order ?? 0),
+      isVisible: Number(row.is_visible ?? 0) === 1,
+      topicCount: Number(row.topic_count ?? 0),
+      todayTopics: Number(row.today_topics ?? 0),
+      replies: Number(row.replies ?? 0),
+      stats: {
+        topics: Number(row.topic_count ?? 0),
+        todayTopics: Number(row.today_topics ?? 0),
+        replies: Number(row.replies ?? 0),
+      },
+      recentTopic: row.recent_topic_id
+        ? { id: String(row.recent_topic_id), title: String(row.recent_topic_title ?? "") }
+        : null,
+    })),
+  });
 });
 
 forumRoutes.get("/api/categories/:slug", async (c) => {
@@ -233,16 +251,33 @@ forumRoutes.get("/api/categories/:slug", async (c) => {
   const row = await c.env.DB.prepare(
     `SELECT c.id, c.slug, c.name, c.description, c.color, c.sort_order, c.is_visible, ${categoryStatsSql}
        FROM categories c WHERE c.slug = ? AND c.is_visible = 1`,
-  ).bind(today, c.req.param("slug")).first<JoinRow>();
+  )
+    .bind(today, c.req.param("slug"))
+    .first<JoinRow>();
   if (!row) return c.json({ ok: false, error: { code: "not_found", message: "版块不存在" } }, 404);
-  return c.json({ ok: true, data: {
-    id: String(row.id), slug: String(row.slug), name: String(row.name),
-    description: String(row.description ?? ""), color: String(row.color ?? "#14513f"), sortOrder: Number(row.sort_order ?? 0),
-    isVisible: Number(row.is_visible ?? 0) === 1, topicCount: Number(row.topic_count ?? 0),
-    todayTopics: Number(row.today_topics ?? 0), replies: Number(row.replies ?? 0),
-    stats: { topics: Number(row.topic_count ?? 0), todayTopics: Number(row.today_topics ?? 0), replies: Number(row.replies ?? 0) },
-    recentTopic: row.recent_topic_id ? { id: String(row.recent_topic_id), title: String(row.recent_topic_title ?? "") } : null,
-  } });
+  return c.json({
+    ok: true,
+    data: {
+      id: String(row.id),
+      slug: String(row.slug),
+      name: String(row.name),
+      description: String(row.description ?? ""),
+      color: String(row.color ?? "#14513f"),
+      sortOrder: Number(row.sort_order ?? 0),
+      isVisible: Number(row.is_visible ?? 0) === 1,
+      topicCount: Number(row.topic_count ?? 0),
+      todayTopics: Number(row.today_topics ?? 0),
+      replies: Number(row.replies ?? 0),
+      stats: {
+        topics: Number(row.topic_count ?? 0),
+        todayTopics: Number(row.today_topics ?? 0),
+        replies: Number(row.replies ?? 0),
+      },
+      recentTopic: row.recent_topic_id
+        ? { id: String(row.recent_topic_id), title: String(row.recent_topic_title ?? "") }
+        : null,
+    },
+  });
 });
 
 forumRoutes.get("/api/tags", async (c) => {
@@ -278,14 +313,23 @@ forumRoutes.get("/api/tags/:slug", async (c) => {
               JOIN posts p ON p.topic_id = t.id AND p.is_first = 0 AND p.status = 'published'
               WHERE tt.tag_id = g.id AND t.status = 'published') AS replies
        FROM tags g WHERE g.slug = ? AND g.status = 'active'`,
-  ).bind(today, c.req.param("slug")).first<JoinRow>();
+  )
+    .bind(today, c.req.param("slug"))
+    .first<JoinRow>();
   if (!row) return c.json({ ok: false, error: { code: "not_found", message: "标签不存在" } }, 404);
   const tag = mapTag(row);
-  return c.json({ ok: true, data: {
-    ...tag,
-    description: String(row.description ?? "") || `关于 #${String(row.name)} 的主题`,
-    stats: { topics: Number(row.topic_count ?? 0), todayTopics: Number(row.today_topics ?? 0), replies: Number(row.replies ?? 0) },
-  } });
+  return c.json({
+    ok: true,
+    data: {
+      ...tag,
+      description: String(row.description ?? "") || `关于 #${String(row.name)} 的主题`,
+      stats: {
+        topics: Number(row.topic_count ?? 0),
+        todayTopics: Number(row.today_topics ?? 0),
+        replies: Number(row.replies ?? 0),
+      },
+    },
+  });
 });
 
 forumRoutes.get("/api/topics", async (c) => {
@@ -293,7 +337,14 @@ forumRoutes.get("/api/topics", async (c) => {
     page: c.req.query("page") ?? "1",
     perPage: c.req.query("perPage") ?? "20",
   });
-  if (!parsedPage.success) return c.json({ ok: false, error: { code: "validation_error", message: "分页参数不合法", fields: zodFields(parsedPage.error) } }, 400);
+  if (!parsedPage.success)
+    return c.json(
+      {
+        ok: false,
+        error: { code: "validation_error", message: "分页参数不合法", fields: zodFields(parsedPage.error) },
+      },
+      400,
+    );
   const sort = topicSortSchema.safeParse(c.req.query("sort") ?? "latest");
   if (!sort.success) return c.json({ ok: false, error: { code: "validation_error", message: "排序参数不合法" } }, 400);
   const { page, perPage } = parsedPage.data;
@@ -309,26 +360,37 @@ forumRoutes.get("/api/topics", async (c) => {
     binds.push(category, category);
   }
   if (tag) {
-    where.push("EXISTS (SELECT 1 FROM topic_tags tt JOIN tags g ON g.id = tt.tag_id WHERE tt.topic_id = t.id AND g.slug = ? AND g.status = 'active')");
+    where.push(
+      "EXISTS (SELECT 1 FROM topic_tags tt JOIN tags g ON g.id = tt.tag_id WHERE tt.topic_id = t.id AND g.slug = ? AND g.status = 'active')",
+    );
     binds.push(tag);
   }
   const whereSql = where.join(" AND ");
   const countRow = await c.env.DB.prepare(
     `SELECT COUNT(*) AS total FROM topics t JOIN categories c ON c.id = t.category_id WHERE ${whereSql}`,
-  ).bind(...binds).first<{ total: number }>();
+  )
+    .bind(...binds)
+    .first<{ total: number }>();
   const total = Number(countRow?.total ?? 0);
-  const order = sort.data === "new"
-    ? "t.created_at DESC"
-    : sort.data === "hot"
-      ? "(t.reply_count * 2 + t.like_count * 3) DESC, t.last_post_at DESC"
-      : "t.pin_level DESC, t.pin_order ASC, t.last_post_at DESC";
-  const rows = await c.env.DB.prepare(
-    `${topicSelect} WHERE ${whereSql} ORDER BY ${order} LIMIT ? OFFSET ?`,
-  ).bind(...binds, perPage, (page - 1) * perPage).all<JoinRow>();
-  const tags = await loadTags(c.env.DB, rows.results.map((row) => String(row.id)));
+  const order =
+    sort.data === "new"
+      ? "t.created_at DESC"
+      : sort.data === "hot"
+        ? "(t.reply_count * 2 + t.like_count * 3) DESC, t.last_post_at DESC"
+        : "t.pin_level DESC, t.pin_order ASC, t.last_post_at DESC";
+  const rows = await c.env.DB.prepare(`${topicSelect} WHERE ${whereSql} ORDER BY ${order} LIMIT ? OFFSET ?`)
+    .bind(...binds, perPage, (page - 1) * perPage)
+    .all<JoinRow>();
+  const tags = await loadTags(
+    c.env.DB,
+    rows.results.map((row) => String(row.id)),
+  );
   const data: TopicList = {
     items: rows.results.map((row) => mapTopic(row, tags.get(String(row.id)) ?? [])),
-    page, perPage, total, totalPages: Math.max(1, Math.ceil(total / perPage)),
+    page,
+    perPage,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / perPage)),
   };
   return c.json({ ok: true, data });
 });
@@ -344,22 +406,35 @@ forumRoutes.get("/api/topics/:id", async (c) => {
        FROM topics t JOIN categories c ON c.id = t.category_id JOIN user u ON u.id = t.author_id
        LEFT JOIN user lu ON lu.id = t.last_post_user_id
       WHERE t.id = ? AND t.status = 'published' AND c.is_visible = 1`,
-  ).bind(id).first<JoinRow>();
+  )
+    .bind(id)
+    .first<JoinRow>();
   if (!row) return c.json({ ok: false, error: { code: "not_found", message: "主题不存在" } }, 404);
   const firstPostRow = await c.env.DB.prepare(
     `SELECT p.*, u.id AS author_id, u.username AS author_username, u.name AS author_name, u.avatar_key AS author_avatar_key,
             EXISTS (SELECT 1 FROM post_likes pl WHERE pl.post_id = p.id AND pl.user_id = ?) AS liked_by_me
        FROM posts p JOIN user u ON u.id = p.author_id
       WHERE p.topic_id = ? AND p.is_first = 1 LIMIT 1`,
-  ).bind(c.get("user")?.id ?? "", id).first<JoinRow>();
+  )
+    .bind(c.get("user")?.id ?? "", id)
+    .first<JoinRow>();
   if (!firstPostRow) return c.json({ ok: false, error: { code: "not_found", message: "首帖不存在" } }, 404);
   const tags = (await loadTags(c.env.DB, [id])).get(id) ?? [];
   const user = c.get("user");
   const bookmarked = user
-    ? Boolean(await c.env.DB.prepare("SELECT 1 AS ok FROM bookmarks WHERE user_id = ? AND topic_id = ?").bind(user.id, id).first())
+    ? Boolean(
+        await c.env.DB.prepare("SELECT 1 AS ok FROM bookmarks WHERE user_id = ? AND topic_id = ?")
+          .bind(user.id, id)
+          .first(),
+      )
     : false;
   const moderator = user ? await isCategoryModerator(c.env.DB, user, String(row.category_id)) : false;
-  const canReply = Boolean(user && user.status === "active" && !Number(row.is_locked) && (user.emailVerified || !c.get("config").account.requireVerificationForWrite));
+  const canReply = Boolean(
+    user &&
+    user.status === "active" &&
+    !Number(row.is_locked) &&
+    (user.emailVerified || !c.get("config").account.requireVerificationForWrite),
+  );
   const canDelete = user
     ? await canDeleteContent({
         db: c.env.DB,
@@ -410,12 +485,16 @@ forumRoutes.get("/api/topics/:id", async (c) => {
 
 forumRoutes.get("/api/topics/:id/posts", async (c) => {
   const id = c.req.param("id");
-  const topic = await c.env.DB.prepare("SELECT id, author_id FROM topics WHERE id = ? AND status = 'published'").bind(id).first<{ id: string; author_id: string }>();
+  const topic = await c.env.DB.prepare("SELECT id, author_id FROM topics WHERE id = ? AND status = 'published'")
+    .bind(id)
+    .first<{ id: string; author_id: string }>();
   if (!topic) return c.json({ ok: false, error: { code: "not_found", message: "主题不存在" } }, 404);
   const onlyOp = c.req.query("onlyOp") === "1";
   const pageMode = c.req.query("page") !== undefined || c.req.query("onlyOp") !== undefined;
   const perPageRaw = Number(c.req.query("perPage") ?? c.get("config").seo.postsPerPage);
-  const perPage = Number.isFinite(perPageRaw) ? Math.min(50, Math.max(5, Math.floor(perPageRaw))) : c.get("config").seo.postsPerPage;
+  const perPage = Number.isFinite(perPageRaw)
+    ? Math.min(50, Math.max(5, Math.floor(perPageRaw)))
+    : c.get("config").seo.postsPerPage;
 
   if (!pageMode && c.req.query("after") !== undefined) {
     const afterRaw = Number(c.req.query("after") ?? 0);
@@ -426,10 +505,12 @@ forumRoutes.get("/api/topics/:id/posts", async (c) => {
          FROM posts p JOIN user u ON u.id = p.author_id
         WHERE p.topic_id = ? AND p.is_first = 0 AND p.floor > ? AND p.status IN ('published','deleted')
         ORDER BY p.floor ASC LIMIT ?`,
-    ).bind(c.get("user")?.id ?? "", id, after, perPage + 1).all<JoinRow>();
+    )
+      .bind(c.get("user")?.id ?? "", id, after, perPage + 1)
+      .all<JoinRow>();
     const hasMore = rows.results.length > perPage;
     const items = rows.results.slice(0, perPage).map(mapPost);
-    return c.json({ ok: true, data: { items, nextCursor: hasMore ? items[items.length - 1]?.floor ?? null : null } });
+    return c.json({ ok: true, data: { items, nextCursor: hasMore ? (items[items.length - 1]?.floor ?? null) : null } });
   }
 
   const pageRaw = Number(c.req.query("page") ?? 1);
@@ -438,10 +519,14 @@ forumRoutes.get("/api/topics/:id/posts", async (c) => {
     ? await c.env.DB.prepare(
         `SELECT COUNT(*) AS total FROM posts
           WHERE topic_id = ? AND status IN ('published','deleted') AND (is_first = 1 OR author_id = ?)`,
-      ).bind(id, topic.author_id).first<{ total: number }>()
+      )
+        .bind(id, topic.author_id)
+        .first<{ total: number }>()
     : await c.env.DB.prepare(
         "SELECT COUNT(*) AS total FROM posts WHERE topic_id = ? AND status IN ('published','deleted')",
-      ).bind(id).first<{ total: number }>();
+      )
+        .bind(id)
+        .first<{ total: number }>();
   const total = Number(totalRow?.total ?? 0);
   const limit = page === 1 ? Math.max(1, perPage - 1) : perPage;
   const offset = page === 1 ? 0 : Math.max(0, (page - 1) * perPage - 1);
@@ -455,7 +540,9 @@ forumRoutes.get("/api/topics/:id/posts", async (c) => {
        FROM posts p JOIN user u ON u.id = p.author_id
       WHERE p.topic_id = ? AND p.is_first = 0 AND p.status IN ('published','deleted')${authorFilter}
       ORDER BY p.floor ASC LIMIT ? OFFSET ?`,
-  ).bind(...binds).all<JoinRow>();
+  )
+    .bind(...binds)
+    .all<JoinRow>();
   const data: PostPage = {
     items: rows.results.map(mapPost),
     page,
@@ -471,17 +558,28 @@ forumRoutes.get("/api/topics/:id/posts", async (c) => {
 forumRoutes.post("/api/topics", requireVerified, async (c) => {
   const user = c.get("user")!;
   let body: unknown;
-  try { body = await c.req.json(); } catch { return c.json({ ok: false, error: { code: "validation_error", message: "请求体必须是 JSON" } }, 400); }
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ ok: false, error: { code: "validation_error", message: "请求体必须是 JSON" } }, 400);
+  }
   const parsed = createTopicSchema.safeParse(body);
-  if (!parsed.success) return c.json({ ok: false, error: { code: "validation_error", message: "请检查表单", fields: zodFields(parsed.error) } }, 400);
+  if (!parsed.success)
+    return c.json(
+      { ok: false, error: { code: "validation_error", message: "请检查表单", fields: zodFields(parsed.error) } },
+      400,
+    );
   const category = await categoryExists(c.env.DB, parsed.data.categoryId);
   if (!category) return c.json({ ok: false, error: { code: "not_found", message: "版块不存在" } }, 404);
   const tagIds = [...new Set(parsed.data.tagIds)];
   if (tagIds.length) {
     const rows = await c.env.DB.prepare(
       `SELECT id FROM tags WHERE status = 'active' AND id IN (${tagIds.map(() => "?").join(",")})`,
-    ).bind(...tagIds).all<{ id: string }>();
-    if (rows.results.length !== tagIds.length) return c.json({ ok: false, error: { code: "validation_error", message: "包含不可用标签" } }, 400);
+    )
+      .bind(...tagIds)
+      .all<{ id: string }>();
+    if (rows.results.length !== tagIds.length)
+      return c.json({ ok: false, error: { code: "validation_error", message: "包含不可用标签" } }, 400);
   }
   const security = await getSecurityConfig(c.env);
   const limits = await postingLimits(c, user, security.config, "topic_create");
@@ -490,7 +588,11 @@ forumRoutes.post("/api/topics", requireVerified, async (c) => {
     return c.json({ ok: false, error: { code: "rate_limited", message: "发帖过于频繁" } }, 429);
   }
   const captcha = await writeTurnstile(c, security.config, "topic_create");
-  if (!captcha.ok) return c.json({ ok: false, error: { code: captcha.code, message: captcha.message } }, captcha.code === "captcha_unavailable" ? 503 : 400);
+  if (!captcha.ok)
+    return c.json(
+      { ok: false, error: { code: captcha.code, message: captcha.message } },
+      captcha.code === "captcha_unavailable" ? 503 : 400,
+    );
 
   const verdict = screenContent(security.config.security, parsed.data.title, parsed.data.contentMd);
   const topicStatus = verdict.flagged ? "pending" : "published";
@@ -518,10 +620,19 @@ forumRoutes.post("/api/topics", requireVerified, async (c) => {
   for (const tagId of tagIds) {
     statements.push(c.env.DB.prepare("UPDATE tags SET usage_count = usage_count + 1 WHERE id = ?").bind(tagId));
   }
-  statements.push(c.env.DB.prepare(
-    `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
+  statements.push(
+    c.env.DB.prepare(
+      `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
      VALUES (?, ?, 'topic.create', 'topic', ?, ?, ?, ?)`,
-  ).bind(ulid(), user.id, topicId, JSON.stringify({ categoryId: parsed.data.categoryId, ...(verdict.flagged ? { keywords: verdict.words } : {}) }), await hashIp(c.env, c.req.header("cf-connecting-ip") ?? "unknown"), now));
+    ).bind(
+      ulid(),
+      user.id,
+      topicId,
+      JSON.stringify({ categoryId: parsed.data.categoryId, ...(verdict.flagged ? { keywords: verdict.words } : {}) }),
+      await hashIp(c.env, c.req.header("cf-connecting-ip") ?? "unknown"),
+      now,
+    ),
+  );
   await c.env.DB.batch(statements);
   if (verdict.flagged) {
     return c.json({ ok: true, data: { id: topicId, postId, pending: true } }, 201);
@@ -536,17 +647,31 @@ forumRoutes.post("/api/topics/:id/posts", requireVerified, async (c) => {
     `SELECT t.id, t.is_locked, t.status, t.author_id,
             (SELECT fp.title FROM posts fp WHERE fp.topic_id = t.id AND fp.is_first = 1 LIMIT 1) AS topic_title
        FROM topics t WHERE t.id = ? AND t.status = 'published'`,
-  ).bind(topicId).first<{ id: string; is_locked: number; status: string; author_id: string; topic_title: string | null }>();
+  )
+    .bind(topicId)
+    .first<{ id: string; is_locked: number; status: string; author_id: string; topic_title: string | null }>();
   if (!topic) return c.json({ ok: false, error: { code: "not_found", message: "主题不存在" } }, 404);
   if (Number(topic.is_locked)) return c.json({ ok: false, error: { code: "forbidden", message: "主题已锁定" } }, 403);
   let body: unknown;
-  try { body = await c.req.json(); } catch { return c.json({ ok: false, error: { code: "validation_error", message: "请求体必须是 JSON" } }, 400); }
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ ok: false, error: { code: "validation_error", message: "请求体必须是 JSON" } }, 400);
+  }
   const parsed = createPostSchema.safeParse(body);
-  if (!parsed.success) return c.json({ ok: false, error: { code: "validation_error", message: "请检查回复", fields: zodFields(parsed.error) } }, 400);
+  if (!parsed.success)
+    return c.json(
+      { ok: false, error: { code: "validation_error", message: "请检查回复", fields: zodFields(parsed.error) } },
+      400,
+    );
   if (parsed.data.parentPostId) {
-    const parent = await c.env.DB.prepare("SELECT id, parent_post_id, status FROM posts WHERE id = ? AND topic_id = ?").bind(parsed.data.parentPostId, topicId).first<{ id: string; parent_post_id: string | null; status: string }>();
-    if (!parent || parent.status === "deleted") return c.json({ ok: false, error: { code: "validation_error", message: "被回复的楼层不存在" } }, 400);
-    if (parent.parent_post_id) return c.json({ ok: false, error: { code: "validation_error", message: "楼中楼最多两层" } }, 400);
+    const parent = await c.env.DB.prepare("SELECT id, parent_post_id, status FROM posts WHERE id = ? AND topic_id = ?")
+      .bind(parsed.data.parentPostId, topicId)
+      .first<{ id: string; parent_post_id: string | null; status: string }>();
+    if (!parent || parent.status === "deleted")
+      return c.json({ ok: false, error: { code: "validation_error", message: "被回复的楼层不存在" } }, 400);
+    if (parent.parent_post_id)
+      return c.json({ ok: false, error: { code: "validation_error", message: "楼中楼最多两层" } }, 400);
   }
   const security = await getSecurityConfig(c.env);
   const limits = await postingLimits(c, user, security.config, "post_create");
@@ -555,7 +680,11 @@ forumRoutes.post("/api/topics/:id/posts", requireVerified, async (c) => {
     return c.json({ ok: false, error: { code: "rate_limited", message: "回复过于频繁" } }, 429);
   }
   const captcha = await writeTurnstile(c, security.config, "post_create");
-  if (!captcha.ok) return c.json({ ok: false, error: { code: captcha.code, message: captcha.message } }, captcha.code === "captcha_unavailable" ? 503 : 400);
+  if (!captcha.ok)
+    return c.json(
+      { ok: false, error: { code: captcha.code, message: captcha.message } },
+      captcha.code === "captcha_unavailable" ? 503 : 400,
+    );
 
   const verdict = screenContent(security.config.security, parsed.data.contentMd);
   const postStatus = verdict.flagged ? "pending" : "published";
@@ -582,7 +711,18 @@ forumRoutes.post("/api/topics/:id/posts", requireVerified, async (c) => {
            status, like_count, version, edit_count, created_at, updated_at)
          VALUES (?, ?, ?, ?, (SELECT COALESCE(MAX(floor), 0) + 1 FROM posts WHERE topic_id = ?), 0, NULL, ?, ?, ?, 0, 1, 0, ?, ?)
          RETURNING floor`,
-      ).bind(postId, topicId, user.id, parsed.data.parentPostId ?? null, topicId, parsed.data.contentMd, contentText, postStatus, now, now),
+      ).bind(
+        postId,
+        topicId,
+        user.id,
+        parsed.data.parentPostId ?? null,
+        topicId,
+        parsed.data.contentMd,
+        contentText,
+        postStatus,
+        now,
+        now,
+      ),
       // A pending reply must not bump counters or surface the topic as active.
       c.env.DB.prepare(
         `UPDATE topics SET reply_count = reply_count + 1, last_post_at = ?, last_post_user_id = ?, updated_at = ?
@@ -591,13 +731,29 @@ forumRoutes.post("/api/topics/:id/posts", requireVerified, async (c) => {
       c.env.DB.prepare(
         `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
          VALUES (?, ?, 'post.create', 'topic', ?, ?, ?, ?)`,
-      ).bind(ulid(), user.id, topicId, verdict.flagged ? JSON.stringify({ keywords: verdict.words }) : null, await hashIp(c.env, c.req.header("cf-connecting-ip") ?? "unknown"), now),
+      ).bind(
+        ulid(),
+        user.id,
+        topicId,
+        verdict.flagged ? JSON.stringify({ keywords: verdict.words }) : null,
+        await hashIp(c.env, c.req.header("cf-connecting-ip") ?? "unknown"),
+        now,
+      ),
       ftsInsertStatement(c.env.DB, { postId, topicId, title: "", content: parsed.data.contentMd }),
       ...(verdict.flagged ? [] : notificationStatements(c.env.DB, notifications)),
     ]);
     insertResult = results[0]!;
   } catch (error) {
-    return c.json({ ok: false, error: { code: "conflict", message: error instanceof Error && /UNIQUE/.test(error.message) ? "楼层冲突，请重试" : "回复失败" } }, 409);
+    return c.json(
+      {
+        ok: false,
+        error: {
+          code: "conflict",
+          message: error instanceof Error && /UNIQUE/.test(error.message) ? "楼层冲突，请重试" : "回复失败",
+        },
+      },
+      409,
+    );
   }
   const floor = Number((insertResult.results[0] as { floor?: number } | undefined)?.floor ?? 0);
   if (!verdict.flagged && notifications.some((item) => item.type === "mention")) {
@@ -606,10 +762,7 @@ forumRoutes.post("/api/topics/:id/posts", requireVerified, async (c) => {
   return c.json({ ok: true, data: { id: postId, floor, ...(verdict.flagged ? { pending: true } : {}) } }, 201);
 });
 
-async function applyPostEdit(
-  c: Context<AppEnv>,
-  input: { topicId: string; postId: string },
-) {
+async function applyPostEdit(c: Context<AppEnv>, input: { topicId: string; postId: string }) {
   const user = c.get("user")!;
   const config = c.get("config");
   const row = await c.env.DB.prepare(
@@ -617,25 +770,45 @@ async function applyPostEdit(
             t.category_id, t.status AS topic_status, t.reply_count
        FROM posts p JOIN topics t ON t.id = p.topic_id
       WHERE p.id = ? AND p.topic_id = ?`,
-  ).bind(input.postId, input.topicId).first<JoinRow>();
+  )
+    .bind(input.postId, input.topicId)
+    .first<JoinRow>();
   if (!row) return c.json({ ok: false, error: { code: "not_found", message: "内容不存在" } }, 404);
   let body: unknown;
-  try { body = await c.req.json(); } catch { return c.json({ ok: false, error: { code: "validation_error", message: "请求体必须是 JSON" } }, 400); }
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ ok: false, error: { code: "validation_error", message: "请求体必须是 JSON" } }, 400);
+  }
   const parsed = editPostSchema.safeParse(body);
-  if (!parsed.success) return c.json({ ok: false, error: { code: "validation_error", message: "请检查编辑内容", fields: zodFields(parsed.error) } }, 400);
+  if (!parsed.success)
+    return c.json(
+      { ok: false, error: { code: "validation_error", message: "请检查编辑内容", fields: zodFields(parsed.error) } },
+      400,
+    );
   const isFirst = Number(row.is_first) === 1;
   if (!isFirst && parsed.data.title !== undefined) {
     return c.json({ ok: false, error: { code: "validation_error", message: "回复不能设置标题" } }, 400);
   }
   if (config.edit.requireReason && !parsed.data.reason?.trim()) {
-    return c.json({ ok: false, error: { code: "validation_error", message: "请填写编辑原因", fields: { reason: ["请填写编辑原因"] } } }, 400);
+    return c.json(
+      {
+        ok: false,
+        error: { code: "validation_error", message: "请填写编辑原因", fields: { reason: ["请填写编辑原因"] } },
+      },
+      400,
+    );
   }
   const decision = await canEditContent({
     db: c.env.DB,
     user,
     config,
     categoryId: String(row.category_id),
-    post: { authorId: String(row.author_id), createdAt: new Date(seconds(row.created_at) * 1000), status: String(row.status) },
+    post: {
+      authorId: String(row.author_id),
+      createdAt: new Date(seconds(row.created_at) * 1000),
+      status: String(row.status),
+    },
     topic: { replyCount: Number(row.reply_count ?? 0), status: String(row.topic_status) },
     isFirst,
   });
@@ -658,13 +831,17 @@ async function applyPostEdit(
   }
   const captcha = await writeTurnstile(c, security.config, "post_edit");
   if (!captcha.ok) {
-    return c.json({ ok: false, error: { code: captcha.code, message: captcha.message } }, captcha.code === "captcha_unavailable" ? 503 : 400);
+    return c.json(
+      { ok: false, error: { code: captcha.code, message: captcha.message } },
+      captcha.code === "captcha_unavailable" ? 503 : 400,
+    );
   }
 
   const verdict = screenContent(security.config.security, parsed.data.title ?? null, parsed.data.contentMd ?? null);
 
   const now = Math.floor(Date.now() / 1000);
-  const contentText = parsed.data.contentMd !== undefined ? markdownToPlainText(parsed.data.contentMd).slice(0, 100_000) : null;
+  const contentText =
+    parsed.data.contentMd !== undefined ? markdownToPlainText(parsed.data.contentMd).slice(0, 100_000) : null;
   let updateResult: D1Result;
   try {
     const results = await c.env.DB.batch([
@@ -681,11 +858,17 @@ async function applyPostEdit(
                 version = version + 1, edit_count = edit_count + 1, edited_at = ?, updated_at = ?
           WHERE id = ? AND version = ?`,
       ).bind(
-        parsed.data.title ?? null, parsed.data.title ?? null,
-        parsed.data.contentMd ?? null, parsed.data.contentMd ?? null,
-        contentText, contentText,
+        parsed.data.title ?? null,
+        parsed.data.title ?? null,
+        parsed.data.contentMd ?? null,
+        parsed.data.contentMd ?? null,
+        contentText,
+        contentText,
         verdict.flagged ? 1 : 0,
-        now, now, input.postId, parsed.data.version,
+        now,
+        now,
+        input.postId,
+        parsed.data.version,
       ),
       // Every following statement is guarded by the *new* version. A stale CAS
       // update must leave the topic timestamp, FTS rows and audit log untouched.
@@ -708,7 +891,9 @@ async function applyPostEdit(
       ).bind(
         input.postId,
         isFirst ? String(parsed.data.title ?? row.title ?? "") : "",
-        bigramTokens(`${isFirst ? String(parsed.data.title ?? row.title ?? "") : ""} ${parsed.data.contentMd ?? String(row.content_md ?? "")}`),
+        bigramTokens(
+          `${isFirst ? String(parsed.data.title ?? row.title ?? "") : ""} ${parsed.data.contentMd ?? String(row.content_md ?? "")}`,
+        ),
         input.postId,
         parsed.data.version + 1,
       ),
@@ -716,7 +901,19 @@ async function applyPostEdit(
         `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
          SELECT ?, ?, 'post.edit', 'post', ?, ?, NULL, ?
           WHERE EXISTS (SELECT 1 FROM posts WHERE id = ? AND version = ?)`,
-      ).bind(ulid(), user.id, input.postId, JSON.stringify({ version: parsed.data.version, reason: parsed.data.reason ?? null, ...(verdict.flagged ? { keywords: verdict.words } : {}) }), now, input.postId, parsed.data.version + 1),
+      ).bind(
+        ulid(),
+        user.id,
+        input.postId,
+        JSON.stringify({
+          version: parsed.data.version,
+          reason: parsed.data.reason ?? null,
+          ...(verdict.flagged ? { keywords: verdict.words } : {}),
+        }),
+        now,
+        input.postId,
+        parsed.data.version + 1,
+      ),
       c.env.DB.prepare(
         `DELETE FROM post_revisions WHERE post_id = ? AND EXISTS (SELECT 1 FROM posts WHERE id = ? AND version = ?)
            AND id NOT IN (SELECT id FROM post_revisions WHERE post_id = ? ORDER BY version DESC LIMIT ?)`,
@@ -724,46 +921,63 @@ async function applyPostEdit(
     ]);
     updateResult = results[1]!;
   } catch (error) {
-    console.error(JSON.stringify({
-      level: "error",
-      route: "post.edit",
-      postId: input.postId,
-      message: error instanceof Error ? error.message : String(error),
-    }));
+    console.error(
+      JSON.stringify({
+        level: "error",
+        route: "post.edit",
+        postId: input.postId,
+        message: error instanceof Error ? error.message : String(error),
+      }),
+    );
     return c.json({ ok: false, error: { code: "conflict", message: "编辑冲突，请刷新后重试" } }, 409);
   }
   if (Number(updateResult.meta.changes) === 0) {
     return c.json({ ok: false, error: { code: "version_conflict", message: "内容已被修改，请刷新后重试" } }, 409);
   }
-  return c.json({ ok: true, data: { version: parsed.data.version + 1, ...(verdict.flagged ? { pending: true } : {}) } });
+  return c.json({
+    ok: true,
+    data: { version: parsed.data.version + 1, ...(verdict.flagged ? { pending: true } : {}) },
+  });
 }
 
 forumRoutes.patch("/api/topics/:id", requireVerified, async (c) => {
-  const first = await c.env.DB.prepare("SELECT id FROM posts WHERE topic_id = ? AND is_first = 1").bind(c.req.param("id")).first<{ id: string }>();
+  const first = await c.env.DB.prepare("SELECT id FROM posts WHERE topic_id = ? AND is_first = 1")
+    .bind(c.req.param("id"))
+    .first<{ id: string }>();
   if (!first) return c.json({ ok: false, error: { code: "not_found", message: "主题不存在" } }, 404);
   return applyPostEdit(c, { topicId: c.req.param("id"), postId: first.id });
 });
 
 forumRoutes.patch("/api/posts/:id", requireVerified, async (c) => {
-  const post = await c.env.DB.prepare("SELECT topic_id FROM posts WHERE id = ?").bind(c.req.param("id")).first<{ topic_id: string }>();
+  const post = await c.env.DB.prepare("SELECT topic_id FROM posts WHERE id = ?")
+    .bind(c.req.param("id"))
+    .first<{ topic_id: string }>();
   if (!post) return c.json({ ok: false, error: { code: "not_found", message: "回复不存在" } }, 404);
   return applyPostEdit(c, { topicId: post.topic_id, postId: c.req.param("id") });
 });
 
 forumRoutes.get("/api/topics/:id/revisions", async (c) => {
   const topicId = c.req.param("id");
-  const topic = await c.env.DB.prepare("SELECT id, category_id, author_id, status FROM topics WHERE id = ?").bind(topicId).first<{ id: string; category_id: string; author_id: string; status: string }>();
+  const topic = await c.env.DB.prepare("SELECT id, category_id, author_id, status FROM topics WHERE id = ?")
+    .bind(topicId)
+    .first<{ id: string; category_id: string; author_id: string; status: string }>();
   if (!topic) return c.json({ ok: false, error: { code: "not_found", message: "主题不存在" } }, 404);
   const historyUser = c.get("user");
   if (topic.status !== "published") {
     const staff = historyUser ? await isCategoryModerator(c.env.DB, historyUser, topic.category_id) : false;
-    const allowedStatus = Boolean(historyUser && (historyUser.role === "admin" || staff || historyUser.id === topic.author_id));
+    const allowedStatus = Boolean(
+      historyUser && (historyUser.role === "admin" || staff || historyUser.id === topic.author_id),
+    );
     if (!allowedStatus) return c.json({ ok: false, error: { code: "not_found", message: "主题不存在" } }, 404);
   }
   const requestedPostId = c.req.query("postId");
   const post = requestedPostId
-    ? await c.env.DB.prepare("SELECT id, author_id FROM posts WHERE id = ? AND topic_id = ?").bind(requestedPostId, topicId).first<{ id: string; author_id: string }>()
-    : await c.env.DB.prepare("SELECT id, author_id FROM posts WHERE topic_id = ? AND is_first = 1").bind(topicId).first<{ id: string; author_id: string }>();
+    ? await c.env.DB.prepare("SELECT id, author_id FROM posts WHERE id = ? AND topic_id = ?")
+        .bind(requestedPostId, topicId)
+        .first<{ id: string; author_id: string }>()
+    : await c.env.DB.prepare("SELECT id, author_id FROM posts WHERE topic_id = ? AND is_first = 1")
+        .bind(topicId)
+        .first<{ id: string; author_id: string }>();
   if (!post) return c.json({ ok: false, error: { code: "not_found", message: "内容不存在" } }, 404);
   const allowed = await canViewHistory({
     db: c.env.DB,
@@ -778,14 +992,20 @@ forumRoutes.get("/api/topics/:id/revisions", async (c) => {
             u.id AS editor_id, u.name AS editor_name, u.username AS editor_username
        FROM post_revisions r JOIN user u ON u.id = r.editor_id
       WHERE r.post_id = ? ORDER BY r.version DESC LIMIT 100`,
-  ).bind(post.id).all<JoinRow>();
+  )
+    .bind(post.id)
+    .all<JoinRow>();
   const items: Revision[] = rows.results.map((row) => ({
     id: String(row.id),
     version: Number(row.version),
     title: (row.title as string | null) ?? null,
     contentMd: String(row.content_md),
     action: String(row.action) as Revision["action"],
-    editor: { id: String(row.editor_id), name: String(row.editor_name), username: (row.editor_username as string | null) ?? null },
+    editor: {
+      id: String(row.editor_id),
+      name: String(row.editor_name),
+      username: (row.editor_username as string | null) ?? null,
+    },
     reason: (row.reason as string | null) ?? null,
     createdAt: seconds(row.created_at),
   }));
@@ -794,8 +1014,11 @@ forumRoutes.get("/api/topics/:id/revisions", async (c) => {
 
 forumRoutes.delete("/api/topics/:id", requireAuth, requireActive, async (c) => {
   const user = c.get("user")!;
-  const topic = await c.env.DB.prepare("SELECT id, author_id, category_id, status, first_post_id FROM topics WHERE id = ? AND status = 'published'")
-    .bind(c.req.param("id")).first<{ id: string; author_id: string; category_id: string; status: string; first_post_id: string | null }>();
+  const topic = await c.env.DB.prepare(
+    "SELECT id, author_id, category_id, status, first_post_id FROM topics WHERE id = ? AND status = 'published'",
+  )
+    .bind(c.req.param("id"))
+    .first<{ id: string; author_id: string; category_id: string; status: string; first_post_id: string | null }>();
   if (!topic) return c.json({ ok: false, error: { code: "not_found", message: "主题不存在" } }, 404);
   const allowed = await canDeleteContent({
     db: c.env.DB,
@@ -806,9 +1029,9 @@ forumRoutes.delete("/api/topics/:id", requireAuth, requireActive, async (c) => {
   });
   if (!allowed) return c.json({ ok: false, error: { code: "forbidden", message: "无权删除该主题" } }, 403);
   const now = Math.floor(Date.now() / 1000);
-  const topicPosts = await c.env.DB.prepare(
-    "SELECT id, version, title, content_md FROM posts WHERE topic_id = ?",
-  ).bind(topic.id).all<{ id: string; version: number; title: string | null; content_md: string }>();
+  const topicPosts = await c.env.DB.prepare("SELECT id, version, title, content_md FROM posts WHERE topic_id = ?")
+    .bind(topic.id)
+    .all<{ id: string; version: number; title: string | null; content_md: string }>();
   const snapshots = topicPosts.results.map((post) =>
     c.env.DB.prepare(
       `INSERT OR IGNORE INTO post_revisions (id, topic_id, post_id, version, title, content_md, action, editor_id, reason, created_at)
@@ -819,8 +1042,12 @@ forumRoutes.delete("/api/topics/:id", requireAuth, requireActive, async (c) => {
     await c.env.DB.batch(snapshots.slice(index, index + 50));
   }
   await c.env.DB.batch([
-    c.env.DB.prepare("UPDATE topics SET status = 'deleted', deleted_at = ?, deleted_by = ?, updated_at = ? WHERE id = ?").bind(now, user.id, now, topic.id),
-    c.env.DB.prepare("UPDATE posts SET status = 'deleted', deleted_at = ?, deleted_by = ?, updated_at = ? WHERE topic_id = ?").bind(now, user.id, now, topic.id),
+    c.env.DB.prepare(
+      "UPDATE topics SET status = 'deleted', deleted_at = ?, deleted_by = ?, updated_at = ? WHERE id = ?",
+    ).bind(now, user.id, now, topic.id),
+    c.env.DB.prepare(
+      "UPDATE posts SET status = 'deleted', deleted_at = ?, deleted_by = ?, updated_at = ? WHERE topic_id = ?",
+    ).bind(now, user.id, now, topic.id),
     ftsDeleteTopicStatement(c.env.DB, topic.id),
     c.env.DB.prepare(
       `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
@@ -835,9 +1062,20 @@ forumRoutes.delete("/api/posts/:id", requireAuth, requireActive, async (c) => {
   const post = await c.env.DB.prepare(
     `SELECT p.id, p.topic_id, p.author_id, p.is_first, p.status, t.category_id
        FROM posts p JOIN topics t ON t.id = p.topic_id WHERE p.id = ?`,
-  ).bind(c.req.param("id")).first<{ id: string; topic_id: string; author_id: string; is_first: number; status: string; category_id: string }>();
-  if (!post || post.status === "deleted") return c.json({ ok: false, error: { code: "not_found", message: "回复不存在" } }, 404);
-  if (Number(post.is_first)) return c.json({ ok: false, error: { code: "conflict", message: "首帖请通过删除主题处理" } }, 409);
+  )
+    .bind(c.req.param("id"))
+    .first<{
+      id: string;
+      topic_id: string;
+      author_id: string;
+      is_first: number;
+      status: string;
+      category_id: string;
+    }>();
+  if (!post || post.status === "deleted")
+    return c.json({ ok: false, error: { code: "not_found", message: "回复不存在" } }, 404);
+  if (Number(post.is_first))
+    return c.json({ ok: false, error: { code: "conflict", message: "首帖请通过删除主题处理" } }, 409);
   const allowed = await canDeleteContent({
     db: c.env.DB,
     user,
@@ -847,14 +1085,30 @@ forumRoutes.delete("/api/posts/:id", requireAuth, requireActive, async (c) => {
   });
   if (!allowed) return c.json({ ok: false, error: { code: "forbidden", message: "无权删除该回复" } }, 403);
   const now = Math.floor(Date.now() / 1000);
-  const postContent = await c.env.DB.prepare("SELECT version, title, content_md FROM posts WHERE id = ?").bind(post.id).first<{ version: number; title: string | null; content_md: string }>();
+  const postContent = await c.env.DB.prepare("SELECT version, title, content_md FROM posts WHERE id = ?")
+    .bind(post.id)
+    .first<{ version: number; title: string | null; content_md: string }>();
   await c.env.DB.batch([
     c.env.DB.prepare(
       `INSERT OR IGNORE INTO post_revisions (id, topic_id, post_id, version, title, content_md, action, editor_id, reason, created_at)
        VALUES (?, ?, ?, ?, ?, ?, 'delete', ?, NULL, ?)`,
-    ).bind(ulid(), post.topic_id, post.id, postContent?.version ?? 1, postContent?.title ?? null, postContent?.content_md ?? "", user.id, now),
-    c.env.DB.prepare("UPDATE posts SET status = 'deleted', deleted_at = ?, deleted_by = ?, updated_at = ? WHERE id = ?").bind(now, user.id, now, post.id),
-    c.env.DB.prepare("UPDATE topics SET reply_count = MAX(0, reply_count - 1), updated_at = ? WHERE id = ?").bind(now, post.topic_id),
+    ).bind(
+      ulid(),
+      post.topic_id,
+      post.id,
+      postContent?.version ?? 1,
+      postContent?.title ?? null,
+      postContent?.content_md ?? "",
+      user.id,
+      now,
+    ),
+    c.env.DB.prepare(
+      "UPDATE posts SET status = 'deleted', deleted_at = ?, deleted_by = ?, updated_at = ? WHERE id = ?",
+    ).bind(now, user.id, now, post.id),
+    c.env.DB.prepare("UPDATE topics SET reply_count = MAX(0, reply_count - 1), updated_at = ? WHERE id = ?").bind(
+      now,
+      post.topic_id,
+    ),
     ftsDeleteStatement(c.env.DB, post.id),
     c.env.DB.prepare(
       `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
@@ -866,13 +1120,18 @@ forumRoutes.delete("/api/posts/:id", requireAuth, requireActive, async (c) => {
 
 forumRoutes.post("/api/posts/:id/like", requireAuth, requireActive, async (c) => {
   const user = c.get("user")!;
-  const post = await c.env.DB.prepare("SELECT id, topic_id, is_first, status FROM posts WHERE id = ? AND status = 'published'")
-    .bind(c.req.param("id")).first<{ id: string; topic_id: string; is_first: number }>();
+  const post = await c.env.DB.prepare(
+    "SELECT id, topic_id, is_first, status FROM posts WHERE id = ? AND status = 'published'",
+  )
+    .bind(c.req.param("id"))
+    .first<{ id: string; topic_id: string; is_first: number }>();
   if (!post) return c.json({ ok: false, error: { code: "not_found", message: "回复不存在" } }, 404);
   const now = Math.floor(Date.now() / 1000);
   const inserted = await c.env.DB.prepare(
     "INSERT OR IGNORE INTO post_likes (user_id, post_id, created_at) VALUES (?, ?, ?)",
-  ).bind(user.id, post.id, now).run();
+  )
+    .bind(user.id, post.id, now)
+    .run();
   const liked = Number(inserted.meta.changes ?? 0) > 0;
   if (!liked) {
     await c.env.DB.prepare("DELETE FROM post_likes WHERE user_id = ? AND post_id = ?").bind(user.id, post.id).run();
@@ -890,19 +1149,24 @@ forumRoutes.post("/api/posts/:id/like", requireAuth, requireActive, async (c) =>
     );
   }
   await c.env.DB.batch(statements);
-  const row = await c.env.DB.prepare("SELECT like_count FROM posts WHERE id = ?").bind(post.id).first<{ like_count: number }>();
+  const row = await c.env.DB.prepare("SELECT like_count FROM posts WHERE id = ?")
+    .bind(post.id)
+    .first<{ like_count: number }>();
   return c.json({ ok: true, data: { liked, likeCount: Number(row?.like_count ?? 0) } });
 });
-
 
 forumRoutes.post("/api/topics/:id/bookmark", requireAuth, requireActive, async (c) => {
   const user = c.get("user")!;
   const topicId = c.req.param("id");
-  const topic = await c.env.DB.prepare("SELECT id FROM topics WHERE id = ? AND status = 'published'").bind(topicId).first();
+  const topic = await c.env.DB.prepare("SELECT id FROM topics WHERE id = ? AND status = 'published'")
+    .bind(topicId)
+    .first();
   if (!topic) return c.json({ ok: false, error: { code: "not_found", message: "主题不存在" } }, 404);
   const inserted = await c.env.DB.prepare(
     "INSERT OR IGNORE INTO bookmarks (user_id, topic_id, created_at) VALUES (?, ?, ?)",
-  ).bind(user.id, topicId, Math.floor(Date.now() / 1000)).run();
+  )
+    .bind(user.id, topicId, Math.floor(Date.now() / 1000))
+    .run();
   const bookmarked = Number(inserted.meta.changes ?? 0) > 0;
   if (!bookmarked) {
     await c.env.DB.prepare("DELETE FROM bookmarks WHERE user_id = ? AND topic_id = ?").bind(user.id, topicId).run();
@@ -912,12 +1176,16 @@ forumRoutes.post("/api/topics/:id/bookmark", requireAuth, requireActive, async (
 
 forumRoutes.post("/api/topics/:id/view", async (c) => {
   const topicId = c.req.param("id");
-  const exists = await c.env.DB.prepare("SELECT 1 AS ok FROM topics WHERE id = ? AND status = 'published'").bind(topicId).first();
+  const exists = await c.env.DB.prepare("SELECT 1 AS ok FROM topics WHERE id = ? AND status = 'published'")
+    .bind(topicId)
+    .first();
   if (!exists) return c.json({ ok: false, error: { code: "not_found", message: "主题不存在" } }, 404);
   const ip = c.req.header("cf-connecting-ip") ?? c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const ipHash = await hashIp(c.env, ip);
   const limit = await consumeRateLimit(c.env, `view:${topicId}:${ipHash}`, 300, 1);
   if (!limit.allowed) return c.json({ ok: true, data: { viewed: false } });
-  await c.env.DB.prepare("UPDATE topics SET view_count = view_count + 1 WHERE id = ? AND status = 'published'").bind(topicId).run();
+  await c.env.DB.prepare("UPDATE topics SET view_count = view_count + 1 WHERE id = ? AND status = 'published'")
+    .bind(topicId)
+    .run();
   return c.json({ ok: true, data: { viewed: true } });
 });

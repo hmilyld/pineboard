@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  containsSensitive,
-  createSensitiveMatcher,
-  DEFAULT_SENSITIVE_WORDS,
-  isIgnorable,
-} from "./sensitive";
+import { containsSensitive, createSensitiveMatcher, DEFAULT_SENSITIVE_WORDS, isIgnorable } from "./sensitive";
 
 describe("createSensitiveMatcher", () => {
   it("matches a plain word and reports its span", () => {

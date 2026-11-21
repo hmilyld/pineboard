@@ -18,10 +18,16 @@ type DocMeta = {
   modifiedTime?: string;
 };
 
-const CSP = "default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com https://*.r2.cloudflarestorage.com; frame-src https://challenges.cloudflare.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self'";
+const CSP =
+  "default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com https://*.r2.cloudflarestorage.com; frame-src https://challenges.cloudflare.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self'";
 
 function xmlEscape(value: string): string {
-  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;");
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
 }
 
 function titleWithTemplate(title: string, template: string, siteName: string): string {
@@ -29,31 +35,123 @@ function titleWithTemplate(title: string, template: string, siteName: string): s
   return template.replaceAll("{title}", title).replaceAll("{siteName}", siteName);
 }
 
-function buildShell(asset: Response, meta: DocMeta, siteUrl: string, siteName: string, language: string, image?: string): Response {
+function buildShell(
+  asset: Response,
+  meta: DocMeta,
+  siteUrl: string,
+  siteName: string,
+  language: string,
+  image?: string,
+): Response {
   const canonical = `${siteUrl}${meta.canonicalPath}`;
   const json = meta.jsonLd ? JSON.stringify(meta.jsonLd).replace(/</g, "\\u003c") : null;
   let rewriter = new HTMLRewriter()
-    .on("title", { element(el) { el.setInnerContent(meta.title); } })
-    .on('meta[name="description"]', { element(el) { el.setAttribute("content", meta.description); } })
-    .on('meta[name="robots"]', { element(el) { el.setAttribute("content", meta.noindex ? "noindex,nofollow" : "index,follow"); } })
-    .on('meta[property="og:type"]', { element(el) { el.setAttribute("content", meta.ogType ?? "website"); } })
-    .on('meta[property="og:site_name"]', { element(el) { el.setAttribute("content", siteName); } })
-    .on('meta[property="og:locale"]', { element(el) { el.setAttribute("content", language.replace("-", "_")); } })
-    .on('meta[property="og:title"]', { element(el) { el.setAttribute("content", meta.title); } })
-    .on('meta[property="og:description"]', { element(el) { el.setAttribute("content", meta.description); } })
-    .on('meta[property="og:url"]', { element(el) { el.setAttribute("content", canonical); } })
-    .on('meta[name="twitter:title"]', { element(el) { el.setAttribute("content", meta.title); } })
-    .on('meta[name="twitter:description"]', { element(el) { el.setAttribute("content", meta.description); } })
-    .on('meta[name="twitter:card"]', { element(el) { el.setAttribute("content", image ? "summary_large_image" : "summary"); } })
-    .on('meta[name="author"]', { element(el) { if (meta.author) el.setAttribute("content", meta.author); else el.remove(); } })
-    .on('meta[property="article:published_time"]', { element(el) { if (meta.publishedTime) el.setAttribute("content", meta.publishedTime); else el.remove(); } })
-    .on('meta[property="article:modified_time"]', { element(el) { if (meta.modifiedTime) el.setAttribute("content", meta.modifiedTime); else el.remove(); } })
-    .on('meta[property="og:image"]', { element(el) { if (image) el.setAttribute("content", image); else el.remove(); } })
-    .on('meta[name="twitter:image"]', { element(el) { if (image) el.setAttribute("content", image); else el.remove(); } })
-    .on('link[rel="canonical"]', { element(el) { el.setAttribute("href", canonical); } })
-    .on('link[rel="alternate"][hreflang="zh-CN"]', { element(el) { el.setAttribute("href", canonical); } });
+    .on("title", {
+      element(el) {
+        el.setInnerContent(meta.title);
+      },
+    })
+    .on('meta[name="description"]', {
+      element(el) {
+        el.setAttribute("content", meta.description);
+      },
+    })
+    .on('meta[name="robots"]', {
+      element(el) {
+        el.setAttribute("content", meta.noindex ? "noindex,nofollow" : "index,follow");
+      },
+    })
+    .on('meta[property="og:type"]', {
+      element(el) {
+        el.setAttribute("content", meta.ogType ?? "website");
+      },
+    })
+    .on('meta[property="og:site_name"]', {
+      element(el) {
+        el.setAttribute("content", siteName);
+      },
+    })
+    .on('meta[property="og:locale"]', {
+      element(el) {
+        el.setAttribute("content", language.replace("-", "_"));
+      },
+    })
+    .on('meta[property="og:title"]', {
+      element(el) {
+        el.setAttribute("content", meta.title);
+      },
+    })
+    .on('meta[property="og:description"]', {
+      element(el) {
+        el.setAttribute("content", meta.description);
+      },
+    })
+    .on('meta[property="og:url"]', {
+      element(el) {
+        el.setAttribute("content", canonical);
+      },
+    })
+    .on('meta[name="twitter:title"]', {
+      element(el) {
+        el.setAttribute("content", meta.title);
+      },
+    })
+    .on('meta[name="twitter:description"]', {
+      element(el) {
+        el.setAttribute("content", meta.description);
+      },
+    })
+    .on('meta[name="twitter:card"]', {
+      element(el) {
+        el.setAttribute("content", image ? "summary_large_image" : "summary");
+      },
+    })
+    .on('meta[name="author"]', {
+      element(el) {
+        if (meta.author) el.setAttribute("content", meta.author);
+        else el.remove();
+      },
+    })
+    .on('meta[property="article:published_time"]', {
+      element(el) {
+        if (meta.publishedTime) el.setAttribute("content", meta.publishedTime);
+        else el.remove();
+      },
+    })
+    .on('meta[property="article:modified_time"]', {
+      element(el) {
+        if (meta.modifiedTime) el.setAttribute("content", meta.modifiedTime);
+        else el.remove();
+      },
+    })
+    .on('meta[property="og:image"]', {
+      element(el) {
+        if (image) el.setAttribute("content", image);
+        else el.remove();
+      },
+    })
+    .on('meta[name="twitter:image"]', {
+      element(el) {
+        if (image) el.setAttribute("content", image);
+        else el.remove();
+      },
+    })
+    .on('link[rel="canonical"]', {
+      element(el) {
+        el.setAttribute("href", canonical);
+      },
+    })
+    .on('link[rel="alternate"][hreflang="zh-CN"]', {
+      element(el) {
+        el.setAttribute("href", canonical);
+      },
+    });
   if (json) {
-    rewriter = rewriter.on("#doc-jsonld", { element(el) { el.setInnerContent(json); } });
+    rewriter = rewriter.on("#doc-jsonld", {
+      element(el) {
+        el.setInnerContent(json);
+      },
+    });
   }
   const headers = new Headers({
     "content-type": "text/html; charset=utf-8",
@@ -102,7 +200,10 @@ async function serveDoc(
     {
       ...meta,
       noindex: Boolean(meta.noindex || config.seo.noindex),
-      title: meta.title === config.site.name ? config.site.name : titleWithTemplate(meta.title, config.seo.titleTemplate, config.site.name),
+      title:
+        meta.title === config.site.name
+          ? config.site.name
+          : titleWithTemplate(meta.title, config.seo.titleTemplate, config.site.name),
     },
     config.site.url.replace(/\/$/, ""),
     config.site.name,
@@ -122,8 +223,9 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
     const loaded = await getConfig(c.env);
     const config = loaded.config;
     const site = config.site.url.replace(/\/$/, "");
-    const latest = await c.env.DB.prepare("SELECT MAX(updated_at) AS updated_at FROM topics WHERE status = 'published'")
-      .first<{ updated_at: number | null }>();
+    const latest = await c.env.DB.prepare(
+      "SELECT MAX(updated_at) AS updated_at FROM topics WHERE status = 'published'",
+    ).first<{ updated_at: number | null }>();
     const lastmod = latest?.updated_at ? new Date(Number(latest.updated_at) * 1000).toISOString() : undefined;
     return serveDoc(c, {
       title: config.seo.homeTitle || config.site.name,
@@ -156,17 +258,48 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
               p.title, p.content_text, p.created_at, t.updated_at, u.name AS author_name
          FROM topics t JOIN posts p ON p.topic_id = t.id AND p.is_first = 1
          JOIN user u ON u.id = t.author_id WHERE t.id = ?`,
-    ).bind(id).first<{ id: string; status: string; reply_count: number; like_count: number; view_count: number; title: string; content_text: string; created_at: number; updated_at: number; author_name: string }>();
+    )
+      .bind(id)
+      .first<{
+        id: string;
+        status: string;
+        reply_count: number;
+        like_count: number;
+        view_count: number;
+        title: string;
+        content_text: string;
+        created_at: number;
+        updated_at: number;
+        author_name: string;
+      }>();
     const config = (await getConfig(c.env)).config;
     const locale = docLocale(config);
     if (!row) {
-      return serveDoc(c, { title: copy("topicMissing", locale), description: copy("topicMissingOrDeleted", locale), canonicalPath: `/t/${id}`, status: 404, noindex: true });
+      return serveDoc(c, {
+        title: copy("topicMissing", locale),
+        description: copy("topicMissingOrDeleted", locale),
+        canonicalPath: `/t/${id}`,
+        status: 404,
+        noindex: true,
+      });
     }
     if (row.status === "deleted") {
-      return serveDoc(c, { title: copy("topicDeleted", locale), description: copy("topicDeletedBody", locale), canonicalPath: `/t/${id}`, status: 410, noindex: true });
+      return serveDoc(c, {
+        title: copy("topicDeleted", locale),
+        description: copy("topicDeletedBody", locale),
+        canonicalPath: `/t/${id}`,
+        status: 410,
+        noindex: true,
+      });
     }
     if (row.status !== "published") {
-      return serveDoc(c, { title: copy("topicMissing", locale), description: copy("topicMissingOrHidden", locale), canonicalPath: `/t/${id}`, status: 404, noindex: true });
+      return serveDoc(c, {
+        title: copy("topicMissing", locale),
+        description: copy("topicMissingOrHidden", locale),
+        canonicalPath: `/t/${id}`,
+        status: 404,
+        noindex: true,
+      });
     }
     const site = config.site.url.replace(/\/$/, "");
     const published = new Date(row.created_at * 1000).toISOString();
@@ -194,9 +327,21 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
         isPartOf: { "@type": "WebSite", name: config.site.name, url: site },
         commentCount: Number(row.reply_count ?? 0),
         interactionStatistic: [
-          { "@type": "InteractionCounter", interactionType: "https://schema.org/CommentAction", userInteractionCount: Number(row.reply_count ?? 0) },
-          { "@type": "InteractionCounter", interactionType: "https://schema.org/LikeAction", userInteractionCount: Number(row.like_count ?? 0) },
-          { "@type": "InteractionCounter", interactionType: "https://schema.org/WatchAction", userInteractionCount: Number(row.view_count ?? 0) },
+          {
+            "@type": "InteractionCounter",
+            interactionType: "https://schema.org/CommentAction",
+            userInteractionCount: Number(row.reply_count ?? 0),
+          },
+          {
+            "@type": "InteractionCounter",
+            interactionType: "https://schema.org/LikeAction",
+            userInteractionCount: Number(row.like_count ?? 0),
+          },
+          {
+            "@type": "InteractionCounter",
+            interactionType: "https://schema.org/WatchAction",
+            userInteractionCount: Number(row.view_count ?? 0),
+          },
         ],
       },
     });
@@ -204,12 +349,22 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
 
   app.get("/c/:slug", async (c) => {
     const slug = c.req.param("slug");
-    const row = await c.env.DB.prepare("SELECT slug, name, description FROM categories WHERE slug = ? AND is_visible = 1")
-      .bind(slug).first<{ slug: string; name: string; description: string }>();
+    const row = await c.env.DB.prepare(
+      "SELECT slug, name, description FROM categories WHERE slug = ? AND is_visible = 1",
+    )
+      .bind(slug)
+      .first<{ slug: string; name: string; description: string }>();
     const config = (await getConfig(c.env)).config;
     const locale = docLocale(config);
     const fallbackDescription = row ? copy("categoryBrowse", locale, { name: row.name }) : "";
-    if (!row) return serveDoc(c, { title: copy("categoryMissing", locale), description: copy("categoryMissingBody", locale), canonicalPath: `/c/${slug}`, status: 404, noindex: true });
+    if (!row)
+      return serveDoc(c, {
+        title: copy("categoryMissing", locale),
+        description: copy("categoryMissingBody", locale),
+        canonicalPath: `/c/${slug}`,
+        status: 404,
+        noindex: true,
+      });
     return serveDoc(c, {
       title: row.name,
       description: row.description || fallbackDescription,
@@ -230,11 +385,19 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
   app.get("/tag/:slug", async (c) => {
     const slug = c.req.param("slug");
     const row = await c.env.DB.prepare("SELECT slug, name, description FROM tags WHERE slug = ? AND status = 'active'")
-      .bind(slug).first<{ slug: string; name: string; description: string }>();
+      .bind(slug)
+      .first<{ slug: string; name: string; description: string }>();
     const config = (await getConfig(c.env)).config;
     const locale = docLocale(config);
     const fallbackDescription = row ? copy("tagTopics", locale, { name: row.name }) : "";
-    if (!row) return serveDoc(c, { title: copy("tagMissing", locale), description: copy("tagMissingBody", locale), canonicalPath: `/tag/${slug}`, status: 404, noindex: true });
+    if (!row)
+      return serveDoc(c, {
+        title: copy("tagMissing", locale),
+        description: copy("tagMissingBody", locale),
+        canonicalPath: `/tag/${slug}`,
+        status: 404,
+        noindex: true,
+      });
     return serveDoc(c, {
       title: `#${row.name}`,
       description: row.description || fallbackDescription,
@@ -255,10 +418,18 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
   app.get("/u/:username", async (c) => {
     const username = c.req.param("username").toLowerCase();
     const row = await c.env.DB.prepare("SELECT username, name, bio FROM user WHERE username = ? AND status = 'active'")
-      .bind(username).first<{ username: string; name: string; bio: string | null }>();
+      .bind(username)
+      .first<{ username: string; name: string; bio: string | null }>();
     const config = (await getConfig(c.env)).config;
     const locale = docLocale(config);
-    if (!row) return serveDoc(c, { title: copy("userMissing", locale), description: copy("userMissingBody", locale), canonicalPath: `/u/${username}`, status: 404, noindex: true });
+    if (!row)
+      return serveDoc(c, {
+        title: copy("userMissing", locale),
+        description: copy("userMissingBody", locale),
+        canonicalPath: `/u/${username}`,
+        status: 404,
+        noindex: true,
+      });
     return serveDoc(c, {
       title: row.name,
       description: row.bio || copy("userHome", locale, { username: row.username }),
@@ -268,7 +439,12 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "ProfilePage",
-        mainEntity: { "@type": "Person", name: row.name, alternateName: `@${row.username}`, description: row.bio || undefined },
+        mainEntity: {
+          "@type": "Person",
+          name: row.name,
+          alternateName: `@${row.username}`,
+          description: row.bio || undefined,
+        },
         url: `${config.site.url.replace(/\/$/, "")}/u/${row.username}`,
       },
     });
@@ -311,10 +487,16 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
       `<url><loc>${xmlEscape(`${site}/tags`)}</loc></url>`,
       ...categories.results.map((row) => `<url><loc>${xmlEscape(`${site}/c/${row.slug}`)}</loc></url>`),
       ...tags.results.map((row) => `<url><loc>${xmlEscape(`${site}/tag/${row.slug}`)}</loc></url>`),
-      ...topics.results.map((row) => `<url><loc>${xmlEscape(`${site}/t/${row.id}`)}</loc><lastmod>${new Date(Number(row.lastmod) * 1000).toISOString()}</lastmod></url>`),
+      ...topics.results.map(
+        (row) =>
+          `<url><loc>${xmlEscape(`${site}/t/${row.id}`)}</loc><lastmod>${new Date(Number(row.lastmod) * 1000).toISOString()}</lastmod></url>`,
+      ),
     ];
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.join("")}</urlset>`;
-    return c.body(xml, 200, { "content-type": "application/xml; charset=utf-8", "cache-control": "public, s-maxage=3600" });
+    return c.body(xml, 200, {
+      "content-type": "application/xml; charset=utf-8",
+      "cache-control": "public, s-maxage=3600",
+    });
   });
 
   app.get("/robots.txt", async (c) => {
@@ -338,7 +520,10 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
           "Disallow: /mod",
           ...(config.seo.sitemapEnabled ? [`Sitemap: ${config.site.url.replace(/\/$/, "")}/sitemap.xml`] : []),
         ];
-    return c.body(lines.join("\n") + "\n", 200, { "content-type": "text/plain; charset=utf-8", "cache-control": "public, s-maxage=3600" });
+    return c.body(lines.join("\n") + "\n", 200, {
+      "content-type": "text/plain; charset=utf-8",
+      "cache-control": "public, s-maxage=3600",
+    });
   });
 
   // SPA sub-routes under run_worker_first prefixes (edit/history/etc.).
@@ -362,7 +547,9 @@ export function registerDocRoutes(app: Hono<AppEnv>): void {
         background_color: "#f1f3f1",
         theme_color: "#14513f",
         lang: config.site.language,
-        icons: [{ src: icon, sizes: "any", type: icon.endsWith(".svg") ? "image/svg+xml" : "image/png", purpose: "any" }],
+        icons: [
+          { src: icon, sizes: "any", type: icon.endsWith(".svg") ? "image/svg+xml" : "image/png", purpose: "any" },
+        ],
       },
       200,
       { "content-type": "application/manifest+json; charset=utf-8", "cache-control": "public, s-maxage=3600" },

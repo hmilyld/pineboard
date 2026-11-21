@@ -37,7 +37,8 @@ describe("settings defaults", () => {
     expect(errors.some((error) => error.group === "account")).toBe(true);
   });
 
-  it("rejects unsafe theme tokens", () => {    const result = configSchema.safeParse({
+  it("rejects unsafe theme tokens", () => {
+    const result = configSchema.safeParse({
       ...DEFAULTS,
       theme: { ...DEFAULTS.theme, tokens: { "--x": "url(javascript:alert(1))" } },
     });

@@ -27,7 +27,14 @@ const deleting = ref(false);
 const cancelling = ref(false);
 const loading = ref(true);
 const summary = ref({ topicCount: 0, replyCount: 0, likeCount: 0, bookmarkCount: 0, unreadCount: 0 });
-const profile = computed(() => ({ id: auth.user?.id ?? "", name: auth.user?.name ?? "", username: auth.user?.username ?? null, role: auth.user?.role ?? "user", bio: auth.user?.bio ?? null, createdAt: auth.user?.createdAt ?? 0 }));
+const profile = computed(() => ({
+  id: auth.user?.id ?? "",
+  name: auth.user?.name ?? "",
+  username: auth.user?.username ?? null,
+  role: auth.user?.role ?? "user",
+  bio: auth.user?.bio ?? null,
+  createdAt: auth.user?.createdAt ?? 0,
+}));
 const isDeleting = computed(() => auth.user?.status === "deleting");
 const minPasswordLength = computed(() => config.config?.account.passwordMinLength ?? 8);
 
@@ -120,12 +127,15 @@ async function deleteAccount(): Promise<void> {
     error.value = t("security.passwordRequired");
     return;
   }
-  if (!(await confirmDialog({
-    title: t("security.deleteConfirmTitle"),
-    message: t("security.deleteConfirmBody"),
-    confirmLabel: t("security.deleteConfirmAction"),
-    danger: true,
-  }))) return;
+  if (
+    !(await confirmDialog({
+      title: t("security.deleteConfirmTitle"),
+      message: t("security.deleteConfirmBody"),
+      confirmLabel: t("security.deleteConfirmAction"),
+      danger: true,
+    }))
+  )
+    return;
   deleting.value = true;
   try {
     const derived = await derivePassword(auth.user.email, password.value);
@@ -144,12 +154,27 @@ async function deleteAccount(): Promise<void> {
 
 <template>
   <AccountSkeleton v-if="!auth.user || loading" />
-  <AccountShell v-else-if="auth.user" :profile="profile" active="security" :topic-count="summary.topicCount" :reply-count="summary.replyCount" :like-count="summary.likeCount" :bookmark-count="summary.bookmarkCount" :notification-count="summary.unreadCount" is-self>
-    <div class="v2-section-head"><h2>{{ t("security.title") }}</h2><span>{{ t("security.subtitle") }}</span></div>
+  <AccountShell
+    v-else-if="auth.user"
+    :profile="profile"
+    active="security"
+    :topic-count="summary.topicCount"
+    :reply-count="summary.replyCount"
+    :like-count="summary.likeCount"
+    :bookmark-count="summary.bookmarkCount"
+    :notification-count="summary.unreadCount"
+    is-self
+  >
+    <div class="v2-section-head">
+      <h2>{{ t("security.title") }}</h2>
+      <span>{{ t("security.subtitle") }}</span>
+    </div>
     <p class="mb-3 text-[0.71875rem] leading-6 text-muted-foreground">{{ t("security.intro") }}</p>
     <section v-if="isDeleting" class="v2-note mb-3 flex flex-wrap items-center gap-3">
       <span class="min-w-0 flex-1">{{ t("security.deletionPending") }}</span>
-      <button type="button" class="v2-btn solid sm" :disabled="cancelling" @click="cancelDeletion">{{ cancelling ? t("security.cancelling") : t("security.cancelDeletion") }}</button>
+      <button type="button" class="v2-btn solid sm" :disabled="cancelling" @click="cancelDeletion">
+        {{ cancelling ? t("security.cancelling") : t("security.cancelDeletion") }}
+      </button>
     </section>
     <p v-if="message" :class="[alertInfoClass, 'mb-3']">{{ message }}</p>
     <p v-if="error" :class="[alertErrorClass, 'mb-3']" role="alert">{{ error }}</p>
@@ -160,24 +185,54 @@ async function deleteAccount(): Promise<void> {
       <div class="mt-3 grid gap-3 sm:grid-cols-3">
         <div>
           <label class="v2-label" for="current-password">{{ t("security.currentPassword") }}</label>
-          <input id="current-password" v-model="currentPassword" name="current-password" type="password" class="v2-input" autocomplete="current-password" :placeholder="t('security.currentPassword')" />
+          <input
+            id="current-password"
+            v-model="currentPassword"
+            name="current-password"
+            type="password"
+            class="v2-input"
+            autocomplete="current-password"
+            :placeholder="t('security.currentPassword')"
+          />
         </div>
         <div>
           <label class="v2-label" for="new-password">{{ t("security.newPassword") }}</label>
-          <input id="new-password" v-model="newPassword" name="new-password" type="password" class="v2-input" autocomplete="new-password" :placeholder="t('auth.passwordMinPlaceholder', { n: minPasswordLength })" />
+          <input
+            id="new-password"
+            v-model="newPassword"
+            name="new-password"
+            type="password"
+            class="v2-input"
+            autocomplete="new-password"
+            :placeholder="t('auth.passwordMinPlaceholder', { n: minPasswordLength })"
+          />
         </div>
         <div>
           <label class="v2-label" for="confirm-new-password">{{ t("security.confirmNewPassword") }}</label>
-          <input id="confirm-new-password" v-model="confirmPassword" name="confirm-new-password" type="password" class="v2-input" autocomplete="new-password" :placeholder="t('security.confirmNewPassword')" />
+          <input
+            id="confirm-new-password"
+            v-model="confirmPassword"
+            name="confirm-new-password"
+            type="password"
+            class="v2-input"
+            autocomplete="new-password"
+            :placeholder="t('security.confirmNewPassword')"
+          />
         </div>
       </div>
-      <div class="mt-3"><Button :disabled="changingPassword" @click="changePassword">{{ changingPassword ? t("auth.updating") : t("security.updatePassword") }}</Button></div>
+      <div class="mt-3">
+        <Button :disabled="changingPassword" @click="changePassword">{{
+          changingPassword ? t("auth.updating") : t("security.updatePassword")
+        }}</Button>
+      </div>
     </section>
 
     <section class="v2-panel mt-3 p-4">
       <h2 class="text-[0.75rem] font-semibold">{{ t("security.exportTitle") }}</h2>
       <p class="mt-1 text-[0.6875rem] leading-6 text-muted-foreground">{{ t("security.exportHint") }}</p>
-      <Button class="mt-3" variant="outline" :disabled="exporting" @click="exportData">{{ exporting ? t("security.exporting") : t("security.exportButton") }}</Button>
+      <Button class="mt-3" variant="outline" :disabled="exporting" @click="exportData">{{
+        exporting ? t("security.exporting") : t("security.exportButton")
+      }}</Button>
     </section>
 
     <section v-if="!isDeleting" class="v2-panel mt-3 border-orange/40 p-4">
@@ -185,9 +240,23 @@ async function deleteAccount(): Promise<void> {
       <p class="mt-1 text-[0.6875rem] leading-6 text-muted-foreground">{{ t("security.deleteHint") }}</p>
       <div class="mt-3 max-w-xs">
         <label class="v2-label" for="delete-password">{{ t("security.deleteConfirmLabel") }}</label>
-        <input id="delete-password" v-model="password" name="password" type="password" class="v2-input" autocomplete="current-password" :placeholder="t('security.deletePasswordPlaceholder')" />
+        <input
+          id="delete-password"
+          v-model="password"
+          name="password"
+          type="password"
+          class="v2-input"
+          autocomplete="current-password"
+          :placeholder="t('security.deletePasswordPlaceholder')"
+        />
       </div>
-      <div class="mt-3 flex items-center gap-3"><Button variant="destructive" :disabled="deleting" @click="deleteAccount">{{ deleting ? t("common.working") : t("security.deleteButton") }}</Button><RouterLink to="/me" class="text-[0.71875rem] text-muted-foreground hover:text-ink">{{ t("security.backToCenter") }}</RouterLink></div>
+      <div class="mt-3 flex items-center gap-3">
+        <Button variant="destructive" :disabled="deleting" @click="deleteAccount">{{
+          deleting ? t("common.working") : t("security.deleteButton")
+        }}</Button><RouterLink to="/me" class="text-[0.71875rem] text-muted-foreground hover:text-ink">{{
+          t("security.backToCenter")
+        }}</RouterLink>
+      </div>
     </section>
   </AccountShell>
 </template>
