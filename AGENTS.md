@@ -106,8 +106,8 @@ Release process:
 git push origin main          # CI only
 
 # Release
-git tag v0.2.6
-git push origin v0.2.6        # Triggers Deploy: migrations → required Secrets check → build → deploy → smoke
+git tag v0.2.10
+git push origin v0.2.10        # Triggers Deploy: migrations → required Secrets check → build → deploy → smoke
 ```
 
 Pre-deployment checks:

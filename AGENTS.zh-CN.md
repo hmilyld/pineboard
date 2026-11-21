@@ -106,8 +106,8 @@ pnpm test:p6:build
 git push origin main          # 只跑 CI
 
 # 发布
-git tag v0.2.6
-git push origin v0.2.6        # 触发 Deploy：migrations → 必需 Secrets 校验 → build → deploy → smoke
+git tag v0.2.10
+git push origin v0.2.10        # 触发 Deploy：migrations → 必需 Secrets 校验 → build → deploy → smoke
 ```
 
 部署前检查：
