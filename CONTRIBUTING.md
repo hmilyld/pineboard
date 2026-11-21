@@ -7,6 +7,8 @@ English | [简体中文](CONTRIBUTING.zh-CN.md)
 3. Run the following before committing:
 
 ```bash
+pnpm lint
+pnpm format:check
 pnpm typecheck
 pnpm test
 pnpm build
@@ -16,5 +18,6 @@ pnpm build
 5. Do not commit `.dev.vars`, `wrangler.site.jsonc`, real D1/R2 IDs, domains, backups, or production data.
 6. Documentation and code go in the same PR; new configuration must be synchronized with `docs/02`/`docs/08`.
 7. Use the `feat:` / `fix:` / `docs:` / `chore:` prefixes in commit messages.
+8. Dependencies: Dependabot opens monthly minor/patch PRs. Major upgrades need an issue first. Before adding a dependency, run `pnpm check:licenses` and confirm the license is permissive and the package is maintained.
 
 See `AGENTS.md` for the design direction and the inviolable constraints. Do not reopen settled matters.

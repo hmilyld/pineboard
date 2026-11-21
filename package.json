@@ -23,6 +23,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:deploy-env": "node scripts/check-deploy-env.mjs",
+    "check:licenses": "node scripts/check-licenses.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",

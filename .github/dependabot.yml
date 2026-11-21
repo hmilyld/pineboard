@@ -1,0 +1,25 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      production-dependencies:
+        dependency-type: production
+        update-types: ["patch", "minor"]
+      development-dependencies:
+        dependency-type: development
+        update-types: ["patch", "minor"]
+    ignore:
+      # Major upgrades are a deliberate decision, not an automated PR.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
