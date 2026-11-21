@@ -23,16 +23,18 @@ Out of core scope: OAuth, moderation queue, drafts, external server-side full-te
 | Missing Turnstile config | Registration/posting locked out | Skip consistently on both frontend and backend when no Site Key, flag in health check |
 | R2 CORS/custom domain | Uploads or image reads fail | Worker direct-upload fallback, `/files/*`, CDN optional |
 | Fork config drift | Cannot follow upstream | All site config goes through Variables/Secrets/D1, no editing tracked files |
+| Dev-only `esbuild` advisory (`better-auth → drizzle-kit → @esbuild-kit`) | Local tooling only; no production runtime exposure | Track upstream; re-run `pnpm audit --prod` before each release |
 
 ## Testing strategy
 
+- `pnpm lint` and `pnpm format:check`
 - `pnpm typecheck`: four workspace packages
-- `pnpm test`: shared contracts, config, stats
+- `pnpm test:coverage`: unit tests with a coverage ratchet (report first, raise as tests land)
 - `pnpm test:e2e:v2`: API contracts and pagination
-- `pnpm test:e2e:p1…p6`: authentication, content, editing, notifications, reports, SEO
+- `pnpm test:e2e:p1…p6` and `pnpm test:e2e:review`: authentication, content, editing, notifications, reports, SEO and moderation
 - `pnpm test:p6:build`: PWA, build output, SW denylist
 
-Before a release, at minimum: typecheck, unit, build, P6 build check; run the corresponding e2e when APIs/data change.
+Before a release, at minimum: lint, formatting, typecheck, unit tests, build and the P6 build check. Run the matching e2e suite when APIs or data change. CI runs all of the above on every pull request.
 
 ## Known boundaries
 

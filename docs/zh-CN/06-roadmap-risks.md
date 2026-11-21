@@ -23,16 +23,18 @@ Pineboard 以“可自托管的轻量讨论板”为范围，核心路线：
 | Turnstile 配置缺失 | 注册/发帖被锁死 | 无 Site Key 时前后端一致跳过，健康检查标记 |
 | R2 CORS/自定义域 | 上传或图片读取失败 | Worker 直传回退、`/files/*`、CDN 可选 |
 | Fork 配置漂移 | 无法跟随上游 | 所有站点配置走 Variables/Secrets/D1，不修改 tracked 文件 |
+| 仅开发期的 `esbuild` 公告（`better-auth → drizzle-kit → @esbuild-kit`） | 只影响本地工具链，不在生产运行时暴露 | 跟踪上游；每次发布前重跑 `pnpm audit --prod` |
 
 ## 测试策略
 
+- `pnpm lint` 与 `pnpm format:check`
 - `pnpm typecheck`：四个 workspace 包
-- `pnpm test`：共享契约、配置、统计
+- `pnpm test:coverage`：单元测试 + 覆盖率棘轮（先报告，随测试补充再抬高）
 - `pnpm test:e2e:v2`：API 契约与分页
-- `pnpm test:e2e:p1…p6`：认证、内容、编辑、通知、举报、SEO
+- `pnpm test:e2e:p1…p6` 与 `pnpm test:e2e:review`：认证、内容、编辑、通知、举报、SEO 与审核
 - `pnpm test:p6:build`：PWA、构建产物、SW denylist
 
-发布前至少：typecheck、unit、build、P6 构建检查；涉及 API/数据变更时跑对应 e2e。
+发布前至少：lint、格式化、typecheck、单元测试、构建与 P6 构建检查；涉及 API/数据变更时跑对应 e2e。CI 会在每个 PR 上执行上述全部检查。
 
 ## 已知边界
 

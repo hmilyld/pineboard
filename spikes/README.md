@@ -1,5 +1,7 @@
 # Spike harness
 
+**This directory is not part of the root pnpm workspace or CI, and nothing here ships with the forum. Do not put product changes here.**
+
 This directory is **throwaway verification code**, not the forum implementation. It exists to answer the five questions in `docs/06-roadmap-risks.md` before P0. The production monorepo will live in `apps/*` and `packages/*`; nothing here should be imported by P0.
 
 ## What is covered
