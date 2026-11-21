@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/hmilyld/pineboard/security/advisories/new
+    about: Report vulnerabilities privately; do not open a public issue.
+  - name: Documentation
+    url: https://github.com/hmilyld/pineboard/tree/main/docs
+    about: Architecture, API, configuration, design and deployment guides.

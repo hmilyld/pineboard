@@ -1,0 +1,45 @@
+name: Feature request
+description: Propose a change in behaviour or a new capability
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is hard or missing today, and who is affected?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Front end
+        - API / data model
+        - Authentication and permissions
+        - Email and notifications
+        - Search and uploads
+        - Admin and operations
+        - Deployment and tooling
+        - Documentation
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I read `AGENTS.md` and `docs/06-roadmap-risks.md`; this is not settled scope.
+          required: true
+        - label: I searched existing issues for the same request.
+          required: true
