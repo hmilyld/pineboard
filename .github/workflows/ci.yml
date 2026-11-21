@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -23,7 +27,55 @@ jobs:
           node-version: 25
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
       - run: pnpm typecheck
-      - run: pnpm test
+      - run: pnpm test:coverage
       - run: pnpm check:deploy-env
       - run: pnpm build
+      - run: pnpm test:p6:build
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.5.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Write a CI-only development environment
+        run: node scripts/write-ci-dev-vars.mjs
+      - run: pnpm db:migrate
+      - name: Start the dev server
+        run: |
+          set -euo pipefail
+          nohup pnpm dev > /tmp/pineboard-dev.log 2>&1 &
+          for _ in $(seq 1 60); do
+            if curl -fsS http://localhost:5173/api/health > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "dev server did not become healthy" >&2
+          tail -200 /tmp/pineboard-dev.log >&2
+          exit 1
+      - name: Run the e2e suites
+        env:
+          DEV_RESET_TOKEN: local-dev-reset
+        run: |
+          pnpm test:e2e:p1
+          pnpm test:e2e:p2
+          pnpm test:e2e:p3
+          pnpm test:e2e:p4
+          pnpm test:e2e:p5
+          pnpm test:e2e:p6
+          pnpm test:e2e:v2
+          pnpm test:e2e:review
+      - name: Dev server log
+        if: failure()
+        run: tail -200 /tmp/pineboard-dev.log

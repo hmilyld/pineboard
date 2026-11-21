@@ -80,6 +80,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - run: pnpm build
+      - run: pnpm test:p6:build
       - name: Deploy Worker
         run: pnpm exec wrangler deploy --config wrangler.site.jsonc
         env:
