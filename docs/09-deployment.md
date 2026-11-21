@@ -16,6 +16,8 @@ Pineboard is an open-source forum built on a single Worker + D1 + R2. The upstre
 
 ## 1. Create resources
 
+Requires Node 24 LTS or newer (`.nvmrc` pins 24) and pnpm 12.5.1.
+
 ```bash
 pnpm install
 pnpm exec wrangler login

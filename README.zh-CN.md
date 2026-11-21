@@ -71,6 +71,8 @@ wrangler.jsonc      Worker、D1、R2、Assets、Cron 与路由配置
 
 ## 本地开发
 
+需要 Node 24 LTS 或更高版本（`.nvmrc` 固定为 24）与 pnpm 12.5.1。
+
 ```bash
 pnpm install
 pnpm run setup                   # 交互式配置域名/D1，并生成本地 .dev.vars

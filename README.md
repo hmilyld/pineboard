@@ -71,6 +71,8 @@ wrangler.jsonc      Worker, D1, R2, Assets, Cron and route configuration
 
 ## Local development
 
+Requires Node 24 LTS or newer (`.nvmrc` pins 24) and pnpm 12.5.1.
+
 ```bash
 pnpm install
 pnpm run setup                   # interactively configure domain/D1 and generate local .dev.vars

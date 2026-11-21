@@ -16,6 +16,8 @@ Pineboard 是单 Worker + D1 + R2 的开源论坛。上游仓库只含占位配�
 
 ## 1. 创建资源
 
+需要 Node 24 LTS 或更高版本（`.nvmrc` 固定为 24）与 pnpm 12.5.1。
+
 ```bash
 pnpm install
 pnpm exec wrangler login
