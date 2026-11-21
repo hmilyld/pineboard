@@ -29,6 +29,7 @@
     "test:e2e:p4": "node scripts/e2e-p4.mjs",
     "test:e2e:p5": "node scripts/e2e-p5.mjs",
     "test:e2e:p6": "node scripts/e2e-p6.mjs",
+    "test:e2e:review": "node scripts/e2e-review.mjs",
     "test:p6:build": "node scripts/check-p6-build.mjs",
     "test:e2e:remote": "node scripts/e2e-remote.mjs",
     "backup:order": "node scripts/order-restore.mjs",

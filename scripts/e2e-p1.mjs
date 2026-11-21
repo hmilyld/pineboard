@@ -2,27 +2,14 @@
 // It resets auth tables through the development-only /api/dev/reset endpoint,
 // then exercises signup (Turnstile), verification, login, reset, admin
 // bootstrap and config writes. Email is the development outbox in D1.
-import { DatabaseSync } from "node:sqlite";
-import { readdirSync } from "node:fs";
 import { derivePassword } from "../packages/shared/src/config.ts";
+import { createResults, localDb } from "./e2e-lib.mjs";
 
 const BASE = process.env.P1_BASE ?? "http://localhost:5173";
-const DB_DIR = ".wrangler/state/v3/d1/miniflare-D1DatabaseObject";
 const ADMIN_EMAIL = "admin@example.test";
-const results = [];
+const { results, assert } = createResults(500);
+const db = localDb;
 let cookie = "";
-
-function assert(name, condition, detail) {
-  results.push({ name, pass: Boolean(condition), detail });
-  if (!condition) console.log("FAIL:", name, JSON.stringify(detail).slice(0, 500));
-  else console.log("PASS:", name);
-}
-
-function db() {
-  const file = readdirSync(DB_DIR).find((name) => name.endsWith(".sqlite") && !name.startsWith("metadata"));
-  if (!file) throw new Error("local D1 sqlite not found");
-  return new DatabaseSync(`${DB_DIR}/${file}`);
-}
 
 async function request(path, options = {}) {
   const headers = new Headers(options.headers ?? {});

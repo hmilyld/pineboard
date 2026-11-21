@@ -1,21 +1,9 @@
-import { DatabaseSync } from "node:sqlite";
-import { readdirSync } from "node:fs";
 import { derivePassword } from "../packages/shared/src/config.ts";
+import { TURNSTILE, createResults, localDb } from "./e2e-lib.mjs";
 
 const BASE = process.env.P4_BASE ?? "http://localhost:5173";
-const DB_DIR = ".wrangler/state/v3/d1/miniflare-D1DatabaseObject";
-const TURNSTILE = "XXXX.DUMMY.TOKEN.XXXX";
-const results = [];
-
-function assert(name, condition, detail) {
-  results.push({ name, pass: Boolean(condition), detail });
-  console.log(condition ? "PASS:" : "FAIL:", name, condition ? "" : JSON.stringify(detail ?? null).slice(0, 400));
-}
-function db() {
-  const file = readdirSync(DB_DIR).find((name) => name.endsWith(".sqlite") && !name.startsWith("metadata"));
-  if (!file) throw new Error("local D1 not found");
-  return new DatabaseSync(`${DB_DIR}/${file}`);
-}
+const { results, assert } = createResults();
+const db = localDb;
 function makeClient() {
   let cookie = "";
   async function request(path, options = {}) {
@@ -150,32 +138,48 @@ assert(
   mentionNotifications.body.data.items.some((n) => n.type === "mention"),
   mentionNotifications.body,
 );
-const mentionMail = await outbox(mentionedEmail, "mention", 5000);
-assert(
-  "mention email is delivered directly",
-  Boolean(mentionMail?.subject?.includes("提到了你")),
-  mentionMail?.subject,
-);
+// Email is opt-in by default, so the mention only creates an in-site notification.
+const mentionMailBeforeOptIn = await outbox(mentionedEmail, "mention", 800);
+assert("mention email is skipped by default", mentionMailBeforeOptIn === null, mentionMailBeforeOptIn?.subject);
 const markRead = await author.request("/api/me/notifications/read", { method: "POST", json: { all: true } });
 const afterRead = await author.request("/api/me/notifications");
 assert("mark all read", markRead.status === 200 && afterRead.body.data.unread === 0, afterRead.body);
 
 const prefs = await author.request("/api/me/preferences");
 assert(
-  "preferences defaults",
-  prefs.body.data.email.topic_reply === true &&
-    prefs.body.data.email.post_reply === false &&
-    prefs.body.data.email.moderation === true,
+  "preferences default every category off",
+  Object.values(prefs.body.data.email).every((value) => value === false),
   prefs.body,
 );
 const prefPatch = await author.request("/api/me/preferences", {
   method: "PATCH",
-  json: { email: { post_reply: true, moderation: false } },
+  json: { email: { topic_reply: true, post_reply: true, mention: true, moderation: false } },
 });
 assert(
-  "preferences patch forces moderation on",
-  prefPatch.body.data.email.post_reply === true && prefPatch.body.data.email.moderation === true,
+  "preferences patch keeps moderation opt-in",
+  prefPatch.body.data.email.topic_reply === true &&
+    prefPatch.body.data.email.post_reply === true &&
+    prefPatch.body.data.email.mention === true &&
+    prefPatch.body.data.email.moderation === false,
   prefPatch.body,
+);
+
+// Opt-in takes effect immediately: a new mention is delivered by mail.
+const mentionedPrefs = await mentioned.request("/api/me/preferences", {
+  method: "PATCH",
+  json: { email: { mention: true } },
+});
+assert("mentioned user opts into mention email", mentionedPrefs.body.data.email.mention === true, mentionedPrefs.body);
+const mentionAfterOptIn = await replier.request(`/api/topics/${topicId}/posts`, {
+  json: { contentMd: `再 @${mentionUsername} 一次` },
+  headers: { "x-turnstile-token": TURNSTILE },
+});
+assert("mention reply after opt-in created", mentionAfterOptIn.status === 201, mentionAfterOptIn.body);
+const mentionMail = await outbox(mentionedEmail, "mention", 5000);
+assert(
+  "mention email is delivered after opt-in",
+  Boolean(mentionMail?.subject?.includes("提到了你")),
+  mentionMail?.subject,
 );
 
 const digestResult = await digest(admin);

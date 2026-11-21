@@ -1,20 +1,9 @@
-import { DatabaseSync } from "node:sqlite";
-import { readdirSync } from "node:fs";
 import { derivePassword } from "../packages/shared/src/config.ts";
+import { TURNSTILE, createResults, localDb } from "./e2e-lib.mjs";
 
 const BASE = process.env.V2_BASE ?? "http://localhost:5173";
-const DB_DIR = ".wrangler/state/v3/d1/miniflare-D1DatabaseObject";
-const TURNSTILE = "XXXX.DUMMY.TOKEN.XXXX";
-const results = [];
-function assert(name, condition, detail) {
-  results.push({ name, pass: Boolean(condition), detail });
-  console.log(condition ? "PASS:" : "FAIL:", name, condition ? "" : JSON.stringify(detail ?? null).slice(0, 500));
-}
-function db() {
-  const file = readdirSync(DB_DIR).find((name) => name.endsWith(".sqlite") && !name.startsWith("metadata"));
-  if (!file) throw new Error("local D1 not found");
-  return new DatabaseSync(`${DB_DIR}/${file}`);
-}
+const { results, assert } = createResults(500);
+const db = localDb;
 function makeClient() {
   let cookie = "";
   async function request(path, options = {}) {
