@@ -7,10 +7,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@better-auth/drizzle-adapter": "1.7.12",
+    "@better-auth/drizzle-adapter": "1.7.25",
     "@pineboard/db": "workspace:*",
     "@pineboard/shared": "workspace:*",
-    "better-auth": "1.7.12",
+    "better-auth": "1.7.25",
     "drizzle-orm": "0.45.4",
     "hono": "4.13.19"
   },
