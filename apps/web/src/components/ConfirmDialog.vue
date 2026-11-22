@@ -34,7 +34,7 @@ function onClick(event: MouseEvent): void {
     <dialog
       ref="dialog"
       aria-labelledby="confirm-dialog-title"
-      class="w-[min(24rem,calc(100%-2rem))] border border-border bg-card shadow-[0_18px_60px_rgba(0,0,0,.28)] backdrop:bg-black/45"
+      class="fixed inset-0 m-auto w-[min(24rem,calc(100%-2rem))] border border-border bg-card shadow-[0_18px_60px_rgba(0,0,0,.28)] backdrop:bg-black/45"
       @close="onClose"
       @click="onClick"
     >

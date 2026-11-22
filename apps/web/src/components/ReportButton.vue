@@ -71,7 +71,7 @@ async function submit(): Promise<void> {
       <dialog
         ref="dialog"
         aria-labelledby="report-title"
-        class="w-[min(28rem,calc(100%-2rem))] border border-border bg-card shadow-xl backdrop:bg-black/40"
+        class="fixed inset-0 m-auto w-[min(28rem,calc(100%-2rem))] border border-border bg-card shadow-xl backdrop:bg-black/40"
         @close="onClose"
         @click="onClick"
       >
