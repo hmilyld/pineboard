@@ -6,6 +6,27 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.11] - 2026-11-22
+
+### Added
+
+- Edge cache for public JSON (`/api/site`, `/api/site/stats`, `/api/categories`, `/api/tags`, `/api/topics`, `/api/search`), production only, with `x-pineboard-cache` and a stored copy served when D1 fails.
+- Migration `0015`: topic-list sorting indexes, including the `hot` expression index and the category-scoped variants.
+- Migration `0016`: triggers that keep `tags.usage_count` exact on tag links and topic status changes.
+- `cache.test.ts` and `counter-sync.test.ts`; the latter runs the real migration and reconciliation SQL against SQLite.
+
+### Changed
+
+- `/api/tags` reads the maintained `tags.usage_count` column instead of running five `COUNT(*)`s per tag; `/api/categories` aggregates in two passes instead of five subqueries per category.
+- The daily maintenance job reconciles counters with scoped `UPDATE ... FROM` statements instead of rewriting every row, so a clean day writes nothing.
+- `/api/search` returns early for input that cannot tokenize instead of scanning the table, and caches results.
+- Docs: the free-tier budget records measured rows per view, the write cost of the new indexes, and the rollback constraint after `0016`.
+
+### Fixed
+
+- `tags.usage_count` stays correct after a topic is deleted, hidden, restored, approved or rejected; pending topics no longer count toward a tag.
+- Native `<dialog>` modals are centred instead of pinned to the top-left corner.
+
 ## [0.2.10] - 2026-11-21
 
 ### Added
