@@ -44,7 +44,7 @@ FTS5 的 `unicode61` 不切分中文，整句会变成一个 token。方案：�
 - 规范化：NFKC、小写、去零宽字符、剥 Markdown 标记、标点转空格。
 - 正文与标题都进 `post_search`；`post_uid` / `topic_id` 用 `UNINDEXED`。
 - 查询同样 bigram 化，服务端拼成短语查询；**必须转义双引号**，禁止原样拼 `MATCH`。
-- 单字查询回退 `LIKE`（带 `ESCAPE`），限制结果数。
+- 单字 CJK 查询没有 bigram token，回退 `LIKE`（带 `ESCAPE`）。这条路径会扫表，所以由按 IP 的限流兜底，并走 30s 边缘缓存；完全无法分词（标点、emoji）的输入直接返回空结果，不再扫表。
 - 排序：相关度用 `bm25()`，或按时间。
 - 查询侧 join `posts/topics` 只返回 `published`，避免索引滞后泄露隐藏/删除内容。
 - 管理员可全量重建；每周抽样 50 条比对漂移。

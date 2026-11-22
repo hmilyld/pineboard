@@ -105,6 +105,7 @@ const categoryId = categories.body.data[0].id;
 const tags = await request("/api/tags");
 assert("tags: defaults exist", tags.body?.data?.length >= 3, tags.body);
 const tagIds = tags.body.data.slice(0, 2).map((tag) => tag.id);
+const tagUsage = new Map(tags.body.data.map((tag) => [tag.id, tag.usageCount]));
 
 const missingCaptcha = await request("/api/topics", {
   json: { categoryId, title: "无验证", contentMd: "正文", tagIds: [] },
@@ -121,6 +122,14 @@ const create = await request("/api/topics", {
 });
 assert("topic: create returns 201", create.status === 201 && create.body?.data?.id, create.body);
 const topicId = create.body.data.id;
+
+// `tags.usage_count` is what /api/tags renders; triggers keep it exact.
+const tagsAfterCreate = await request("/api/tags");
+assert(
+  "tags: usage_count follows topic creation",
+  tagIds.every((id) => tagsAfterCreate.body?.data?.find((tag) => tag.id === id)?.usageCount === tagUsage.get(id) + 1),
+  tagsAfterCreate.body?.data,
+);
 
 const detail = await request(`/api/topics/${topicId}`);
 assert(
@@ -222,6 +231,15 @@ const deleteTopic = await request(`/api/topics/${topicId}`, { method: "DELETE" }
 assert("delete: topic soft deleted", deleteTopic.status === 200, deleteTopic.body);
 const gone = await request(`/api/topics/${topicId}`);
 assert("delete: topic no longer readable", gone.status === 404, gone.body);
+
+// The reason the count is a column and not a per-request COUNT: it must still
+// be right after a delete, not only after the next daily reconciliation.
+const tagsAfterDelete = await request("/api/tags");
+assert(
+  "tags: usage_count returns to baseline after delete",
+  tagIds.every((id) => tagsAfterDelete.body?.data?.find((tag) => tag.id === id)?.usageCount === tagUsage.get(id)),
+  tagsAfterDelete.body?.data,
+);
 
 await request("/api/dev/reset", { method: "POST" });
 const failed = results.filter((row) => !row.pass);

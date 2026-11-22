@@ -17,6 +17,7 @@ import {
   type TopicSummary,
 } from "@pineboard/shared";
 import { Hono, type Context } from "hono";
+import { CACHE_TTL, cachedJson, purgeCaches } from "./cache";
 import { getSecurityConfig } from "./config";
 import type { AppEnv, SessionUser } from "./env";
 import { requireActive, requireAuth, requireVerified } from "./middleware/guards";
@@ -65,6 +66,28 @@ function mapTag(row: JoinRow): Tag {
     usageCount: Number(row.usage_count ?? 0),
     ...(row.description == null ? {} : { description: String(row.description) }),
     ...(row.topic_count == null ? {} : { topicCount: Number(row.topic_count) }),
+    recentTopic: row.recent_topic_id
+      ? { id: String(row.recent_topic_id), title: String(row.recent_topic_title ?? "") }
+      : null,
+  };
+}
+
+function mapCategory(row: JoinRow) {
+  const topicCount = Number(row.topic_count ?? 0);
+  const todayTopics = Number(row.today_topics ?? 0);
+  const replies = Number(row.replies ?? 0);
+  return {
+    id: String(row.id),
+    slug: String(row.slug),
+    name: String(row.name),
+    description: String(row.description ?? ""),
+    color: String(row.color ?? "#14513f"),
+    sortOrder: Number(row.sort_order ?? 0),
+    isVisible: Number(row.is_visible ?? 0) === 1,
+    topicCount,
+    todayTopics,
+    replies,
+    stats: { topics: topicCount, todayTopics, replies },
     recentTopic: row.recent_topic_id
       ? { id: String(row.recent_topic_id), title: String(row.recent_topic_title ?? "") }
       : null,
@@ -205,130 +228,114 @@ async function postingLimits(
 
 export const forumRoutes = new Hono<AppEnv>();
 
-const categoryStatsSql = `(SELECT COUNT(*) FROM topics t WHERE t.category_id = c.id AND t.status = 'published') AS topic_count,
-  (SELECT COUNT(*) FROM topics t WHERE t.category_id = c.id AND t.status = 'published' AND t.created_at >= ?) AS today_topics,
-  (SELECT COUNT(*) FROM posts p JOIN topics t ON t.id = p.topic_id
-    WHERE t.category_id = c.id AND t.status = 'published' AND p.is_first = 0 AND p.status = 'published') AS replies,
-  (SELECT t.id FROM topics t WHERE t.category_id = c.id AND t.status = 'published' ORDER BY t.last_post_at DESC LIMIT 1) AS recent_topic_id,
+// Aggregated once per request instead of five correlated subqueries per
+// category. That removes the per-category multiplier, but each pass still
+// scans the catalogue, so the 60s edge cache — not this rewrite — is what
+// actually bounds the cost.
+const categoryStatsSelect = `COALESCE(st.topic_count, 0) AS topic_count,
+  COALESCE(st.today_topics, 0) AS today_topics,
+  COALESCE(rp.replies, 0) AS replies`;
+
+const categoryStatsJoins = `LEFT JOIN (
+    SELECT category_id,
+           COUNT(*) AS topic_count,
+           SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) AS today_topics
+      FROM topics WHERE status = 'published' GROUP BY category_id
+  ) st ON st.category_id = c.id
+  LEFT JOIN (
+    SELECT t.category_id, COUNT(*) AS replies
+      FROM posts p JOIN topics t ON t.id = p.topic_id
+     WHERE t.status = 'published' AND p.is_first = 0 AND p.status = 'published'
+     GROUP BY t.category_id
+  ) rp ON rp.category_id = c.id`;
+
+const categoryRecentSelect = `(SELECT t.id FROM topics t WHERE t.category_id = c.id AND t.status = 'published' ORDER BY t.last_post_at DESC LIMIT 1) AS recent_topic_id,
   (SELECT fp.title FROM topics t JOIN posts fp ON fp.topic_id = t.id AND fp.is_first = 1
     WHERE t.category_id = c.id AND t.status = 'published' ORDER BY t.last_post_at DESC LIMIT 1) AS recent_topic_title`;
 
 forumRoutes.get("/api/categories", async (c) => {
   const today = startOfDaySeconds(c.get("config").site.timezone);
-  const result = await c.env.DB.prepare(
-    `SELECT c.id, c.slug, c.name, c.description, c.color, c.sort_order, c.is_visible, ${categoryStatsSql}
-       FROM categories c WHERE c.is_visible = 1 ORDER BY c.sort_order, c.name`,
-  )
-    .bind(today)
-    .all<JoinRow>();
-  return c.json({
-    ok: true,
-    data: result.results.map((row) => ({
-      id: String(row.id),
-      slug: String(row.slug),
-      name: String(row.name),
-      description: String(row.description ?? ""),
-      color: String(row.color ?? "#14513f"),
-      sortOrder: Number(row.sort_order ?? 0),
-      isVisible: Number(row.is_visible ?? 0) === 1,
-      topicCount: Number(row.topic_count ?? 0),
-      todayTopics: Number(row.today_topics ?? 0),
-      replies: Number(row.replies ?? 0),
-      stats: {
-        topics: Number(row.topic_count ?? 0),
-        todayTopics: Number(row.today_topics ?? 0),
-        replies: Number(row.replies ?? 0),
-      },
-      recentTopic: row.recent_topic_id
-        ? { id: String(row.recent_topic_id), title: String(row.recent_topic_title ?? "") }
-        : null,
-    })),
+  return cachedJson(c, CACHE_TTL.lists, async () => {
+    const result = await c.env.DB.prepare(
+      `SELECT c.id, c.slug, c.name, c.description, c.color, c.sort_order, c.is_visible,
+              ${categoryStatsSelect}, ${categoryRecentSelect}
+         FROM categories c
+         ${categoryStatsJoins}
+        WHERE c.is_visible = 1 ORDER BY c.sort_order, c.name`,
+    )
+      .bind(today)
+      .all<JoinRow>();
+    return { ok: true as const, data: result.results.map(mapCategory) };
   });
 });
 
 forumRoutes.get("/api/categories/:slug", async (c) => {
   const today = startOfDaySeconds(c.get("config").site.timezone);
-  const row = await c.env.DB.prepare(
-    `SELECT c.id, c.slug, c.name, c.description, c.color, c.sort_order, c.is_visible, ${categoryStatsSql}
-       FROM categories c WHERE c.slug = ? AND c.is_visible = 1`,
-  )
-    .bind(today, c.req.param("slug"))
-    .first<JoinRow>();
-  if (!row) return c.json({ ok: false, error: { code: "not_found", message: "版块不存在" } }, 404);
-  return c.json({
-    ok: true,
-    data: {
-      id: String(row.id),
-      slug: String(row.slug),
-      name: String(row.name),
-      description: String(row.description ?? ""),
-      color: String(row.color ?? "#14513f"),
-      sortOrder: Number(row.sort_order ?? 0),
-      isVisible: Number(row.is_visible ?? 0) === 1,
-      topicCount: Number(row.topic_count ?? 0),
-      todayTopics: Number(row.today_topics ?? 0),
-      replies: Number(row.replies ?? 0),
-      stats: {
-        topics: Number(row.topic_count ?? 0),
-        todayTopics: Number(row.today_topics ?? 0),
-        replies: Number(row.replies ?? 0),
-      },
-      recentTopic: row.recent_topic_id
-        ? { id: String(row.recent_topic_id), title: String(row.recent_topic_title ?? "") }
-        : null,
-    },
+  const slug = c.req.param("slug");
+  return cachedJson(c, CACHE_TTL.lists, async () => {
+    const row = await c.env.DB.prepare(
+      `SELECT c.id, c.slug, c.name, c.description, c.color, c.sort_order, c.is_visible,
+              ${categoryStatsSelect}, ${categoryRecentSelect}
+         FROM categories c
+         ${categoryStatsJoins}
+        WHERE c.slug = ? AND c.is_visible = 1`,
+    )
+      .bind(today, slug)
+      .first<JoinRow>();
+    if (!row) return c.json({ ok: false, error: { code: "not_found", message: "版块不存在" } }, 404);
+    return { ok: true as const, data: mapCategory(row) };
   });
 });
 
-forumRoutes.get("/api/tags", async (c) => {
-  const rows = await c.env.DB.prepare(
-    `SELECT g.id, g.slug, g.name, g.description, g.color,
-            (SELECT COUNT(*) FROM topic_tags tt JOIN topics t ON t.id = tt.topic_id
-              WHERE tt.tag_id = g.id AND t.status = 'published') AS usage_count,
-            (SELECT COUNT(*) FROM topic_tags tt JOIN topics t ON t.id = tt.topic_id
-              WHERE tt.tag_id = g.id AND t.status = 'published') AS topic_count,
+forumRoutes.get("/api/tags", async (c) =>
+  cachedJson(c, CACHE_TTL.lists, async () => {
+    const rows = await c.env.DB.prepare(
+      `SELECT g.id, g.slug, g.name, g.description, g.color,
+            g.usage_count AS usage_count,
+            g.usage_count AS topic_count,
             (SELECT t.id FROM topic_tags tt JOIN topics t ON t.id = tt.topic_id
               WHERE tt.tag_id = g.id AND t.status = 'published' ORDER BY t.last_post_at DESC LIMIT 1) AS recent_topic_id,
             (SELECT fp.title FROM topic_tags tt JOIN topics t ON t.id = tt.topic_id
               JOIN posts fp ON fp.topic_id = t.id AND fp.is_first = 1
               WHERE tt.tag_id = g.id AND t.status = 'published' ORDER BY t.last_post_at DESC LIMIT 1) AS recent_topic_title
        FROM tags g WHERE g.status = 'active'
-      ORDER BY (SELECT COUNT(*) FROM topic_tags tt JOIN topics t ON t.id = tt.topic_id
-                 WHERE tt.tag_id = g.id AND t.status = 'published') DESC, g.name`,
-  ).all<JoinRow>();
-  return c.json({ ok: true, data: rows.results.map(mapTag) });
-});
+      ORDER BY g.usage_count DESC, g.name`,
+    ).all<JoinRow>();
+    return { ok: true as const, data: rows.results.map(mapTag) };
+  }),
+);
 
 forumRoutes.get("/api/tags/:slug", async (c) => {
   const today = startOfDaySeconds(c.get("config").site.timezone);
-  const row = await c.env.DB.prepare(
-    `SELECT g.id, g.slug, g.name, g.description, g.color,
-            (SELECT COUNT(*) FROM topic_tags tt JOIN topics t ON t.id = tt.topic_id
-              WHERE tt.tag_id = g.id AND t.status = 'published') AS usage_count,
-            (SELECT COUNT(*) FROM topic_tags tt JOIN topics t ON t.id = tt.topic_id
-              WHERE tt.tag_id = g.id AND t.status = 'published') AS topic_count,
+  const slug = c.req.param("slug");
+  return cachedJson(c, CACHE_TTL.lists, async () => {
+    const row = await c.env.DB.prepare(
+      `SELECT g.id, g.slug, g.name, g.description, g.color,
+            g.usage_count AS usage_count,
+            g.usage_count AS topic_count,
             (SELECT COUNT(*) FROM topic_tags tt JOIN topics t ON t.id = tt.topic_id
               WHERE tt.tag_id = g.id AND t.status = 'published' AND t.created_at >= ?) AS today_topics,
             (SELECT COUNT(*) FROM topic_tags tt JOIN topics t ON t.id = tt.topic_id
               JOIN posts p ON p.topic_id = t.id AND p.is_first = 0 AND p.status = 'published'
               WHERE tt.tag_id = g.id AND t.status = 'published') AS replies
        FROM tags g WHERE g.slug = ? AND g.status = 'active'`,
-  )
-    .bind(today, c.req.param("slug"))
-    .first<JoinRow>();
-  if (!row) return c.json({ ok: false, error: { code: "not_found", message: "标签不存在" } }, 404);
-  const tag = mapTag(row);
-  return c.json({
-    ok: true,
-    data: {
-      ...tag,
-      description: String(row.description ?? "") || `关于 #${String(row.name)} 的主题`,
-      stats: {
-        topics: Number(row.topic_count ?? 0),
-        todayTopics: Number(row.today_topics ?? 0),
-        replies: Number(row.replies ?? 0),
+    )
+      .bind(today, slug)
+      .first<JoinRow>();
+    if (!row) return c.json({ ok: false, error: { code: "not_found", message: "标签不存在" } }, 404);
+    const tag = mapTag(row);
+    return {
+      ok: true as const,
+      data: {
+        ...tag,
+        description: String(row.description ?? "") || `关于 #${String(row.name)} 的主题`,
+        stats: {
+          topics: Number(row.topic_count ?? 0),
+          todayTopics: Number(row.today_topics ?? 0),
+          replies: Number(row.replies ?? 0),
+        },
       },
-    },
+    };
   });
 });
 
@@ -366,33 +373,35 @@ forumRoutes.get("/api/topics", async (c) => {
     binds.push(tag);
   }
   const whereSql = where.join(" AND ");
-  const countRow = await c.env.DB.prepare(
-    `SELECT COUNT(*) AS total FROM topics t JOIN categories c ON c.id = t.category_id WHERE ${whereSql}`,
-  )
-    .bind(...binds)
-    .first<{ total: number }>();
-  const total = Number(countRow?.total ?? 0);
   const order =
     sort.data === "new"
       ? "t.created_at DESC"
       : sort.data === "hot"
         ? "(t.reply_count * 2 + t.like_count * 3) DESC, t.last_post_at DESC"
         : "t.pin_level DESC, t.pin_order ASC, t.last_post_at DESC";
-  const rows = await c.env.DB.prepare(`${topicSelect} WHERE ${whereSql} ORDER BY ${order} LIMIT ? OFFSET ?`)
-    .bind(...binds, perPage, (page - 1) * perPage)
-    .all<JoinRow>();
-  const tags = await loadTags(
-    c.env.DB,
-    rows.results.map((row) => String(row.id)),
-  );
-  const data: TopicList = {
-    items: rows.results.map((row) => mapTopic(row, tags.get(String(row.id)) ?? [])),
-    page,
-    perPage,
-    total,
-    totalPages: Math.max(1, Math.ceil(total / perPage)),
-  };
-  return c.json({ ok: true, data });
+  return cachedJson(c, CACHE_TTL.topics, async () => {
+    const countRow = await c.env.DB.prepare(
+      `SELECT COUNT(*) AS total FROM topics t JOIN categories c ON c.id = t.category_id WHERE ${whereSql}`,
+    )
+      .bind(...binds)
+      .first<{ total: number }>();
+    const total = Number(countRow?.total ?? 0);
+    const rows = await c.env.DB.prepare(`${topicSelect} WHERE ${whereSql} ORDER BY ${order} LIMIT ? OFFSET ?`)
+      .bind(...binds, perPage, (page - 1) * perPage)
+      .all<JoinRow>();
+    const tags = await loadTags(
+      c.env.DB,
+      rows.results.map((row) => String(row.id)),
+    );
+    const data: TopicList = {
+      items: rows.results.map((row) => mapTopic(row, tags.get(String(row.id)) ?? [])),
+      page,
+      perPage,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / perPage)),
+    };
+    return { ok: true as const, data };
+  });
 });
 
 forumRoutes.get("/api/topics/:id", async (c) => {
@@ -617,9 +626,9 @@ forumRoutes.post("/api/topics", requireVerified, async (c) => {
   for (const tagId of tagIds) {
     statements.push(c.env.DB.prepare("INSERT INTO topic_tags (topic_id, tag_id) VALUES (?, ?)").bind(topicId, tagId));
   }
-  for (const tagId of tagIds) {
-    statements.push(c.env.DB.prepare("UPDATE tags SET usage_count = usage_count + 1 WHERE id = ?").bind(tagId));
-  }
+  // `tags.usage_count` is maintained by triggers on topic_tags and on
+  // topics.status change (migration 0016), so creating a topic must not
+  // increment it again.
   statements.push(
     c.env.DB.prepare(
       `INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, meta_json, ip_hash, created_at)
@@ -634,6 +643,10 @@ forumRoutes.post("/api/topics", requireVerified, async (c) => {
     ),
   );
   await c.env.DB.batch(statements);
+  // The new topic moved a category counter and a tag counter; drop this data
+  // center's copy of those two lists. The topic list itself is not purged —
+  // its cache key carries the query string — so it catches up on its 20s TTL.
+  purgeCaches(c, ["/api/categories", "/api/tags"]);
   if (verdict.flagged) {
     return c.json({ ok: true, data: { id: topicId, postId, pending: true } }, 201);
   }

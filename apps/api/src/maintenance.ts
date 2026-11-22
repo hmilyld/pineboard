@@ -1,6 +1,7 @@
 import { ok } from "@pineboard/shared";
 import { Hono } from "hono";
 import { runAccountCleanup } from "./account";
+import { COUNTER_RECONCILE_SQL } from "./counter-sync";
 import type { AppEnv, Bindings } from "./env";
 import { requireAdmin } from "./middleware/guards";
 import { markMaintenanceRun } from "./jobs";
@@ -42,24 +43,10 @@ export async function runDailyMaintenance(env: Bindings): Promise<{
     unsubscribeTokens: Number(deletes[8]?.meta.changes ?? 0),
     stuckDirectEmails: Number(deletes[9]?.meta.changes ?? 0),
   };
-  await env.DB.batch([
-    env.DB.prepare("UPDATE posts SET like_count = (SELECT COUNT(*) FROM post_likes WHERE post_id = posts.id)"),
-    env.DB.prepare(
-      `UPDATE topics SET reply_count = (SELECT COUNT(*) FROM posts WHERE topic_id = topics.id AND is_first = 0 AND status = 'published')`,
-    ),
-    env.DB.prepare(
-      `UPDATE topics SET like_count = COALESCE((SELECT like_count FROM posts WHERE topic_id = topics.id AND is_first = 1 LIMIT 1), 0)`,
-    ),
-    env.DB.prepare(
-      `UPDATE tags SET usage_count = (SELECT COUNT(*) FROM topic_tags tt JOIN topics t ON t.id = tt.topic_id
-        WHERE tt.tag_id = tags.id AND t.status = 'published')`,
-    ),
-    env.DB.prepare(
-      `UPDATE topics SET
-         last_post_at = COALESCE((SELECT MAX(p.created_at) FROM posts p WHERE p.topic_id = topics.id AND p.status = 'published'), last_post_at),
-         last_post_user_id = COALESCE((SELECT p.author_id FROM posts p WHERE p.topic_id = topics.id AND p.status = 'published' ORDER BY p.created_at DESC LIMIT 1), last_post_user_id)`,
-    ),
-  ]);
+  // Counter reconciliation is drift-only (see counter-sync.ts): a full-table
+  // UPDATE would rewrite every row once a day, and the write is what the D1
+  // free tier caps.
+  await env.DB.batch(COUNTER_RECONCILE_SQL.map((sql) => env.DB.prepare(sql)));
   const account = await runAccountCleanup(env);
   const config = await getConfig(env);
   let uploads = 0;

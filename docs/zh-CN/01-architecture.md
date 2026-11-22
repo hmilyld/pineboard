@@ -79,6 +79,7 @@ forum.example.com/
 ## 缓存策略
 
 - 配置：普通域 45s isolate 内存缓存；安全域（维护/注册/验证/Turnstile/noindex）5s。
+- 公开 JSON：仅生产环境走 `caches.default`（`apps/api/src/cache.ts`）——`/api/site/stats` 300s、`/api/site` 60s、`/api/categories` 与 `/api/tags` 60s、`/api/topics` 20s、`/api/search` 30s。这些响应与访客无关，缓存键不按用户区分；`s-maxage` 保证不进浏览器私有缓存。条目保留时长是新鲜期的六倍：超过 TTL 后重新计算，若 D1 报错则返回存档副本并标记 `x-pineboard-cache: stale`。
 - `GET /api/site`：`s-maxage=60`；`GET /api/me`：`no-store`。**含用户态的响应永不进缓存。**
 - 主题文档 meta：`caches.default` 300s，键含完整路径与配置版本。
 - sitemap 1h；静态资源 immutable。

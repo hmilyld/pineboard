@@ -1,5 +1,6 @@
 import { ok, toPublicConfig, type NavItem } from "@pineboard/shared";
 import { Hono } from "hono";
+import { CACHE_TTL, cachedJson } from "../cache";
 import { getConfig, getSecurityConfig } from "../config";
 import type { AppEnv } from "../env";
 import { getEffectiveIntegrations } from "../integrations";
@@ -7,19 +8,22 @@ import { siteStats } from "../stats";
 
 export const siteRoutes = new Hono<AppEnv>();
 
-siteRoutes.get("/api/site/stats", async (c) => {
-  const loaded = await getConfig(c.env);
-  const data = await siteStats(c.env.DB, loaded.config.site.timezone);
-  c.header("cache-control", "public, s-maxage=60, stale-while-revalidate=30");
-  return c.json(ok(data));
-});
+// Footer counters do not need to be exact: one D1 pass every five minutes
+// instead of one per visitor. `/api/topics` is the expensive page; this keeps
+// its baseline free.
+siteRoutes.get("/api/site/stats", async (c) =>
+  cachedJson(c, CACHE_TTL.stats, async () => {
+    const loaded = await getConfig(c.env);
+    return ok(await siteStats(c.env.DB, loaded.config.site.timezone));
+  }),
+);
 
-siteRoutes.get("/api/site", async (c) => {
-  const [loaded, integration] = await Promise.all([getSecurityConfig(c.env), getEffectiveIntegrations(c.env)]);
-  const data = toPublicConfig(loaded.config, loaded.version, integration.cloudflare.turnstileSiteKey);
-  c.header("cache-control", "public, s-maxage=60, stale-while-revalidate=30");
-  return c.json(ok(data));
-});
+siteRoutes.get("/api/site", async (c) =>
+  cachedJson(c, CACHE_TTL.config, async () => {
+    const [loaded, integration] = await Promise.all([getSecurityConfig(c.env), getEffectiveIntegrations(c.env)]);
+    return ok(toPublicConfig(loaded.config, loaded.version, integration.cloudflare.turnstileSiteKey));
+  }),
+);
 
 /** Top navigation is a small, frequently edited table; never edge-cached. */
 siteRoutes.get("/api/nav", async (c) => {

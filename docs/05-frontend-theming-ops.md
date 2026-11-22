@@ -131,14 +131,23 @@ Same-origin requests still validate `Origin` (write requests) and keep `SameSite
 
 ## Free tier budget (100 DAU / 500 views per day / 50 posts per day)
 
+D1 bills **rows scanned**, not queries, and the free tier fails queries outright once the daily cap is hit — there is no overage buffer. What decides the ceiling is therefore the cost of one page view, not the number of visitors. Measured on a seeded 4 MB database (2026-11): one page view cost ~17k rows read across tag counters, category counters, site stats and the topic list; after the fixes below the same view costs a few hundred.
+
 | Resource | Estimate | Quota | Headroom |
 |---|---|---|---|
 | Worker requests (API+documents) | 8–10k/day | 100k/day | ~90% |
 | Static assets | Free, unlimited | — | — |
-| D1 reads | ~40k rows/day | 5M/day | >99% |
+| D1 reads | ~0.1–0.25M rows/day | 5M/day | ~95% |
 | D1 writes | ~3k rows/day | 100k/day | ~97% |
 | R2 | 2–3GB/month | 10GB | Needs orphan cleanup |
 | Resend | 10–30 emails/day | 100/day | Main bottleneck |
 | CPU | 1–4ms/request | 10ms | Medium-low |
 
-What really needs watching is **Resend's 100 emails/day** and **Better Auth's CPU behavior**. The former relies on digests/budgets/unsubscribe, the latter on client-side password derivation.
+What keeps those numbers true:
+
+- **No per-row `COUNT(*)`.** Tag counts read `tags.usage_count`, kept exact by triggers on `topic_tags` and on `topics.status` (migration `0016`), with the daily job as a backstop. Category stats run as two `GROUP BY` passes per request instead of five correlated subqueries per category: that removes the per-category multiplier, but each pass is still proportional to the catalogue, which is why the 60s cache matters more than the rewrite itself.
+- **Public JSON goes through the edge cache** (`apps/api/src/cache.ts`, production only): `/api/site/stats` 300s, `/api/site` 60s, `/api/categories` and `/api/tags` 60s, `/api/topics` 20s, `/api/search` 30s. The Cache API is per data center and does not replicate, and `s-maxage` keeps entries out of browser caches. Entries are kept six times their fresh TTL, so when D1 answers with an error (the free tier fails hard instead of billing) the last copy is served with `x-pineboard-cache: stale` rather than a 500.
+- **Writes follow the row, not the table.** Counter reconciliation in the daily job is drift-only (`UPDATE … FROM` against the aggregate), so on a clean day it writes nothing; before that change a single run rewrote every `posts`/`topics` row. The `topics` sorting indexes added in `0015` (including the `hot` expression index and the category-scoped variants) keep every list sort on index order instead of a full scan plus temp B-tree. The trade-off is on the write side: each index adds a written row whenever `topics` is updated, so a reply costs more index writes than before — irrelevant at 50 posts/day, worth watching for bulk imports.
+- **Bulk work never touches the remote database.** Seeding, reindexing and integrity checks belong to local D1; a single ad-hoc full-table `SELECT` cost 516k rows read in one run.
+
+What still needs watching is **Resend's 100 emails/day** and **Better Auth's CPU behavior**. The former relies on digests/budgets/unsubscribe, the latter on client-side password derivation.
