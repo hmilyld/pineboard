@@ -182,6 +182,7 @@ Anything that can be maintained from the admin panel does not require code chang
 - `post_search` must be rebuilt after restoring
 - Worker rollback: Cloudflare Dashboard or `wrangler rollback`
 - Migrations are additive by default; do not run production migrations in reverse
+- Rolling back to a Worker released before `0016` while the triggers stay in place over-counts `tags.usage_count` by one per new topic (that Worker increments the column the trigger now computes). The daily reconciliation repairs it, so roll forward rather than back once `0016` has been applied
 
 ## 9. Fork / Mirror synchronization
 

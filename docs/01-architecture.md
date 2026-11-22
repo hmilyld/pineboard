@@ -79,6 +79,7 @@ forum.example.com/
 ## Caching strategy
 
 - Config: 45s isolate memory cache for normal domains; 5s for security domains (maintenance/registration/verification/Turnstile/noindex).
+- Public JSON: `caches.default` in production only (`apps/api/src/cache.ts`) — `/api/site/stats` 300s, `/api/site` 60s, `/api/categories` and `/api/tags` 60s, `/api/topics` 20s, `/api/search` 30s. Responses are identical for every visitor, so the entry is never keyed by user; `s-maxage` keeps it out of browser caches. Entries live six times their fresh TTL: past the TTL the handler recomputes, and if D1 fails the stored copy is served with `x-pineboard-cache: stale`.
 - `GET /api/site`: `s-maxage=60`; `GET /api/me`: `no-store`. **Responses containing user state never enter the cache.**
 - Topic document meta: `caches.default` 300s, keyed by full path and config version.
 - sitemap 1h; static assets immutable.

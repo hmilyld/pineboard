@@ -45,7 +45,7 @@ FTS5's `unicode61` does not segment Chinese, so a whole sentence becomes one tok
 - Normalization: NFKC, lowercase, strip zero-width characters, strip Markdown markers, punctuation to spaces.
 - Both the body and the title go into `post_search`; `post_uid` / `topic_id` use `UNINDEXED`.
 - Queries are bigrammed the same way and assembled into phrase queries on the server; **double quotes must be escaped**, and raw concatenation into `MATCH` is forbidden.
-- Single-character queries fall back to `LIKE` (with `ESCAPE`) and limit the number of results.
+- Single-character CJK queries have no bigram token and fall back to `LIKE` (with `ESCAPE`). That path scans the table, so it is bounded by the per-IP rate limit and served from the edge cache for 30s; input that tokenizes to nothing at all (punctuation, emoji) returns an empty result instead of scanning.
 - Ordering: relevance via `bm25()`, or by time.
 - The query side joins `posts/topics` and returns only `published`, so index lag cannot leak hidden/deleted content.
 - Admins can rebuild everything; sample 50 rows weekly to compare for drift.

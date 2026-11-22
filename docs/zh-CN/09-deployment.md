@@ -182,6 +182,7 @@ pnpm exec wrangler d1 execute D1_DATABASE_NAME --remote \
 - 恢复后必须重建 `post_search`
 - Worker 回滚：Cloudflare Dashboard 或 `wrangler rollback`
 - 迁移默认 additive；不要反向执行生产 migration
+- 在 `0016` 已应用后回滚到更早的 Worker，会让 `tags.usage_count` 每发一个新主题多算 1（旧 Worker 仍在自增这一列，而触发器已经会重算它）。每日对账会修正，所以有了 `0016` 之后优先向前修，不要往回滚
 
 ## 9. Fork / Mirror 同步
 
